@@ -15,15 +15,14 @@
 <body>
   <!-- Top Announcement Bar -->
   <div class="top-bar">
-    ✈️ Pre-Order 7–15 business days delivery | Cash on Delivery available across Bangladesh | Helpline: 01819740112
+    ✈️ Pre-Order 15–25 Days delivery | Cash on Delivery available across Bangladesh | Helpline: 01819740112
   </div>
 
   <!-- Header -->
   <header class="site-header">
     <div class="header-container">
       <a href="index.html" class="brand-wrap">
-        <span class="brand-name" style="letter-spacing:-0.5px">zayn.shop</span>
-        <span class="brand-sub">PRE-ORDER COLLECTION</span>
+        <img src="images/logo.png" alt="zayn.shop" class="site-logo">
       </a>
 
       <div class="search-wrap">
@@ -99,7 +98,7 @@
             </tr>
             <tr>
               <td class="col-head">Delivery</td>
-              <td class="col-val" id="specDelivery">7–15 business days</td>
+              <td class="col-val" id="specDelivery">15–25 Days</td>
               <td class="col-head">Care</td>
               <td class="col-val">Spot clean with a damp cloth / Store dry</td>
             </tr>
@@ -120,7 +119,7 @@
       <div class="pdp-tab-pane" id="tabPane-additional">
         <div style="font-size:14px;color:#475569;line-height:1.7;">
           <h4 style="color:#0f172a;margin-bottom:8px">Pre-Order & Delivery Information:</h4>
-          <p>• <b>Delivery Timeline:</b> 7 to 15 business days across Bangladesh.</p>
+          <p>• <b>Delivery Timeline:</b> 15 to 25 days across Bangladesh.</p>
           <p>• <b>Delivery Charges:</b> Inside Dhaka ৳70 | Outside Dhaka ৳130.</p>
           <p>• <b>Advance Policy:</b> An advance payment of ৳200 via bKash or Nagad (01819740112) is required to secure your order with international suppliers. The remaining amount is payable Cash on Delivery.</p>
           <p>• <b>Inspection:</b> You can check the package in front of the delivery rider upon delivery.</p>
@@ -261,7 +260,7 @@
         document.getElementById('bcTitle').textContent = p.name;
 
         const currency = CONFIG.currencySymbol || '৳';
-        const deliveryTime = CONFIG.deliveryTime || '7–15 business days';
+        const deliveryTime = CONFIG.deliveryTime || '15–25 Days';
         const advanceAmount = CONFIG.advanceAmount || 200;
         const discount = p.regular_price && p.regular_price > p.price
           ? Math.round(((p.regular_price - p.price) / p.regular_price) * 100)

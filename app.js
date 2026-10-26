@@ -104,7 +104,7 @@ function renderProducts() {
   }
 
   const currency = typeof CONFIG !== 'undefined' ? CONFIG.currencySymbol : '৳';
-  const deliveryTime = typeof CONFIG !== 'undefined' ? CONFIG.deliveryTime : '7–15 business days';
+  const deliveryTime = typeof CONFIG !== 'undefined' ? CONFIG.deliveryTime : '15–25 Days';
 
   grid.innerHTML = filtered.map(p => {
     const discount = p.regular_price && p.regular_price > p.price 

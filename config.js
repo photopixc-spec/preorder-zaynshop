@@ -9,7 +9,7 @@ const CONFIG = {
   deliveryOutside: 130,
   advanceAmount: 200,
   advanceNotice: "An advance payment of 200 BDT is required to confirm the pre-order. The remaining amount will be paid Cash on Delivery.",
-  deliveryTime: "7–15 business days",
+  deliveryTime: "15–25 Days",
   
   // Tracking Tag Settings
   orderWebhookUrl: "", // Google Apps Script Web App URL for order logging (optional)

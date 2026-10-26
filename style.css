@@ -57,8 +57,23 @@ header.site-header {
 
 .brand-wrap {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   text-decoration: none;
+}
+
+.site-logo {
+  height: 38px;
+  width: auto;
+  max-width: 170px;
+  object-fit: contain;
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .site-logo {
+    height: 30px;
+    max-width: 140px;
+  }
 }
 
 .brand-name {
