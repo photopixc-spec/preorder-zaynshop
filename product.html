@@ -215,14 +215,14 @@
   <div id="toast"></div>
 
   <!-- Scripts -->
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script src="config.js?v=2"></script>
+  <script src="app.js?v=2"></script>
   <script>
     let activePdpProduct = null;
 
     async function initProductPage() {
       const params = new URLSearchParams(window.location.search);
-      const id = parseInt(params.get('id'), 10);
+      const id = params.get('id');
       const mainArea = document.getElementById('pdpMainArea');
 
       if (!id) {
@@ -235,12 +235,19 @@
         return;
       }
 
+      // Show loader while fetching real-time data
+      mainArea.innerHTML = `
+        <div style="text-align:center;padding:80px 20px;color:#64748b;">
+          <div style="font-size:24px;margin-bottom:10px;">⏳</div>
+          <h3 style="font-size:18px;font-weight:700;color:#1e293b;">Loading product details…</h3>
+        </div>`;
+
       try {
-        const products = (typeof allProducts !== 'undefined' && allProducts.length)
-          ? allProducts 
-          : (typeof fetchStoreProducts === 'function' ? await fetchStoreProducts() : await fetch('products.json').then(r => r.json()));
+        const products = typeof fetchStoreProducts === 'function'
+          ? await fetchStoreProducts()
+          : await fetch('products.json?v=' + Date.now()).then(r => r.json());
         allProducts = products;
-        const p = products.find(item => Number(item.id) === Number(id));
+        const p = products.find(item => String(item.id).trim() === String(id).trim());
 
         if (!p) {
           mainArea.innerHTML = `
