@@ -12,7 +12,7 @@ const CONFIG = {
   deliveryTime: "15–25 Days",
   
   // Tracking Tag Settings
-  orderWebhookUrl: "", // Google Apps Script Web App URL for order logging (optional)
+  orderWebhookUrl: "https://script.google.com/macros/s/AKfycbz6_ZkMemBMd8kUDicKdQtaB-kdNgDonPSTEC1-W6ilwEji7MLcgFzXShKqAKsYxkuv1A/exec", // Google Apps Script Web App URL for order logging
   gtmId: "",           // e.g. "GTM-XXXXXXX"
   metaPixelId: "",     // e.g. "1234567890123456"
   googleAnalyticsId: "" // e.g. "G-XXXXXXXXXX"
