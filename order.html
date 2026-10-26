@@ -72,7 +72,7 @@
     .form-label span.req {
       color: var(--pri, #e11d48);
     }
-    .form-input, .form-textarea {
+    .form-input, .form-textarea, select.form-input {
       width: 100%;
       padding: 12px 14px;
       border: 1.5px solid #cbd5e1;
@@ -80,13 +80,25 @@
       font-size: 14px;
       font-family: inherit;
       color: #0f172a;
+      background-color: #ffffff;
       box-sizing: border-box;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
-    .form-input:focus, .form-textarea:focus {
+    .form-input:focus, .form-textarea:focus, select.form-input:focus {
       outline: none;
       border-color: var(--pri, #e11d48);
       box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+    }
+    .district-upazila-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 550px) {
+      .district-upazila-grid {
+        grid-template-columns: 1fr;
+      }
     }
     .area-radios {
       display: grid;
@@ -396,13 +408,6 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="custAddress">
-                Full Delivery Address <span class="req">*</span>
-              </label>
-              <textarea id="custAddress" class="form-textarea" rows="3" required placeholder="House/Flat number, Road, Area, Thana, District"></textarea>
-            </div>
-
-            <div class="form-group">
               <label class="form-label">
                 Delivery Area <span class="req">*</span>
               </label>
@@ -422,6 +427,37 @@
                   </div>
                 </label>
               </div>
+            </div>
+
+            <!-- Conditional Outside Dhaka Fields: District & Upazila -->
+            <div id="outsideDhakaFields" style="display: none; animation: fadeIn 0.25s ease-out;">
+              <div class="district-upazila-grid">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" for="custDistrict">
+                    District (জেলা) <span class="req">*</span>
+                  </label>
+                  <select id="custDistrict" class="form-input" onchange="handleDistrictChange(this.value)">
+                    <option value="">-- Select District / জেলা --</option>
+                  </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" for="custUpazila">
+                    Upazila / Thana (উপজেলা / থানা) <span class="req">*</span>
+                  </label>
+                  <select id="custUpazila" class="form-input" onchange="handleUpazilaChange(this.value)">
+                    <option value="">-- First Select District --</option>
+                  </select>
+                  <input type="text" id="custUpazilaCustom" class="form-input" style="display: none; margin-top: 8px;" placeholder="Type your Upazila / Thana name">
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="custAddress">
+                Full Delivery Address <span class="req">*</span>
+              </label>
+              <textarea id="custAddress" class="form-textarea" rows="3" required placeholder="House/Flat number, Road, Area (e.g. Dhanmondi, Mirpur, Uttara)"></textarea>
             </div>
 
             <div class="form-group">
@@ -562,20 +598,143 @@
   <script>
     let checkoutDeliveryArea = 'dhaka';
 
+    // 64 Districts of Bangladesh and their Upazilas
+    const BANGLADESH_DISTRICTS = {
+      "Bagerhat": ["Bagerhat Sadar", "Chitalmari", "Fakirhat", "Kachua", "Mollahat", "Mongla", "Morrelganj", "Rampal", "Sarankhola"],
+      "Bandarban": ["Bandarban Sadar", "Ali Kadam", "Naikhongchhari", "Rowangchhari", "Ruma", "Thanchi", "Lama"],
+      "Barguna": ["Barguna Sadar", "Amtali", "Bamna", "Betagi", "Patharghata", "Taltali"],
+      "Barishal": ["Barishal Sadar (Kotwali)", "Agailjhara", "Babuganj", "Bakerganj", "Banaripara", "Gaurnadi", "Hizla", "Mehendiganj", "Muladi", "Wazirpur"],
+      "Bhola": ["Bhola Sadar", "Burhanuddin", "Char Fasson", "Daulatkhan", "Lalmohan", "Manpura", "Tazumuddin"],
+      "Bogura": ["Bogura Sadar", "Adamdighi", "Dhunat", "Dhupchanchia", "Gabtali", "Kahaloo", "Nandigram", "Sariakandi", "Shajahanpur", "Sherpur", "Shibganj", "Sonatala"],
+      "Brahmanbaria": ["Brahmanbaria Sadar", "Akhaura", "Ashuganj", "Bancharampur", "Bijoynagar", "Kasba", "Nabinagar", "Nasirnagar", "Sarail"],
+      "Chandpur": ["Chandpur Sadar", "Faridganj", "Haimchar", "Haziganj", "Kachua", "Matlab North", "Matlab South", "Shahrasti"],
+      "Chapainawabganj": ["Chapainawabganj Sadar", "Bholahat", "Gomastapur", "Nachole", "Shibganj"],
+      "Chattogram": ["Chattogram Sadar / Kotwali", "Panchlaish", "Halishahar", "Pahartali", "Bakalia", "Khulshi", "Bayazid", "Patenga", "Anwara", "Banshkhali", "Boalkhali", "Chandanaish", "Fatikchhari", "Hathazari", "Karnaphuli", "Lohagara", "Mirsharai", "Patiya", "Rangunia", "Raozan", "Sandwip", "Satkania", "Sitakunda"],
+      "Chuadanga": ["Chuadanga Sadar", "Alamdanga", "Damurhuda", "Jibannagar"],
+      "Cox's Bazar": ["Cox's Bazar Sadar", "Chakaria", "Kutubdia", "Maheshkhali", "Ramu", "Teknaf", "Ukhia", "Pekua"],
+      "Cumilla": ["Cumilla Sadar", "Cumilla Sadar South", "Barura", "Brahmanpara", "Burichang", "Chandina", "Chauddagram", "Daudkandi", "Debidwar", "Homna", "Laksam", "Lalmai", "Meghna", "Monohargonj", "Muradnagar", "Nangalkot", "Titas"],
+      "Dhaka (Suburbs)": ["Savar", "Dhamrai", "Keraniganj", "Nawabganj", "Dohar"],
+      "Dinajpur": ["Dinajpur Sadar", "Birampur", "Birganj", "Biral", "Bochaganj", "Chirirbandar", "Fulbari", "Ghoraghat", "Hakimpur", "Kaharole", "Khansama", "Nawabganj", "Parbatipur"],
+      "Faridpur": ["Faridpur Sadar", "Alfadanga", "Bhanga", "Boalmari", "Charbhadrasan", "Madhukhali", "Nagarkanda", "Sadarpur", "Saltha"],
+      "Feni": ["Feni Sadar", "Chhagalnaiya", "Daganbhuiyan", "Fulgazi", "Parshuram", "Sonagazi"],
+      "Gaibandha": ["Gaibandha Sadar", "Fulchhari", "Gobindaganj", "Palashbari", "Sadullapur", "Saghata", "Sundarganj"],
+      "Gazipur": ["Gazipur Sadar", "Kaliakair", "Kaliganj", "Kapasia", "Sreepur", "Tongi"],
+      "Gopalganj": ["Gopalganj Sadar", "Kashiani", "Kotalipara", "Muksudpur", "Tungipara"],
+      "Habiganj": ["Habiganj Sadar", "Ajmiriganj", "Bahubal", "Baniachong", "Chunarughat", "Lakhai", "Madhabpur", "Nabiganj", "Sayestaganj"],
+      "Jamalpur": ["Jamalpur Sadar", "Baksiganj", "Dewanganj", "Islampur", "Madarganj", "Melandaha", "Sarishabari"],
+      "Jashore": ["Jashore Sadar", "Abhaynagar", "Bagherpara", "Chaugachha", "Jhikargachha", "Keshabpur", "Manirampur", "Sharsha"],
+      "Jhalokathi": ["Jhalokathi Sadar", "Kathalia", "Nalchhiti", "Rajapur"],
+      "Jhenaidah": ["Jhenaidah Sadar", "Harinakundu", "Kaliganj", "Kotchandpur", "Maheshpur", "Shailkupa"],
+      "Joypurhat": ["Joypurhat Sadar", "Akkelpur", "Kalai", "Khetlal", "Panchbibi"],
+      "Khagrachhari": ["Khagrachhari Sadar", "Dighinala", "Lakshmichhari", "Mahalchhari", "Manikchhari", "Matiranga", "Panchhari", "Ramgarh", "Guimara"],
+      "Khulna": ["Khulna Sadar", "Sonadanga", "Khalishpur", "Daulatpur", "Khan Jahan Ali", "Batiaghata", "Dacope", "Dumuria", "Dighalia", "Koyra", "Paikgachha", "Phultala", "Rupsha", "Terokhada"],
+      "Kishoreganj": ["Kishoreganj Sadar", "Austagram", "Bajitpur", "Bhairab", "Hossainpur", "Itna", "Karimganj", "Katiadi", "Kuliarchar", "Mithamain", "Nikli", "Pakundia", "Tarail"],
+      "Kurigram": ["Kurigram Sadar", "Bhurungamari", "Char Rajibpur", "Chilmari", "Nageshwari", "Rajarhat", "Raomari", "Ulipur", "Phulbari"],
+      "Kushtia": ["Kushtia Sadar", "Bheramara", "Daulatpur", "Khoksa", "Kumarkhali", "Mirpur"],
+      "Lakshmipur": ["Lakshmipur Sadar", "Raipur", "Ramganj", "Ramgati", "Kamalnagar"],
+      "Lalmonirhat": ["Lalmonirhat Sadar", "Aditmari", "Hatibandha", "Kaliganj", "Patgram"],
+      "Madaripur": ["Madaripur Sadar", "Kalkini", "Rajoir", "Shibchar", "Dasar"],
+      "Magura": ["Magura Sadar", "Mohammadpur", "Shalikha", "Sreepur"],
+      "Manikganj": ["Manikganj Sadar", "Daulatpur", "Ghior", "Harirampur", "Saturia", "Shivalaya", "Singair"],
+      "Meherpur": ["Meherpur Sadar", "Gangni", "Mujibnagar"],
+      "Moulvibazar": ["Moulvibazar Sadar", "Barlekha", "Juri", "Kamalganj", "Kulaura", "Rajnagar", "Sreemangal"],
+      "Munshiganj": ["Munshiganj Sadar", "Gazaria", "Lohajang", "Sirajdikhan", "Sreenagar", "Tongibari"],
+      "Mymensingh": ["Mymensingh Sadar", "Bhaluka", "Dhobaura", "Fulbaria", "Gafargaon", "Gauripur", "Haluaghat", "Ishwarganj", "Muktagachha", "Nandail", "Phulpur", "Tara Khanda", "Trishal"],
+      "Naogaon": ["Naogaon Sadar", "Atrai", "Badalgachhi", "Dhamoirhat", "Manda", "Mohadevpur", "Niamatpur", "Patnitala", "Porsha", "Raninagar", "Sapahar"],
+      "Narail": ["Narail Sadar", "Kalia", "Lohagara"],
+      "Narayanganj": ["Narayanganj Sadar", "Araihazar", "Bandar", "Rupganj", "Sonargaon", "Siddhirganj", "Fatullah"],
+      "Narsingdi": ["Narsingdi Sadar", "Belabo", "Monohardi", "Palash", "Raipura", "Shibpur"],
+      "Natore": ["Natore Sadar", "Bagatipara", "Baraigram", "Gurudaspur", "Lalpur", "Singra", "Naldanga"],
+      "Netrokona": ["Netrokona Sadar", "Atpara", "Barhatta", "Durgapur", "Kalmakanda", "Kendua", "Madan", "Mohanganj", "Purbadhala", "Khaliajuri"],
+      "Nilphamari": ["Nilphamari Sadar", "Dimla", "Domar", "Jaldhaka", "Kishoreganj", "Syedpur"],
+      "Noakhali": ["Noakhali Sadar", "Begumganj", "Chatkhil", "Companiganj", "Hatiya", "Senbagh", "Sonaimuri", "Subarnachar", "Kabirhat"],
+      "Pabna": ["Pabna Sadar", "Atgharia", "Bera", "Bhangura", "Chatmohar", "Faridpur", "Ishwardi", "Santhia", "Sujanagar"],
+      "Panchagarh": ["Panchagarh Sadar", "Atwari", "Boda", "Debiganj", "Tetulia"],
+      "Patuakhali": ["Patuakhali Sadar", "Bauphal", "Dashmina", "Galachipa", "Kalapara", "Mirzaganj", "Dumki", "Rangabali"],
+      "Pirojpur": ["Pirojpur Sadar", "Bhandaria", "Kawkhali", "Mathbaria", "Nazirpur", "Nesarabad", "Indurkani"],
+      "Rajbari": ["Rajbari Sadar", "Baliakandi", "Goalandaghat", "Pangsha", "Kalukhali"],
+      "Rajshahi": ["Rajshahi Sadar", "Bagha", "Bagmara", "Charghat", "Durgapur", "Godagari", "Mohanpur", "Paba", "Puthia", "Tanore"],
+      "Rangamati": ["Rangamati Sadar", "Bagaichhari", "Barkal", "Belaichhari", "Juraichhari", "Kaptai", "Kawkhali", "Langadu", "Naniarchar", "Rajasthali"],
+      "Rangpur": ["Rangpur Sadar", "Badarganj", "Gangachhara", "Kaunia", "Mithapukur", "Pirgachha", "Pirganj", "Taraganj"],
+      "Satkhira": ["Satkhira Sadar", "Assasuni", "Debhata", "Kalaroa", "Kaliganj", "Shyamnagar", "Tala"],
+      "Shariatpur": ["Shariatpur Sadar", "Bhedarganj", "Damudya", "Gosairhat", "Naria", "Zajira"],
+      "Sherpur": ["Sherpur Sadar", "Jhenaigati", "Nakla", "Nalitabari", "Sreebardi"],
+      "Sirajganj": ["Sirajganj Sadar", "Belkuchi", "Chauhali", "Kamarkhanda", "Kazipur", "Rayganj", "Shahjadpur", "Tarash", "Ullahpara"],
+      "Sunamganj": ["Sunamganj Sadar", "Bishwamvarpur", "Chhatak", "Derai", "Dharampasha", "Dowarabazar", "Jagannathpur", "Jamalganj", "Sullah", "Tahirpur", "Shantiganj"],
+      "Sylhet": ["Sylhet Sadar", "Balaganj", "Beanibazar", "Bishwanath", "Companiganj", "Dakshin Surma", "Fenchuganj", "Golapganj", "Gowainghat", "Jaintiapur", "Kanaighat", "Osmani Nagar", "Zakiganj"],
+      "Tangail": ["Tangail Sadar", "Basail", "Bhuapur", "Delduar", "Dhanbari", "Ghatail", "Gopalpur", "Kalihati", "Madhupur", "Mirzapur", "Nagarpur", "Sakhipur"],
+      "Thakurgaon": ["Thakurgaon Sadar", "Baliadangi", "Haripur", "Pirganj", "Ranisankhail"]
+    };
+
+    function populateDistricts() {
+      const select = document.getElementById('custDistrict');
+      if (!select) return;
+      let html = '<option value="">-- Select District / জেলা নির্বাচন করুন --</option>';
+      const districtNames = Object.keys(BANGLADESH_DISTRICTS).sort();
+      districtNames.forEach(d => {
+        html += `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`;
+      });
+      select.innerHTML = html;
+    }
+
+    function handleDistrictChange(district) {
+      const upazilaSel = document.getElementById('custUpazila');
+      const customInp = document.getElementById('custUpazilaCustom');
+      if (customInp) {
+        customInp.style.display = 'none';
+        customInp.value = '';
+        customInp.required = false;
+      }
+      if (!upazilaSel) return;
+
+      if (!district || !BANGLADESH_DISTRICTS[district]) {
+        upazilaSel.innerHTML = '<option value="">-- First Select District --</option>';
+        return;
+      }
+
+      const list = BANGLADESH_DISTRICTS[district] || [];
+      let html = '<option value="">-- Select Upazila / Thana (উপজেলা / থানা) --</option>';
+      list.forEach(upz => {
+        html += `<option value="${escapeHtml(upz)}">${escapeHtml(upz)}</option>`;
+      });
+      html += '<option value="Other">Other / অন্যটি (type below)</option>';
+      upazilaSel.innerHTML = html;
+    }
+
+    function handleUpazilaChange(val) {
+      const customInp = document.getElementById('custUpazilaCustom');
+      if (customInp) {
+        if (val === 'Other') {
+          customInp.style.display = 'block';
+          customInp.required = true;
+          customInp.focus();
+        } else {
+          customInp.style.display = 'none';
+          customInp.required = false;
+        }
+      }
+    }
+
     function initOrderPage() {
+      populateDistricts();
+
       // Restore delivery area if user selected Outside Dhaka earlier
       try {
-        const savedArea = localStorage.getItem('zayn_delivery_area');
+        const savedArea = localStorage.getItem('zayn_delivery_area') || 'dhaka';
+        checkoutDeliveryArea = savedArea;
+        const rDhaka = document.querySelector('input[name="orderArea"][value="dhaka"]');
+        const rOutside = document.querySelector('input[name="orderArea"][value="outside"]');
         if (savedArea === 'outside') {
-          checkoutDeliveryArea = 'outside';
-          const rDhaka = document.querySelector('input[name="orderArea"][value="dhaka"]');
-          const rOutside = document.querySelector('input[name="orderArea"][value="outside"]');
           if (rOutside) rOutside.checked = true;
           if (rDhaka) rDhaka.checked = false;
-          document.getElementById('areaCardDhaka')?.classList.remove('active');
-          document.getElementById('areaCardOutside')?.classList.add('active');
+        } else {
+          if (rDhaka) rDhaka.checked = true;
+          if (rOutside) rOutside.checked = false;
         }
-      } catch (e) {}
+        updateOrderDeliveryArea(savedArea);
+      } catch (e) {
+        updateOrderDeliveryArea('dhaka');
+      }
 
       // Explicitly load cart from localStorage
       loadCart();
@@ -589,6 +748,24 @@
       } catch (e) {}
       document.getElementById('areaCardDhaka')?.classList.toggle('active', area === 'dhaka');
       document.getElementById('areaCardOutside')?.classList.toggle('active', area === 'outside');
+
+      const outsideBox = document.getElementById('outsideDhakaFields');
+      const districtSel = document.getElementById('custDistrict');
+      const upazilaSel = document.getElementById('custUpazila');
+      const addressTextarea = document.getElementById('custAddress');
+
+      if (area === 'outside') {
+        if (outsideBox) outsideBox.style.display = 'block';
+        if (districtSel) districtSel.required = true;
+        if (upazilaSel) upazilaSel.required = true;
+        if (addressTextarea) addressTextarea.placeholder = 'Village/Area, Road/Post Office, Landmark (বাড়ি, রোড, গ্রাম, পোস্ট অফিস)';
+      } else {
+        if (outsideBox) outsideBox.style.display = 'none';
+        if (districtSel) districtSel.required = false;
+        if (upazilaSel) upazilaSel.required = false;
+        if (addressTextarea) addressTextarea.placeholder = 'House/Flat number, Road, Area (e.g. Dhanmondi, Mirpur, Uttara)';
+      }
+
       renderCheckoutItems();
     }
 
@@ -717,13 +894,41 @@
         return;
       }
 
+      // Check Outside Dhaka fields: District & Upazila
+      const isOutside = checkoutDeliveryArea === 'outside';
+      let district = '';
+      let upazila = '';
+
+      if (isOutside) {
+        district = (document.getElementById('custDistrict')?.value || '').trim();
+        upazila = (document.getElementById('custUpazila')?.value || '').trim();
+        if (upazila === 'Other') {
+          upazila = (document.getElementById('custUpazilaCustom')?.value || '').trim() || 'Other';
+        }
+
+        if (!district) {
+          alert('অনুগ্রহ করে আপনার জেলা (District) সিলেক্ট করুন।');
+          document.getElementById('custDistrict')?.focus();
+          return;
+        }
+        if (!upazila) {
+          alert('অনুগ্রহ করে আপনার উপজেলা / থানা (Upazila/Thana) সিলেক্ট করুন।');
+          document.getElementById('custUpazila')?.focus();
+          return;
+        }
+      }
+
+      const formattedAddress = isOutside 
+        ? `${address}\n[উপজেলা/থানা: ${upazila}, জেলা: ${district}]` 
+        : address;
+
       const currency = CONFIG.currencySymbol || '৳';
       const deliveryDhaka = CONFIG.deliveryDhaka || 70;
       const deliveryOutside = CONFIG.deliveryOutside || 130;
       const advanceAmount = CONFIG.advanceAmount || 200;
 
       const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-      const delivery = checkoutDeliveryArea === 'dhaka' ? deliveryDhaka : deliveryOutside;
+      const delivery = isOutside ? deliveryOutside : deliveryDhaka;
       const total = subtotal + delivery;
       const remainingCod = Math.max(0, total - advanceAmount);
       const orderId = 'ZS-' + Math.floor(100000 + Math.random() * 900000);
@@ -743,8 +948,11 @@
         orderId: orderId,
         customerName: name,
         customerPhone: phone,
-        deliveryAddress: address,
-        deliveryArea: checkoutDeliveryArea === 'dhaka' ? 'Inside Dhaka' : 'Outside Dhaka',
+        deliveryAddress: formattedAddress,
+        rawAddress: address,
+        district: isOutside ? district : 'Dhaka',
+        upazila: isOutside ? upazila : 'Dhaka Metro',
+        deliveryArea: isOutside ? 'Outside Dhaka' : 'Inside Dhaka',
         deliveryCharge: delivery,
         advanceAmount: advanceAmount,
         remainingCod: remainingCod,
@@ -784,8 +992,9 @@
         `📦 *Order ID:* #${orderId}\n` +
         `👤 *Name:* ${name}\n` +
         `📞 *Phone:* ${phone}\n` +
+        `🚚 *Area:* ${isOutside ? 'Outside Dhaka (৳130)' : 'Inside Dhaka (৳70)'}\n` +
+        (isOutside ? `🏛️ *District:* ${district}\n🏘️ *Upazila/Thana:* ${upazila}\n` : '') +
         `📍 *Address:* ${address}\n` +
-        `🚚 *Area:* ${checkoutDeliveryArea === 'dhaka' ? 'Inside Dhaka (৳70)' : 'Outside Dhaka (৳130)'}\n` +
         (note ? `📝 *Note:* ${note}\n` : '') +
         `──────────────────────────\n` +
         `📋 *Ordered Items:*\n${itemsListText}\n` +
