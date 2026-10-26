@@ -113,23 +113,40 @@ function renderCategoryNav() {
   const container = document.getElementById('categoryNavInner');
   if (!container) return;
 
-  const categories = [
+  const categoryIcons = {
+    'all': '✨',
+    'Beauty & Skincare': '💄',
+    'Jewelry & Accessories': '💎',
+    'Kids & Toys': '🧸',
+    'Home & Living': '🏡',
+    'Gifts': '🎁',
+    'Winter Collection': '❄️',
+    'DIY & Crafts': '🎨',
+    'Bags & Pouches': '👜',
+    'Pet Supplies': '🐾',
+    'Stationery & Books': '📚'
+  };
+
+  // Get unique categories from current product list
+  const presentCats = [...new Set(allProducts.map(p => (p.category || '').trim()).filter(Boolean))];
+  
+  const navList = [
     { id: 'all', name: 'All Products', icon: '✨' },
-    { id: 'Jewelry & Accessories', name: 'Jewelry & Accessories', icon: '💎' },
-    { id: 'Cute & Toys', name: 'Cute & Toys', icon: '🧸' },
-    { id: 'Beauty & Skincare', name: 'Beauty & Skincare', icon: '💄' },
-    { id: 'Home & Living', name: 'Home & Living', icon: '🏡' },
-    { id: 'Fashion & Wear', name: 'Fashion & Wear', icon: '👗' }
+    ...presentCats.map(cat => ({
+      id: cat,
+      name: cat,
+      icon: categoryIcons[cat] || '🏷️'
+    }))
   ];
 
   const isHome = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || !window.location.pathname.includes('.html');
 
-  container.innerHTML = categories.map(cat => {
+  container.innerHTML = navList.map(cat => {
     const isActive = cat.id === activeCategory;
     if (isHome) {
-      return `<a href="javascript:void(0)" class="category-nav-link ${isActive ? 'active' : ''}" onclick="setCategory('${cat.id}')"><span>${cat.icon}</span> <span>${cat.name}</span></a>`;
+      return `<a href="javascript:void(0)" class="category-nav-link ${isActive ? 'active' : ''}" onclick="setCategory('${escapeHtml(cat.id)}')"><span>${cat.icon}</span> <span>${escapeHtml(cat.name)}</span></a>`;
     } else {
-      return `<a href="index.html?cat=${encodeURIComponent(cat.id)}" class="category-nav-link ${isActive ? 'active' : ''}"><span>${cat.icon}</span> <span>${cat.name}</span></a>`;
+      return `<a href="index.html?cat=${encodeURIComponent(cat.id)}" class="category-nav-link ${isActive ? 'active' : ''}"><span>${cat.icon}</span> <span>${escapeHtml(cat.name)}</span></a>`;
     }
   }).join('');
 }
@@ -138,13 +155,32 @@ function renderCategoryPills() {
   const container = document.getElementById('categoryPills');
   if (!container) return;
 
-  const categories = ['all', ...new Set(allProducts.map(p => p.category))];
+  const categoryIcons = {
+    'all': '✨',
+    'Beauty & Skincare': '💄',
+    'Jewelry & Accessories': '💎',
+    'Kids & Toys': '🧸',
+    'Home & Living': '🏡',
+    'Gifts': '🎁',
+    'Winter Collection': '❄️',
+    'DIY & Crafts': '🎨',
+    'Bags & Pouches': '👜',
+    'Pet Supplies': '🐾',
+    'Stationery & Books': '📚'
+  };
 
-  container.innerHTML = categories.map(cat => `
-    <button class="cat-pill ${cat === activeCategory ? 'active' : ''}" onclick="setCategory('${cat}')">
-      ${cat === 'all' ? '✨ All Products (' + allProducts.length + ')' : escapeHtml(cat)}
-    </button>
-  `).join('');
+  const presentCats = [...new Set(allProducts.map(p => (p.category || '').trim()).filter(Boolean))];
+  const categories = ['all', ...presentCats];
+
+  container.innerHTML = categories.map(cat => {
+    const icon = categoryIcons[cat] || '🏷️';
+    const count = cat === 'all' ? allProducts.length : allProducts.filter(p => (p.category || '').trim() === cat).length;
+    return `
+      <button class="cat-pill ${cat === activeCategory ? 'active' : ''}" onclick="setCategory('${escapeHtml(cat)}')">
+        <span>${icon}</span> <span>${cat === 'all' ? 'All Products' : escapeHtml(cat)} (${count})</span>
+      </button>
+    `;
+  }).join('');
 }
 
 function setCategory(cat) {

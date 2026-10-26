@@ -1,6 +1,6 @@
 /**
  * Zayn Shop BD — 1-Click MoveDrop Importer Extension Script
- * Runs inside MoveDrop (movedrop.global) or any supplier page (1688, AliExpress)
+ * Runs inside MoveDrop (movedrop.global) or supplier pages
  */
 (function() {
   // Prevent duplicate modals
@@ -9,8 +9,57 @@
     existing.remove();
   }
 
-  // --- 1. INTELLIGENT DATA EXTRACTION ---
-  
+  // --- 1. INTELLIGENT DATA EXTRACTION HELPERS ---
+
+  // Clean description text and strip supplier export noise
+  function cleanDescriptionText(raw) {
+    if (!raw) return '';
+    const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const cleaned = lines.filter(l => {
+      const low = l.toLowerCase();
+      if (low.startsWith('• main downstream platforms') || low.startsWith('main downstream platforms')) return false;
+      if (low.startsWith('• main sales regions') || low.startsWith('main sales regions')) return false;
+      if (low.includes('cross-border export') || low.includes('licansable private label')) return false;
+      if (low.startsWith('update product description') || low.startsWith('generate description with ai')) return false;
+      return true;
+    });
+    return cleaned.join('\n');
+  }
+
+  // Find rich-text editor or specifications container in current DOM
+  function findEditorText() {
+    const selectors = [
+      '.ql-editor',
+      '.w-e-text',
+      '.ck-content',
+      '.ProseMirror',
+      '[contenteditable="true"]',
+      '.tox-edit-area__iframe',
+      '.description-editor',
+      '[class*="editor"] [contenteditable="true"]',
+      'div[placeholder*="description" i]'
+    ];
+    for (const sel of selectors) {
+      const el = document.querySelector(sel);
+      if (el) {
+        const text = (el.innerText || el.textContent || '').trim();
+        if (text && text.length > 15) {
+          return cleanDescriptionText(text);
+        }
+      }
+    }
+    // Check if there is any element containing "Specification:"
+    const allDivs = Array.from(document.querySelectorAll('div, p, section'));
+    const specContainer = allDivs.find(d => {
+      const t = d.innerText || '';
+      return (t.includes('Specification:') || t.includes('Specifications:')) && t.length > 25 && t.length < 5000;
+    });
+    if (specContainer) {
+      return cleanDescriptionText(specContainer.innerText);
+    }
+    return '';
+  }
+
   // Extract Title
   let title = '';
   const titleInput = document.querySelector('textarea, input[placeholder*="title" i], input[placeholder*="Title" i], .title-input');
@@ -65,31 +114,90 @@
     }
   }
 
-  // Smart Category Guess
-  const tLower = title.toLowerCase();
-  let guessedCategory = 'Jewelry & Accessories';
-  if (tLower.includes('serum') || tLower.includes('zinc') || tLower.includes('niacinamide') || tLower.includes('cream') || tLower.includes('skin') || tLower.includes('oil') || tLower.includes('beauty') || tLower.includes('cosmetic')) {
+  // Extract Initial Description / Specs
+  let descText = findEditorText();
+  if (!descText) {
+    descText = 'Imported on pre-order from MoveDrop / global suppliers. 100% money back / replacement guarantee. Delivery 15-25 days across Bangladesh.';
+  }
+
+  // Smart Category Guess across all 10 authentic store categories
+  const tLower = (title + ' ' + descText).toLowerCase();
+  let guessedCategory = 'Home & Living';
+  if (tLower.includes('serum') || tLower.includes('zinc') || tLower.includes('niacinamide') || tLower.includes('cream') || tLower.includes('skin') || tLower.includes('beauty') || tLower.includes('cosmetic') || tLower.includes('lotion') || tLower.includes('toner') || tLower.includes('cleanser')) {
     guessedCategory = 'Beauty & Skincare';
-  } else if (tLower.includes('necklace') || tLower.includes('ring') || tLower.includes('earring') || tLower.includes('bracelet') || tLower.includes('keychain') || tLower.includes('jewelry') || tLower.includes('zircon')) {
+  } else if (tLower.includes('pet') || tLower.includes('cat') || tLower.includes('dog') || tLower.includes('fountain') || tLower.includes('litter') || tLower.includes('leash') || tLower.includes('collar')) {
+    guessedCategory = 'Pet Supplies';
+  } else if (tLower.includes('hand warmer') || tLower.includes('hand-warmer') || tLower.includes('winter') || tLower.includes('warmer') || tLower.includes('jacket') || tLower.includes('glove') || tLower.includes('scarf') || tLower.includes('heater') || tLower.includes('fleece') || tLower.includes('thermal')) {
+    guessedCategory = 'Winter Collection';
+  } else if (tLower.includes('diamond painting') || tLower.includes('painting kit') || tLower.includes('needle felting') || tLower.includes('wool felting') || tLower.includes('diy') || tLower.includes('craft') || tLower.includes('bead') || tLower.includes('sticker') || tLower.includes('label') || tLower.includes('embroidery') || tLower.includes('shrink film')) {
+    guessedCategory = 'DIY & Crafts';
+  } else if (tLower.includes('bag') || tLower.includes('pouch') || tLower.includes('pencil case') || tLower.includes('backpack') || tLower.includes('purse') || tLower.includes('tote') || tLower.includes('wallet')) {
+    guessedCategory = 'Bags & Pouches';
+  } else if (tLower.includes('stationery') || tLower.includes('journal') || tLower.includes('notebook') || tLower.includes('book') || tLower.includes('ruler')) {
+    guessedCategory = 'Stationery & Books';
+  } else if (tLower.includes('toy') || tLower.includes('plush') || tLower.includes('doll') || tLower.includes('puzzle') || tLower.includes('sand set') || tLower.includes('kids') || tLower.includes('baby') || tLower.includes('fidget')) {
+    guessedCategory = 'Kids & Toys';
+  } else if (tLower.includes('necklace') || tLower.includes('ring') || tLower.includes('earring') || tLower.includes('bracelet') || tLower.includes('jewelry') || tLower.includes('zircon') || tLower.includes('pendant') || tLower.includes('brooch') || tLower.includes('hair clip') || tLower.includes('keychain')) {
     guessedCategory = 'Jewelry & Accessories';
-  } else if (tLower.includes('toy') || tLower.includes('plush') || tLower.includes('doll') || tLower.includes('game') || tLower.includes('puzzle') || tLower.includes('painting')) {
-    guessedCategory = 'Cute & Toys';
-  } else if (tLower.includes('cup') || tLower.includes('bottle') || tLower.includes('lamp') || tLower.includes('box') || tLower.includes('organizer') || tLower.includes('decor') || tLower.includes('home')) {
+  } else if (tLower.includes('gift') || tLower.includes('birthday') || tLower.includes('anniversary') || tLower.includes('rose') || tLower.includes('music box') || tLower.includes('bouquet') || tLower.includes('couple') || tLower.includes('dashboard')) {
+    guessedCategory = 'Gifts';
+  } else if (tLower.includes('bottle') || tLower.includes('cup') || tLower.includes('lamp') || tLower.includes('tissue') || tLower.includes('organizer') || tLower.includes('decor') || tLower.includes('home') || tLower.includes('tongs') || tLower.includes('mask') || tLower.includes('pillow')) {
     guessedCategory = 'Home & Living';
-  } else if (tLower.includes('bag') || tLower.includes('dress') || tLower.includes('shirt') || tLower.includes('pant') || tLower.includes('hair') || tLower.includes('wear') || tLower.includes('shoe')) {
-    guessedCategory = 'Fashion & Wear';
   }
 
-  // Extract Description / Specs
-  let descText = '';
-  const specEl = document.querySelector('.ck-content, [contenteditable="true"], .specification, .description');
-  if (specEl && specEl.innerText && specEl.innerText.length > 20) {
-    descText = specEl.innerText.slice(0, 300);
-  } else {
-    descText = 'Imported on pre-order from MoveDrop / global suppliers. Delivery 15-25 days across Bangladesh.';
-  }
+  // --- 2. GLOBAL HANDLERS ---
 
-  // Define global submit handler
+  // Grab specs from MoveDrop Description Tab
+  window.__zaynGrabDescription = async function() {
+    const descTextarea = document.getElementById('zayn-desc');
+    const grabBtn = document.getElementById('zayn-grab-desc-btn');
+    if (grabBtn) {
+      grabBtn.textContent = '⏳ Grabbing Specs from MoveDrop…';
+      grabBtn.disabled = true;
+    }
+
+    // 1. Check current DOM
+    let text = findEditorText();
+
+    // 2. If not found, find and click the MoveDrop "Description" tab
+    if (!text || text.length < 20) {
+      const allTabs = Array.from(document.querySelectorAll('div, button, span, a, [role="tab"], li'));
+      const descTab = allTabs.find(el => {
+        const t = (el.innerText || el.textContent || '').trim();
+        return (t === 'Description' || t === 'Descriptions' || t === 'Product Description') && el.children.length === 0;
+      });
+
+      if (descTab) {
+        descTab.click();
+        await new Promise(r => setTimeout(r, 450));
+        text = findEditorText();
+      }
+    }
+
+    if (text && text.trim().length > 15) {
+      if (descTextarea) {
+        descTextarea.value = text.trim();
+        descTextarea.style.borderColor = '#059669';
+      }
+      if (grabBtn) {
+        grabBtn.disabled = false;
+        grabBtn.innerHTML = '✅ MoveDrop Specs Grabbed!';
+        setTimeout(() => {
+          grabBtn.innerHTML = '📋 Auto-Grab Specs from MoveDrop';
+        }, 2500);
+      }
+    } else {
+      if (grabBtn) {
+        grabBtn.disabled = false;
+        grabBtn.innerHTML = '⚠️ Click "Description" Tab in MoveDrop & Retry';
+        setTimeout(() => {
+          grabBtn.innerHTML = '📋 Auto-Grab Specs from MoveDrop';
+        }, 3000);
+      }
+    }
+  };
+
+  // Submit to Google Sheet Webhook
   window.__zaynShopSubmit = async function(btn) {
     const btnText = document.getElementById('zayn-btn-text');
     const statusMsg = document.getElementById('zayn-status-msg');
@@ -109,7 +217,7 @@
       const nameVal = (document.getElementById('zayn-title')?.value || '').trim();
       const priceVal = parseInt(document.getElementById('zayn-price')?.value, 10);
       const regPriceVal = parseInt(document.getElementById('zayn-reg-price')?.value, 10) || Math.round(priceVal * 1.25);
-      const catVal = document.getElementById('zayn-category')?.value || 'Jewelry & Accessories';
+      const catVal = document.getElementById('zayn-category')?.value || 'Home & Living';
       const imgVal = (document.getElementById('zayn-img-url')?.value || '').trim();
       const descVal = (document.getElementById('zayn-desc')?.value || '').trim();
 
@@ -156,10 +264,10 @@
       if (btnText) btnText.textContent = '✅ Product Imported Successfully!';
       if (statusMsg) {
         statusMsg.style.color = '#059669';
-        statusMsg.innerHTML = '🎉 <b>Product successfully added to Zayn Shop!</b><br><span style="font-size:11px;color:#64748b">Check your Google Sheet & website.</span>';
+        statusMsg.innerHTML = '🎉 <b>Product successfully added to Zayn Shop!</b><br><span style="font-size:11px;color:#64748b">Synced to Google Sheet & website.</span>';
       }
 
-      alert('🎉 Success! Product added to Zayn Shop!\n\nTitle: ' + nameVal + '\nPrice: ৳' + priceVal);
+      alert('🎉 Success! Product added to Zayn Shop!\n\nTitle: ' + nameVal + '\nCategory: ' + catVal + '\nPrice: ৳' + priceVal);
 
       setTimeout(() => {
         const modal = document.getElementById('zayn-shop-importer-modal');
@@ -177,15 +285,15 @@
     }
   };
 
-  // --- 2. CREATE FLOATING MODAL OVER MOVEDROP ---
+  // --- 3. CREATE FLOATING MODAL OVER MOVEDROP ---
   const modal = document.createElement('div');
   modal.id = 'zayn-shop-importer-modal';
   modal.style.cssText = `
     position: fixed;
     top: 20px;
     right: 20px;
-    width: 420px;
-    max-width: 90vw;
+    width: 440px;
+    max-width: 92vw;
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.1);
@@ -197,7 +305,7 @@
     pointer-events: auto !important;
   `;
 
-  // Inject CSS Keyframe
+  // Inject CSS Keyframe & Styles
   if (!document.getElementById('zayn-importer-styles')) {
     const style = document.createElement('style');
     style.id = 'zayn-importer-styles';
@@ -250,6 +358,26 @@
     ">
   `).join('');
 
+  // 10 Authentic Store Categories
+  const storeCategories = [
+    { id: 'Beauty & Skincare', icon: '💄' },
+    { id: 'Jewelry & Accessories', icon: '💎' },
+    { id: 'Kids & Toys', icon: '🧸' },
+    { id: 'Home & Living', icon: '🏡' },
+    { id: 'Gifts', icon: '🎁' },
+    { id: 'Winter Collection', icon: '❄️' },
+    { id: 'DIY & Crafts', icon: '🎨' },
+    { id: 'Bags & Pouches', icon: '👜' },
+    { id: 'Pet Supplies', icon: '🐾' },
+    { id: 'Stationery & Books', icon: '📚' }
+  ];
+
+  const catOptionsHtml = storeCategories.map(c => `
+    <option value="${c.id}" ${guessedCategory === c.id ? 'selected' : ''}>
+      ${c.icon} ${c.id}
+    </option>
+  `).join('');
+
   modal.innerHTML = `
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #1e1b4b, #0f172a); color: #ffffff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;">
@@ -257,20 +385,20 @@
         <span style="font-size: 18px;">⚡</span>
         <div>
           <div style="font-size: 14px; font-weight: 800; letter-spacing: -0.2px;">Zayn Shop Importer</div>
-          <div style="font-size: 11px; opacity: 0.75;">1-Click MoveDrop Sync</div>
+          <div style="font-size: 11px; opacity: 0.75;">MoveDrop 1-Click Sync</div>
         </div>
       </div>
       <button type="button" onclick="document.getElementById('zayn-shop-importer-modal').remove()" style="background: none; border: none; color: #ffffff; font-size: 20px; cursor: pointer; opacity: 0.8; line-height: 1;">✕</button>
     </div>
 
     <!-- Body -->
-    <div style="padding: 16px; max-height: 75vh; overflow-y: auto;">
+    <div style="padding: 16px; max-height: 78vh; overflow-y: auto;">
       
       <!-- Main Image Preview + Thumbnails -->
-      <div style="display: flex; gap: 12px; margin-bottom: 14px;">
-        <img id="zayn-preview-img" src="${selectedImg}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; flex-shrink: 0;">
+      <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+        <img id="zayn-preview-img" src="${selectedImg}" style="width: 76px; height: 76px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; flex-shrink: 0;">
         <div style="flex: 1; min-width: 0;">
-          <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Product Image</label>
+          <label style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Product Image (Click to pick)</label>
           <div class="zayn-thumb-strip">
             ${thumbHtml || '<span style="font-size:11px;color:#94a3b8">Image selected</span>'}
           </div>
@@ -296,22 +424,30 @@
         </div>
       </div>
 
-      <!-- Category -->
+      <!-- Category (All 10 Categories) -->
       <div style="margin-bottom: 12px;">
         <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Category *</label>
         <select id="zayn-category" class="zayn-inp">
-          <option value="Beauty & Skincare" ${guessedCategory === 'Beauty & Skincare' ? 'selected' : ''}>💄 Beauty & Skincare</option>
-          <option value="Jewelry & Accessories" ${guessedCategory === 'Jewelry & Accessories' ? 'selected' : ''}>💎 Jewelry & Accessories</option>
-          <option value="Cute & Toys" ${guessedCategory === 'Cute & Toys' ? 'selected' : ''}>🧸 Cute & Toys</option>
-          <option value="Home & Living" ${guessedCategory === 'Home & Living' ? 'selected' : ''}>🏡 Home & Living</option>
-          <option value="Fashion & Wear" ${guessedCategory === 'Fashion & Wear' ? 'selected' : ''}>👗 Fashion & Wear</option>
+          ${catOptionsHtml}
         </select>
       </div>
 
-      <!-- Description -->
-      <div style="margin-bottom: 16px;">
-        <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Description / Specs</label>
-        <textarea id="zayn-desc" class="zayn-inp" rows="2" style="font-size: 11px; resize: vertical;">${descText}</textarea>
+      <!-- Description Header + Auto Grab Button -->
+      <div style="margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+          <label style="font-size: 12px; font-weight: 700; color: #334155;">Description / Specifications</label>
+          <button type="button" id="zayn-grab-desc-btn" onclick="window.__zaynGrabDescription()" style="
+            background: #f1f5f9;
+            color: #2563eb;
+            border: 1px solid #cbd5e1;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+          ">📋 Auto-Grab Specs from MoveDrop</button>
+        </div>
+        <textarea id="zayn-desc" class="zayn-inp" rows="5" style="font-size: 11px; line-height: 1.5; resize: vertical;">${descText}</textarea>
       </div>
 
       <!-- Submit Button -->
@@ -344,7 +480,19 @@
 
   document.body.appendChild(modal);
 
-  // Bind direct event listener as backup
+  // Background check: If default placeholder text is currently loaded, auto-try grabbing MoveDrop specs
+  setTimeout(() => {
+    const curDesc = document.getElementById('zayn-desc')?.value || '';
+    if (curDesc.startsWith('Imported on pre-order')) {
+      const liveSpecs = findEditorText();
+      if (liveSpecs && liveSpecs.length > 25) {
+        const descEl = document.getElementById('zayn-desc');
+        if (descEl) descEl.value = liveSpecs;
+      }
+    }
+  }, 350);
+
+  // Bind direct click fallback
   setTimeout(() => {
     const sBtn = document.getElementById('zayn-submit-btn');
     if (sBtn) {

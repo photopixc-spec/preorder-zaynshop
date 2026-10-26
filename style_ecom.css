@@ -569,9 +569,11 @@
 
 .pdp-desc-text {
   font-size: 14px;
-  color: #475569;
-  line-height: 1.7;
+  color: #334155;
+  line-height: 1.8;
   margin-bottom: 24px;
+  white-space: pre-line;
+  word-break: break-word;
 }
 
 /* Specifications Table */
