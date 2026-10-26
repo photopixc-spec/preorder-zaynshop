@@ -231,18 +231,24 @@ header.site-header {
   border-color: var(--sec);
 }
 
-/* Product Grid */
+/* Product Grid - Exactly 3 products per row on desktop */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 24px !important;
 }
 
-@media (max-width: 1024px) {
-  .product-grid { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 960px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
 }
-@media (max-width: 768px) {
-  .product-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (max-width: 580px) {
+  .product-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
 }
 
 /* Product Card */
@@ -359,34 +365,47 @@ header.site-header {
 .prod-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 10px;
+  width: 100%;
 }
 
 .btn-card-cart {
   background: #f1f5f9;
   color: var(--sec);
   border: 1px solid var(--line);
-  padding: 8px;
+  padding: 10px 8px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  box-sizing: border-box;
 }
 .btn-card-cart:hover { background: #e2e8f0; }
 
 .btn-card-buy {
-  background: var(--pri);
+  background: #2563eb;
   color: #fff;
-  border: none;
-  padding: 8px;
+  border: 1px solid #2563eb;
+  padding: 10px 8px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  box-sizing: border-box;
 }
-.btn-card-buy:hover { background: var(--pri-dark); }
+.btn-card-buy:hover { background: #1d4ed8; }
 
 /* Quick View Modal */
 .modal-overlay {

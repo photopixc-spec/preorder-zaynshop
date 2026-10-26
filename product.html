@@ -5,285 +5,184 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Product Details — Zayn Shop</title>
-  <meta name="description" content="Product details for Zayn Shop Pre-Order Collection.">
+  <meta name="description" content="Authentic global pre-order collection at Zayn Shop BD.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="style_ecom.css">
-  <style>
-    .detail-container {
-      max-width: 1000px;
-      margin: 24px auto;
-      padding: 0 16px;
-    }
-    .breadcrumb {
-      font-size: 13px;
-      color: #64748b;
-      margin-bottom: 20px;
-    }
-    .breadcrumb a {
-      color: var(--pri, #e11d48);
-      text-decoration: none;
-    }
-    .breadcrumb a:hover {
-      text-decoration: underline;
-    }
-    .product-detail-card {
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-      padding: 30px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 36px;
-      align-items: start;
-    }
-    @media (max-width: 768px) {
-      .product-detail-card {
-        grid-template-columns: 1fr;
-        padding: 20px;
-        gap: 24px;
-      }
-    }
-    .detail-img-wrap {
-      background: #f8fafc;
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      position: relative;
-    }
-    .detail-img {
-      max-width: 100%;
-      height: auto;
-      max-height: 420px;
-      object-fit: contain;
-      border-radius: 8px;
-    }
-    .detail-info {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .detail-cat-badge {
-      display: inline-block;
-      align-self: flex-start;
-      background: #f1f5f9;
-      color: #475569;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .detail-title {
-      font-size: 24px;
-      font-weight: 800;
-      color: #0f172a;
-      line-height: 1.3;
-    }
-    .detail-price-row {
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-    }
-    .detail-price {
-      font-size: 28px;
-      font-weight: 900;
-      color: var(--pri, #e11d48);
-    }
-    .detail-old-price {
-      font-size: 18px;
-      color: #94a3b8;
-      text-decoration: line-through;
-    }
-    .detail-discount-pill {
-      background: #fee2e2;
-      color: #dc2626;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 999px;
-    }
-    .detail-meta-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 14px 16px;
-      font-size: 13px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .meta-line {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #334155;
-    }
-    .meta-line b {
-      color: #0f172a;
-    }
-    .advance-alert {
-      background: #fff1f2;
-      border: 1px solid #fecdd3;
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-size: 12px;
-      color: #9f1239;
-      line-height: 1.4;
-    }
-    .detail-desc {
-      font-size: 14px;
-      color: #475569;
-      line-height: 1.6;
-      padding: 12px 0;
-      border-top: 1px solid #f1f5f9;
-      border-bottom: 1px solid #f1f5f9;
-    }
-    .detail-qty-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 6px;
-    }
-    .qty-picker {
-      display: inline-flex;
-      align-items: center;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      background: #ffffff;
-      overflow: hidden;
-    }
-    .qty-picker button {
-      background: #f8fafc;
-      border: none;
-      width: 38px;
-      height: 38px;
-      font-size: 18px;
-      font-weight: 700;
-      cursor: pointer;
-      color: #334155;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.15s;
-    }
-    .qty-picker button:hover {
-      background: #e2e8f0;
-    }
-    .qty-picker input {
-      width: 48px;
-      height: 38px;
-      border: none;
-      text-align: center;
-      font-size: 15px;
-      font-weight: 700;
-      color: #0f172a;
-    }
-    .detail-actions-row {
-      display: flex;
-      gap: 12px;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
-    .btn-detail-cart {
-      flex: 1;
-      min-width: 160px;
-      padding: 14px 20px;
-      background: #ffffff;
-      border: 2px solid var(--pri, #e11d48);
-      color: var(--pri, #e11d48);
-      font-size: 15px;
-      font-weight: 800;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .btn-detail-cart:hover {
-      background: #fff1f2;
-    }
-    .btn-detail-buy {
-      flex: 1.2;
-      min-width: 180px;
-      padding: 14px 20px;
-      background: var(--pri, #e11d48);
-      border: 2px solid var(--pri, #e11d48);
-      color: #ffffff;
-      font-size: 15px;
-      font-weight: 800;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
-    }
-    .btn-detail-buy:hover {
-      background: #be123c;
-      border-color: #be123c;
-    }
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 14px;
-      font-weight: 700;
-      color: #64748b;
-      text-decoration: none;
-      margin-top: 16px;
-    }
-    .back-link:hover {
-      color: var(--pri, #e11d48);
-    }
-  </style>
 </head>
 <body>
   <!-- Top Announcement Bar -->
   <div class="top-bar">
-    ✈️ Global Pre-Order Collection • Delivery 7–15 business days • Cash on Delivery available across Bangladesh
+    ✈️ Pre-Order 7–15 business days delivery | Cash on Delivery available across Bangladesh | Helpline: 01819740112
   </div>
 
   <!-- Header -->
   <header class="site-header">
     <div class="header-container">
       <a href="index.html" class="brand-wrap">
-        <span class="brand-name">ZAYN SHOP</span>
+        <span class="brand-name" style="letter-spacing:-0.5px">zayn.shop</span>
         <span class="brand-sub">PRE-ORDER COLLECTION</span>
       </a>
+
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="pdpSearch" placeholder="Search products..." onkeydown="if(event.key==='Enter')window.location='index.html'">
+      </div>
+
       <div class="header-actions">
-        <a href="index.html" style="text-decoration:none;font-size:14px;font-weight:700;color:#334155;padding:8px 12px;border-radius:8px;background:#f1f5f9">
+        <a href="index.html" style="text-decoration:none;font-size:13px;font-weight:700;color:#334155;padding:8px 12px;border-radius:8px;background:#f1f5f9">
           ← All Products
         </a>
         <button class="btn-header-cart" onclick="openCartDrawer()">
-          <span>🛒 Bag</span>
+          <span>🛍️ Bag</span>
           <span class="cart-badge-count" style="display:none">0</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Product Detail Content -->
-  <main class="detail-container">
-    <div class="breadcrumb" id="breadcrumb">
-      <a href="index.html">Home</a> &gt; <span>Product</span>
+  <!-- Category Navigation Menu Bar -->
+  <nav class="category-nav-bar">
+    <div class="category-nav-inner" id="categoryNavInner">
+      <a href="index.html" class="category-nav-link active">All Products</a>
+      <a href="index.html" class="category-nav-link">Jewelry & Accessories</a>
+      <a href="index.html" class="category-nav-link">Beauty & Skincare</a>
+      <a href="index.html" class="category-nav-link">Home & Living</a>
+      <a href="index.html" class="category-nav-link">Bags & Pouches</a>
+      <a href="index.html" class="category-nav-link">Gifts</a>
+      <a href="index.html" class="category-nav-link">Kids & Toys</a>
+    </div>
+  </nav>
+
+  <!-- Main Product Detail Page Container -->
+  <main class="pdp-page-container">
+    <!-- Breadcrumb -->
+    <div class="pdp-breadcrumb" id="pdpBreadcrumb">
+      <a href="index.html">Home</a> / <span id="bcCat">Category</span> / <span class="current" id="bcTitle">Product Name</span>
     </div>
 
-    <div id="productDetailArea">
+    <!-- 2-Column Product Detail Area -->
+    <div id="pdpMainArea">
       <div style="text-align:center;padding:60px 20px;color:#64748b;">
         Loading product details…
       </div>
     </div>
 
-    <a href="index.html" class="back-link">← Continue Shopping All Products</a>
+    <!-- Tabs Section (Description, Images, Additional Info, Reviews) -->
+    <section class="pdp-tabs-container" id="pdpTabsSection" style="display:none">
+      <div class="pdp-tabs-header">
+        <button type="button" class="pdp-tab-btn active" onclick="switchTab('desc', this)">Description</button>
+        <button type="button" class="pdp-tab-btn" onclick="switchTab('images', this)">Product Images</button>
+        <button type="button" class="pdp-tab-btn" onclick="switchTab('additional', this)">Additional information</button>
+        <button type="button" class="pdp-tab-btn" onclick="switchTab('reviews', this)">Reviews (0)</button>
+      </div>
+
+      <!-- Tab 1: Description & Specs -->
+      <div class="pdp-tab-pane active" id="tabPane-desc">
+        <div class="pdp-desc-text" id="tabFullDescText"></div>
+
+        <table class="pdp-specs-table" id="tabSpecsTable">
+          <tbody>
+            <tr>
+              <td class="col-head">Material</td>
+              <td class="col-val" id="specMaterial">Premium Quality Global Stock</td>
+              <td class="col-head">Weight / Size</td>
+              <td class="col-val" id="specWeight">Standard specification</td>
+            </tr>
+            <tr>
+              <td class="col-head">What's in the box</td>
+              <td class="col-val" id="specBox">1 item (as selected)</td>
+              <td class="col-head">Origin</td>
+              <td class="col-val">China (imported on pre-order)</td>
+            </tr>
+            <tr>
+              <td class="col-head">Delivery</td>
+              <td class="col-val" id="specDelivery">7–15 business days</td>
+              <td class="col-head">Care</td>
+              <td class="col-val">Spot clean with a damp cloth / Store dry</td>
+            </tr>
+            <tr>
+              <td class="col-head">Pre-Order Note</td>
+              <td class="col-val" colspan="3">Imported on demand. ৳200 advance payment confirms reservation with global supplier.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Tab 2: Images Gallery -->
+      <div class="pdp-tab-pane" id="tabPane-images">
+        <div id="tabImagesGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:16px;"></div>
+      </div>
+
+      <!-- Tab 3: Additional Information -->
+      <div class="pdp-tab-pane" id="tabPane-additional">
+        <div style="font-size:14px;color:#475569;line-height:1.7;">
+          <h4 style="color:#0f172a;margin-bottom:8px">Pre-Order & Delivery Information:</h4>
+          <p>• <b>Delivery Timeline:</b> 7 to 15 business days across Bangladesh.</p>
+          <p>• <b>Delivery Charges:</b> Inside Dhaka ৳70 | Outside Dhaka ৳130.</p>
+          <p>• <b>Advance Policy:</b> An advance payment of ৳200 via bKash or Nagad (01819740112) is required to secure your order with international suppliers. The remaining amount is payable Cash on Delivery.</p>
+          <p>• <b>Inspection:</b> You can check the package in front of the delivery rider upon delivery.</p>
+        </div>
+      </div>
+
+      <!-- Tab 4: Reviews -->
+      <div class="pdp-tab-pane" id="tabPane-reviews">
+        <div style="font-size:14px;color:#64748b;padding:20px 0;">
+          <p>There are no reviews yet.</p>
+          <p style="margin-top:6px;font-size:13px">Only verified customers who have purchased this product can leave a review after delivery.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Related Products Section -->
+    <section class="related-section" id="relatedSection" style="display:none">
+      <h2 class="related-title">Related products</h2>
+      <div class="related-grid" id="relatedGrid"></div>
+    </section>
   </main>
+
+  <!-- Site Footer (Matches Reference) -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <h4 style="color:#ffffff;font-size:16px;margin-bottom:10px;">Zayn Shop</h4>
+        <p style="line-height:1.7;margin-bottom:12px;color:#94a3b8">Pre-order trending products from China & global suppliers, delivered safely across Bangladesh.</p>
+        <p style="color:#cbd5e1">📞 <b>Phone / WhatsApp:</b> 01819740112<br>⏰ <b>Support:</b> Every day 9:00 AM – 10:00 PM</p>
+      </div>
+      <div class="footer-col">
+        <h4>Shop</h4>
+        <p style="margin-bottom:6px"><a href="index.html" style="color:#94a3b8;text-decoration:none">Winter Collection</a></p>
+        <p style="margin-bottom:6px"><a href="index.html" style="color:#94a3b8;text-decoration:none">Beauty & Skincare</a></p>
+        <p style="margin-bottom:6px"><a href="index.html" style="color:#94a3b8;text-decoration:none">Jewelry & Accessories</a></p>
+        <p style="margin-bottom:6px"><a href="index.html" style="color:#94a3b8;text-decoration:none">Bags & Pouches</a></p>
+        <p><a href="index.html" style="color:#94a3b8;text-decoration:none">Kids & Toys</a></p>
+      </div>
+      <div class="footer-col">
+        <h4>Help</h4>
+        <p style="margin-bottom:6px"><a href="#" style="color:#94a3b8;text-decoration:none">Shipping Info</a></p>
+        <p style="margin-bottom:6px"><a href="#" style="color:#94a3b8;text-decoration:none">Returns & Exchange</a></p>
+        <p style="margin-bottom:6px"><a href="#" style="color:#94a3b8;text-decoration:none">Refund Policy</a></p>
+        <p style="margin-bottom:6px"><a href="#" style="color:#94a3b8;text-decoration:none">FAQ</a></p>
+        <p><a href="#" style="color:#94a3b8;text-decoration:none">Terms & Conditions</a></p>
+      </div>
+      <div class="footer-col">
+        <h4>We accept</h4>
+        <p style="margin-bottom:6px;color:#cbd5e1">💵 Cash on Delivery (COD)</p>
+        <p style="margin-bottom:6px;color:#cbd5e1">📱 bKash Personal: 01819740112</p>
+        <p style="color:#cbd5e1">📱 Nagad Personal: 01819740112</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 Zayn Shop. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- Floating WhatsApp Contact Button -->
+  <a id="floatingWaBtn" href="https://wa.me/8801819740112" target="_blank" class="floating-whatsapp-btn" title="Chat on WhatsApp">
+    💬
+  </a>
 
   <!-- Cart Drawer -->
   <div class="cart-overlay" id="cartOverlay" onclick="closeCartDrawer()"></div>
@@ -321,19 +220,19 @@
   <script src="config.js"></script>
   <script src="app.js"></script>
   <script>
-    let currentDetailProduct = null;
+    let activePdpProduct = null;
 
-    async function loadProductDetailPage() {
+    async function initProductPage() {
       const params = new URLSearchParams(window.location.search);
       const id = parseInt(params.get('id'), 10);
-      const container = document.getElementById('productDetailArea');
+      const mainArea = document.getElementById('pdpMainArea');
 
       if (!id) {
-        container.innerHTML = `
+        mainArea.innerHTML = `
           <div style="text-align:center;padding:60px 20px;background:#fff;border-radius:12px;">
             <h3>Product not found</h3>
-            <p style="color:#64748b;margin-top:8px">No product ID was specified.</p>
-            <a href="index.html" class="btn-checkout" style="display:inline-block;width:auto;margin-top:16px;padding:10px 20px;">Browse Products</a>
+            <p style="color:#64748b;margin:8px 0 16px;">No product ID was specified.</p>
+            <a href="index.html" class="btn-card-buy" style="display:inline-flex;padding:10px 24px;text-decoration:none;">Browse All Products</a>
           </div>`;
         return;
       }
@@ -345,92 +244,179 @@
         const p = products.find(item => item.id === id);
 
         if (!p) {
-          container.innerHTML = `
+          mainArea.innerHTML = `
             <div style="text-align:center;padding:60px 20px;background:#fff;border-radius:12px;">
               <h3>Product not found</h3>
-              <p style="color:#64748b;margin-top:8px">We could not find the requested product (ID #${id}).</p>
-              <a href="index.html" class="btn-checkout" style="display:inline-block;width:auto;margin-top:16px;padding:10px 20px;">Browse All Products</a>
+              <p style="color:#64748b;margin:8px 0 16px;">We could not find the requested product (ID #${id}).</p>
+              <a href="index.html" class="btn-card-buy" style="display:inline-flex;padding:10px 24px;text-decoration:none;">Browse All Products</a>
             </div>`;
           return;
         }
 
-        currentDetailProduct = p;
+        activePdpProduct = p;
         document.title = `${p.name} — Zayn Shop Pre-Order`;
 
-        // Update breadcrumb
-        document.getElementById('breadcrumb').innerHTML = `
-          <a href="index.html">Home</a> &gt; <span>${escapeHtml(p.category)}</span> &gt; <b>${escapeHtml(p.name)}</b>
-        `;
+        // Update Breadcrumb
+        document.getElementById('bcCat').textContent = p.category;
+        document.getElementById('bcTitle').textContent = p.name;
 
+        const currency = CONFIG.currencySymbol || '৳';
+        const deliveryTime = CONFIG.deliveryTime || '7–15 business days';
+        const advanceAmount = CONFIG.advanceAmount || 200;
         const discount = p.regular_price && p.regular_price > p.price
           ? Math.round(((p.regular_price - p.price) / p.regular_price) * 100)
           : 0;
 
-        const currency = CONFIG.currencySymbol || '৳';
+        // Clean WhatsApp prefilled link for this specific product
+        const waMsg = `Hi Zayn Shop, I want to order this product:\n*${p.name}*\nPrice: ${currency}${p.price.toLocaleString()}\nLink: ${window.location.href}`;
+        const waCleanNumber = (CONFIG.whatsappNumber || '8801819740112').replace(/[^0-9]/g, '');
+        const waProductUrl = `https://wa.me/${waCleanNumber}?text=${encodeURIComponent(waMsg)}`;
+        document.getElementById('floatingWaBtn').href = waProductUrl;
 
-        container.innerHTML = `
-          <div class="product-detail-card">
-            <div class="detail-img-wrap">
-              <span class="badge-preorder" style="top:12px;left:12px">Pre-Order (${CONFIG.deliveryTime})</span>
-              ${discount > 0 ? `<span class="badge-discount" style="top:12px;right:12px">${discount}% off</span>` : ''}
-              <img src="${p.image}" alt="${escapeHtml(p.name)}" class="detail-img">
+        // Render Main 2-Column Product Grid
+        mainArea.innerHTML = `
+          <div class="pdp-main-grid">
+            <!-- Left: Gallery -->
+            <div class="pdp-gallery-wrap">
+              <div class="pdp-main-img-box">
+                <img id="pdpDisplayImg" src="${p.image}" alt="${escapeHtml(p.name)}" class="pdp-main-img">
+                <button type="button" class="pdp-zoom-btn" title="View Full Image" onclick="window.open('${p.image}','_blank')">🔍</button>
+              </div>
+
+              <!-- Thumbnails strip -->
+              <div class="pdp-thumb-row">
+                <div class="pdp-thumb-item active" onclick="switchMainImage('${p.image}', this)">
+                  <img src="${p.image}" alt="Preview 1">
+                </div>
+                <div class="pdp-thumb-item" onclick="switchMainImage('${p.image}', this)">
+                  <img src="${p.image}" alt="Preview 2">
+                </div>
+                <div class="pdp-thumb-item" onclick="switchMainImage('${p.image}', this)">
+                  <img src="${p.image}" alt="Preview 3">
+                </div>
+                <div class="pdp-thumb-item" onclick="switchMainImage('${p.image}', this)">
+                  <img src="${p.image}" alt="Preview 4">
+                </div>
+              </div>
             </div>
 
-            <div class="detail-info">
-              <span class="detail-cat-badge">${escapeHtml(p.category)}</span>
-              <h1 class="detail-title">${escapeHtml(p.name)}</h1>
-
-              <div class="detail-price-row">
-                <span class="detail-price">${currency}${p.price.toLocaleString()}</span>
-                ${p.regular_price ? `<span class="detail-old-price">${currency}${p.regular_price.toLocaleString()}</span>` : ''}
-                ${discount > 0 ? `<span class="detail-discount-pill">${discount}% OFF</span>` : ''}
+            <!-- Right: Product Info & Actions -->
+            <div class="pdp-info-wrap">
+              <div class="pdp-badge-row">
+                <span class="pdp-badge-tag">Pre-Order</span>
+                <span class="pdp-badge-time">${deliveryTime} delivery</span>
+                ${discount > 0 ? `<span class="pdp-discount-pill">${discount}% OFF</span>` : ''}
               </div>
 
-              <div class="detail-meta-box">
-                <div class="meta-line">
-                  <span>📦</span>
-                  <span><b>Status:</b> In Stock for Pre-Order</span>
+              <div class="pdp-cat-label">${escapeHtml(p.category)}</div>
+              <h1 class="pdp-title">${escapeHtml(p.name)}</h1>
+
+              <div class="pdp-price-row">
+                <span class="pdp-price-current">${currency}${p.price.toLocaleString()}</span>
+                ${p.regular_price ? `<span class="pdp-price-old">${currency}${p.regular_price.toLocaleString()}</span>` : ''}
+              </div>
+
+              <!-- Highlights list -->
+              <ul class="pdp-highlights">
+                <li>100% genuine imported pre-order collection from global verified suppliers.</li>
+                <li>Carefully inspected, brand-new piece packaged securely for home delivery.</li>
+                <li>Fast air-shipping to Bangladesh with continuous tracking updates.</li>
+              </ul>
+
+              <!-- Actions Box -->
+              <div class="pdp-actions-box">
+                <div class="pdp-qty-and-cart-row">
+                  <div class="pdp-qty-stepper">
+                    <button type="button" onclick="changePdpQty(-1)">−</button>
+                    <input type="number" id="pdpQtyInput" value="1" min="1" readonly>
+                    <button type="button" onclick="changePdpQty(1)">+</button>
+                  </div>
+                  <button type="button" class="btn-pdp-cart" onclick="addPdpToCart()">
+                    🛒 Add to Bag
+                  </button>
                 </div>
-                <div class="meta-line">
-                  <span>✈️</span>
-                  <span><b>Delivery:</b> ${CONFIG.deliveryTime} across Bangladesh</span>
-                </div>
-                <div class="meta-line">
-                  <span>💵</span>
-                  <span><b>Payment:</b> Cash on Delivery with ${currency}${CONFIG.advanceAmount} advance</span>
-                </div>
-              </div>
 
-              <div class="advance-alert">
-                ⚠️ <b>Pre-Order Notice:</b> ${escapeHtml(CONFIG.advanceNotice)}
-              </div>
-
-              <div class="detail-desc">
-                ${escapeHtml(p.description)}
-              </div>
-
-              <div class="detail-qty-row">
-                <span style="font-size:13px;font-weight:700;color:#334155">Quantity:</span>
-                <div class="qty-picker">
-                  <button type="button" onclick="changeDetailQty(-1)">−</button>
-                  <input type="number" id="detailQtyInput" value="1" min="1" readonly>
-                  <button type="button" onclick="changeDetailQty(1)">+</button>
-                </div>
-              </div>
-
-              <div class="detail-actions-row">
-                <button type="button" class="btn-detail-cart" onclick="addCurrentDetailToBag()">
-                  🛒 Add to Bag
-                </button>
-                <button type="button" class="btn-detail-buy" onclick="buyCurrentDetailNow()">
+                <button type="button" class="btn-pdp-buy" onclick="buyPdpNow()">
                   ⚡ Order Now
                 </button>
+
+                <a href="${waProductUrl}" target="_blank" class="btn-pdp-whatsapp">
+                  💬 WhatsApp Us
+                </a>
+              </div>
+
+              <div class="pdp-categories-tag">
+                <b>Categories:</b> ${escapeHtml(p.category)}
+              </div>
+
+              <!-- Trust Information Box (Matches Screenshot) -->
+              <div class="pdp-trust-box">
+                <div class="pdp-trust-item">
+                  <span class="pdp-trust-check">✓</span>
+                  <div><b>Cash on Delivery:</b> Pay the remaining amount upon receiving your package at your doorstep.</div>
+                </div>
+                <div class="pdp-trust-item">
+                  <span class="pdp-trust-check">✓</span>
+                  <div><b>Advance Delivery Charge:</b> Inside Dhaka ৳70, Outside Dhaka ৳130 (৳${advanceAmount} pre-order advance via bKash/Nagad).</div>
+                </div>
+                <div class="pdp-trust-item">
+                  <span class="pdp-trust-check">✓</span>
+                  <div><b>Delivery Timeline:</b> ${deliveryTime} across all districts of Bangladesh.</div>
+                </div>
+                <div class="pdp-trust-item">
+                  <span class="pdp-trust-check">✓</span>
+                  <div><b>Return & Exchange:</b> 100% replacement guarantee if any defect upon arrival.</div>
+                </div>
+                <div class="pdp-trust-item">
+                  <span class="pdp-trust-check">✓</span>
+                  <div><b>Need Help?</b> WhatsApp / Helpline: 01819740112</div>
+                </div>
               </div>
             </div>
           </div>
         `;
 
-        // Track ViewContent
+        // Fill Tabs Section
+        document.getElementById('tabFullDescText').textContent = p.description || 'Premium quality imported item. Sourced directly from manufacturer on pre-order.';
+        document.getElementById('specDelivery').textContent = deliveryTime;
+        
+        // Populate Tab 2 Images
+        const tabImagesGrid = document.getElementById('tabImagesGrid');
+        tabImagesGrid.innerHTML = `
+          <div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;background:#fff;text-align:center">
+            <img src="${p.image}" alt="View 1" style="max-width:100%;height:180px;object-fit:contain">
+          </div>
+          <div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;background:#fff;text-align:center">
+            <img src="${p.image}" alt="View 2" style="max-width:100%;height:180px;object-fit:contain">
+          </div>
+        `;
+        document.getElementById('pdpTabsSection').style.display = 'block';
+
+        // Render Related Products (same category or top products)
+        const related = products.filter(item => item.id !== p.id && item.category === p.category).slice(0, 4);
+        const relatedToDisplay = related.length >= 3 ? related : products.filter(item => item.id !== p.id).slice(0, 4);
+
+        if (relatedToDisplay.length) {
+          const relatedGrid = document.getElementById('relatedGrid');
+          relatedGrid.innerHTML = relatedToDisplay.map(item => `
+            <div class="related-card" onclick="window.location='product.html?id=${item.id}'">
+              <div class="related-img-wrap">
+                <img src="${item.image}" alt="${escapeHtml(item.name)}" class="related-img" loading="lazy">
+              </div>
+              <div class="related-body">
+                <div class="related-cat">${escapeHtml(item.category)}</div>
+                <div class="related-name">${escapeHtml(item.name)}</div>
+                <div class="related-price">${currency}${item.price.toLocaleString()}</div>
+                <button type="button" class="btn-related-order" onclick="event.stopPropagation();window.location='product.html?id=${item.id}'">
+                  Order Now
+                </button>
+              </div>
+            </div>
+          `).join('');
+          document.getElementById('relatedSection').style.display = 'block';
+        }
+
+        // Track ViewContent event
         trackEvent('ViewContent', {
           content_name: p.name,
           content_ids: [String(p.id)],
@@ -440,34 +426,50 @@
         });
 
       } catch (err) {
-        console.error('Failed to load product detail:', err);
-        container.innerHTML = '<p style="text-align:center;color:#ef4444;padding:40px;">Failed to load product details.</p>';
+        console.error('Failed to load PDP:', err);
+        mainArea.innerHTML = '<p style="text-align:center;padding:40px;color:#ef4444">Failed to load product details.</p>';
       }
     }
 
-    function changeDetailQty(delta) {
-      const input = document.getElementById('detailQtyInput');
+    function switchMainImage(src, element) {
+      document.getElementById('pdpDisplayImg').src = src;
+      document.querySelectorAll('.pdp-thumb-item').forEach(el => el.classList.remove('active'));
+      if (element) element.classList.add('active');
+    }
+
+    function changePdpQty(delta) {
+      const input = document.getElementById('pdpQtyInput');
       if (!input) return;
       let val = parseInt(input.value, 10) + delta;
       if (val < 1) val = 1;
       input.value = val;
     }
 
-    function addCurrentDetailToBag() {
-      if (!currentDetailProduct) return;
-      const input = document.getElementById('detailQtyInput');
+    function addPdpToCart() {
+      if (!activePdpProduct) return;
+      const input = document.getElementById('pdpQtyInput');
       const qty = input ? parseInt(input.value, 10) || 1 : 1;
-      addToCart(currentDetailProduct.id, qty);
+      addToCart(activePdpProduct.id, qty);
     }
 
-    function buyCurrentDetailNow() {
-      if (!currentDetailProduct) return;
-      const input = document.getElementById('detailQtyInput');
+    function buyPdpNow() {
+      if (!activePdpProduct) return;
+      const input = document.getElementById('pdpQtyInput');
       const qty = input ? parseInt(input.value, 10) || 1 : 1;
-      openDirectCheckout(currentDetailProduct.id, qty);
+      openDirectCheckout(activePdpProduct.id, qty);
     }
 
-    document.addEventListener('DOMContentLoaded', loadProductDetailPage);
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.pdp-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.pdp-tab-pane').forEach(p => p.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      const targetPane = document.getElementById('tabPane-' + tabId);
+      if (targetPane) targetPane.classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initProductPage();
+    });
   </script>
 </body>
 </html>
