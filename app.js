@@ -171,7 +171,13 @@ function renderProducts() {
   const searchInput = document.getElementById('searchQuery')?.value.toLowerCase().trim() || '';
 
   const filtered = allProducts.filter(p => {
-    const matchCat = activeCategory === 'all' || p.category === activeCategory;
+    const pCat = (p.category || '').toLowerCase();
+    const aCat = activeCategory.toLowerCase();
+    const matchCat = activeCategory === 'all' || 
+      p.category === activeCategory || 
+      aCat.includes(pCat) || 
+      pCat.includes(aCat) ||
+      (aCat.split(' ')[0] && pCat.includes(aCat.split(' ')[0]));
     const matchSearch = !searchInput || p.name.toLowerCase().includes(searchInput) || (p.description && p.description.toLowerCase().includes(searchInput));
     return matchCat && matchSearch;
   });
@@ -194,7 +200,7 @@ function renderProducts() {
       <div class="prod-img-wrap">
         <span class="badge-preorder">Pre-Order (${deliveryTime})</span>
         ${discount > 0 ? `<span class="badge-discount">${discount}% off</span>` : ''}
-        <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" class="prod-img">
+        <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" class="prod-img" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
       </div>
       <div class="prod-body">
         <div class="prod-cat">${escapeHtml(p.category)}</div>

@@ -278,7 +278,7 @@
             <!-- Left: Gallery -->
             <div class="pdp-gallery-wrap">
               <div class="pdp-main-img-box">
-                <img id="pdpDisplayImg" src="${p.image}" alt="${escapeHtml(p.name)}" class="pdp-main-img">
+                <img id="pdpDisplayImg" src="${p.image}" alt="${escapeHtml(p.name)}" class="pdp-main-img" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
                 <button type="button" class="pdp-zoom-btn" title="View Full Image" onclick="window.open('${p.image}','_blank')">🔍</button>
               </div>
 

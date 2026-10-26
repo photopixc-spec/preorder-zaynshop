@@ -1,23 +1,13 @@
 /**
  * Zayn Shop BD — Pre-Order Google Sheet Webhook & Product Sync Engine
  * 
- * Capabilities:
- * 1. Orders Tab: Automatically logs all customer pre-orders into an "Orders" sheet.
- * 2. Products Tab: Automatically serves live products to the website from a "Products" sheet.
- *    - Add new products from MoveDrop / 1688 / Taobao into new rows.
- *    - Edit price, category, name, or image anytime.
- *    - Set Status to "Hidden" or delete row to remove product from website.
- * 
- * Instructions:
- * 1. Copy this entire code.
- * 2. In your Google Sheet, go to Extensions > Apps Script.
- * 3. Replace all existing code with this and click Save (Cmd+S / Ctrl+S).
- * 4. To populate all initial 42 products right now:
- *    Select "populateInitialProducts" in the top function dropdown and click "Run".
- * 5. Click Deploy > Manage deployments > Edit (pencil icon) > Version: "New version" > Deploy!
+ * Functions:
+ * 1. importAllOriginalProducts: Run this to instantly bring all 42 original products into your "Products" sheet!
+ * 2. doGet: Live product feed for the website from the "Products" sheet.
+ * 3. doPost: Logs incoming customer orders into the "Orders" sheet.
  */
 
-var INITIAL_PRODUCTS = [
+var ORIGINAL_PRODUCTS = [
   [
     19,
     "Zircon Butterfly Necklace Set",
@@ -482,99 +472,83 @@ var INITIAL_PRODUCTS = [
   ]
 ];
 
-function doPost(e) {
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName("Orders");
-    
-    // Create Orders tab if not present
-    if (!sheet) {
-      sheet = ss.insertSheet("Orders");
-    }
-
-    // Set headers if the sheet is brand new / empty
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow([
-        "Timestamp",
-        "Order ID",
-        "Customer Name",
-        "Customer Phone",
-        "Delivery Address",
-        "Delivery Area",
-        "Delivery Charge (৳)",
-        "Ordered Items",
-        "Subtotal (৳)",
-        "Advance Required (৳)",
-        "Remaining COD (৳)",
-        "Total Order Amount (৳)",
-        "Note / Instructions",
-        "Order Status"
-      ]);
-      sheet.getRange(1, 1, 1, 14).setFontWeight("bold").setBackground("#f1f5f9");
-      sheet.setFrozenRows(1);
-    }
-
-    var data = JSON.parse(e.postData.contents);
-
-    // Format ordered items as clean text
-    var itemsText = "";
-    if (data.items && data.items.length) {
-      itemsText = data.items.map(function(item) {
-        return item.name + " (" + item.qty + "x ৳" + item.price + " = ৳" + item.subtotal + ")";
-      }).join("\n");
-    }
-
-    var row = [
-      new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" }),
-      data.orderId || "",
-      data.customerName || "",
-      "'" + (data.customerPhone || ""), // Prefix with apostrophe to keep leading zero
-      data.deliveryAddress || "",
-      data.deliveryArea || "",
-      data.deliveryCharge || 0,
-      itemsText,
-      (data.totalAmount - data.deliveryCharge) || 0,
-      data.advanceAmount || 200,
-      data.remainingCod || 0,
-      data.totalAmount || 0,
-      data.note || "",
-      "Pending Advance"
-    ];
-
-    sheet.appendRow(row);
-
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: "success", orderId: data.orderId }))
-      .setMimeType(ContentService.MimeType.JSON);
-
-  } catch (error) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: "error", message: error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+/**
+ * 1. RUN THIS ONCE to import all 42 original products into your sheet!
+ * Select "importAllOriginalProducts" in the top function dropdown and click "Run".
+ */
+function importAllOriginalProducts() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName("Products");
+  if (!sheet) {
+    sheet = ss.insertSheet("Products");
   }
+
+  // Create Headers if row 1 is empty
+  if (sheet.getLastRow() === 0) {
+    var headers = ["ID", "Name", "Category", "Price (৳)", "Regular Price (৳)", "Image URL", "Description", "Badge", "Status"];
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#e2e8f0");
+    sheet.setFrozenRows(1);
+    
+    sheet.setColumnWidth(1, 70);  // ID
+    sheet.setColumnWidth(2, 260); // Name
+    sheet.setColumnWidth(3, 160); // Category
+    sheet.setColumnWidth(4, 90);  // Price
+    sheet.setColumnWidth(5, 120); // Regular Price
+    sheet.setColumnWidth(6, 220); // Image URL
+    sheet.setColumnWidth(7, 300); // Description
+    sheet.setColumnWidth(8, 100); // Badge
+    sheet.setColumnWidth(9, 90);  // Status
+  }
+
+  // Check existing IDs to prevent duplicates
+  var existingData = sheet.getDataRange().getValues();
+  var existingIds = {};
+  for (var i = 1; i < existingData.length; i++) {
+    if (existingData[i][0]) {
+      existingIds[String(existingData[i][0])] = true;
+    }
+  }
+
+  var toAdd = [];
+  for (var j = 0; j < ORIGINAL_PRODUCTS.length; j++) {
+    var p = ORIGINAL_PRODUCTS[j];
+    if (!existingIds[String(p[0])]) {
+      toAdd.push(p);
+    }
+  }
+
+  if (toAdd.length > 0) {
+    var startRow = sheet.getLastRow() + 1;
+    sheet.getRange(startRow, 1, toAdd.length, 9).setValues(toAdd);
+  }
+
+  Logger.log("Successfully imported " + toAdd.length + " products into the Products sheet!");
+  return "Successfully imported " + toAdd.length + " products!";
 }
 
+/**
+ * Serves live products to website
+ */
 function doGet(e) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName("Products");
-    
-    // Auto-create and populate Products tab if it does not exist
     if (!sheet) {
-      sheet = populateInitialProducts();
+      importAllOriginalProducts();
+      sheet = ss.getSheetByName("Products");
     }
 
-    // Check if manual populate requested via URL (?action=populate)
+    // Manual URL trigger to populate (?action=populate)
     if (e && e.parameter && e.parameter.action === "populate") {
-      sheet = populateInitialProducts();
-      return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "42 initial products populated!" }))
+      importAllOriginalProducts();
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "Products populated!" }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
     var data = sheet.getDataRange().getValues();
     if (data.length <= 1) {
-      return ContentService.createTextOutput(JSON.stringify([]))
-        .setMimeType(ContentService.MimeType.JSON);
+      return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
     }
 
     var products = [];
@@ -612,42 +586,56 @@ function doGet(e) {
 }
 
 /**
- * Run this function directly inside Google Apps Script editor
- * to create the "Products" sheet and insert all 42 products instantly!
+ * Logs customer orders into "Orders" sheet
  */
-function populateInitialProducts() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("Products");
-  if (!sheet) {
-    sheet = ss.insertSheet("Products");
-  } else {
-    sheet.clear();
+function doPost(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("Orders");
+    if (!sheet) sheet = ss.insertSheet("Orders");
+
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow([
+        "Timestamp", "Order ID", "Customer Name", "Customer Phone",
+        "Delivery Address", "Delivery Area", "Delivery Charge (৳)",
+        "Ordered Items", "Subtotal (৳)", "Advance Required (৳)",
+        "Remaining COD (৳)", "Total Order Amount (৳)", "Note / Instructions", "Order Status"
+      ]);
+      sheet.getRange(1, 1, 1, 14).setFontWeight("bold").setBackground("#f1f5f9");
+      sheet.setFrozenRows(1);
+    }
+
+    var data = JSON.parse(e.postData.contents);
+    var itemsText = "";
+    if (data.items && data.items.length) {
+      itemsText = data.items.map(function(item) {
+        return item.name + " (" + item.qty + "x ৳" + item.price + " = ৳" + item.subtotal + ")";
+      }).join("\n");
+    }
+
+    var row = [
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Dhaka" }),
+      data.orderId || "",
+      data.customerName || "",
+      "'" + (data.customerPhone || ""),
+      data.deliveryAddress || "",
+      data.deliveryArea || "",
+      data.deliveryCharge || 0,
+      itemsText,
+      (data.totalAmount - data.deliveryCharge) || 0,
+      data.advanceAmount || 200,
+      data.remainingCod || 0,
+      data.totalAmount || 0,
+      data.note || "",
+      "Pending Advance"
+    ];
+
+    sheet.appendRow(row);
+    return ContentService.createTextOutput(JSON.stringify({ status: "success", orderId: data.orderId }))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
-
-  // Headers
-  var headers = [
-    "ID", "Name", "Category", "Price (৳)", "Regular Price (৳)",
-    "Image URL", "Description", "Badge", "Status"
-  ];
-  sheet.appendRow(headers);
-  sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#e2e8f0");
-  sheet.setFrozenRows(1);
-
-  // Set column widths for easy viewing
-  sheet.setColumnWidth(1, 70);  // ID
-  sheet.setColumnWidth(2, 260); // Name
-  sheet.setColumnWidth(3, 160); // Category
-  sheet.setColumnWidth(4, 90);  // Price
-  sheet.setColumnWidth(5, 120); // Regular Price
-  sheet.setColumnWidth(6, 220); // Image URL
-  sheet.setColumnWidth(7, 300); // Description
-  sheet.setColumnWidth(8, 100); // Badge
-  sheet.setColumnWidth(9, 90);  // Status
-
-  // Insert all 42 rows
-  if (INITIAL_PRODUCTS && INITIAL_PRODUCTS.length) {
-    sheet.getRange(2, 1, INITIAL_PRODUCTS.length, headers.length).setValues(INITIAL_PRODUCTS);
-  }
-
-  return sheet;
 }
