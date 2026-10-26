@@ -278,23 +278,23 @@
             <!-- Left: Gallery -->
             <div class="pdp-gallery-wrap">
               <div class="pdp-main-img-box">
-                <img id="pdpDisplayImg" src="${p.image}" alt="${escapeHtml(p.name)}" class="pdp-main-img" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
+                <img id="pdpDisplayImg" src="${p.image}" alt="${escapeHtml(p.name)}" class="pdp-main-img" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
                 <button type="button" class="pdp-zoom-btn" title="View Full Image" onclick="window.open('${p.image}','_blank')">🔍</button>
               </div>
 
               <!-- Thumbnails strip -->
               <div class="pdp-thumb-row">
                 <div class="pdp-thumb-item active" onclick="switchMainImage('${p.image}', this)">
-                  <img src="${p.image}" alt="Preview 1">
+                  <img src="${p.image}" alt="Preview 1" referrerpolicy="no-referrer">
                 </div>
                 <div class="pdp-thumb-item" onclick="switchMainImage('${p.image}', this)">
-                  <img src="${p.image}" alt="Preview 2">
+                  <img src="${p.image}" alt="Preview 2" referrerpolicy="no-referrer">
                 </div>
                 <div class="pdp-thumb-item" onclick="switchMainImage('${p.image}', this)">
-                  <img src="${p.image}" alt="Preview 3">
+                  <img src="${p.image}" alt="Preview 3" referrerpolicy="no-referrer">
                 </div>
                 <div class="pdp-thumb-item" onclick="switchMainImage('${p.image}', this)">
-                  <img src="${p.image}" alt="Preview 4">
+                  <img src="${p.image}" alt="Preview 4" referrerpolicy="no-referrer">
                 </div>
               </div>
             </div>

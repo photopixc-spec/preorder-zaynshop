@@ -61,34 +61,30 @@ function trackEvent(name, params = {}) {
 
 // ---- Universal Product Loader (Google Sheet Sync with Local Fallback) ----
 async function fetchStoreProducts() {
-  // 1. Try Google Sheet Webhook if configured
+  let localProducts = [];
+  try {
+    const resLocal = await fetch('products.json?v=' + Date.now());
+    localProducts = await resLocal.json();
+  } catch (_) {}
+
+  // 1. Try Google Sheet Webhook if configured (Cache-Busted for Real-Time Sync)
   if (typeof CONFIG !== 'undefined' && CONFIG.orderWebhookUrl) {
     try {
-      const res = await fetch(CONFIG.orderWebhookUrl);
+      const sep = CONFIG.orderWebhookUrl.includes('?') ? '&' : '?';
+      const res = await fetch(CONFIG.orderWebhookUrl + sep + 't=' + Date.now());
       const sheetProducts = await res.json();
       if (Array.isArray(sheetProducts) && sheetProducts.length > 0) {
-        try {
-          sessionStorage.setItem('zayn_cached_products', JSON.stringify(sheetProducts));
-        } catch (_) {}
-        return sheetProducts;
+        // Merge: New products from Google Sheet placed FIRST on top!
+        const sheetIds = new Set(sheetProducts.map(p => String(p.id)));
+        const combined = [...sheetProducts, ...localProducts.filter(p => !sheetIds.has(String(p.id)))];
+        return combined;
       }
     } catch (sheetErr) {
       console.warn('Google Sheet product fetch failed, fallback to local products.json:', sheetErr);
     }
   }
 
-  // 2. Check session cache
-  try {
-    const cached = sessionStorage.getItem('zayn_cached_products');
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch (_) {}
-
-  // 3. Fallback to local products.json
-  const res = await fetch('products.json');
-  return await res.json();
+  return localProducts;
 }
 
 // ---- Load Products & Render ----
@@ -200,7 +196,7 @@ function renderProducts() {
       <div class="prod-img-wrap">
         <span class="badge-preorder">Pre-Order (${deliveryTime})</span>
         ${discount > 0 ? `<span class="badge-discount">${discount}% off</span>` : ''}
-        <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" class="prod-img" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
+        <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" referrerpolicy="no-referrer" class="prod-img" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
       </div>
       <div class="prod-body">
         <div class="prod-cat">${escapeHtml(p.category)}</div>
