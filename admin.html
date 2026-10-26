@@ -358,42 +358,7 @@
           <span style="color:#64748b;font-size:11px">(বুকমার্ক বার দেখতে কিবোর্ডে চাপুন: Mac-এ <code>Cmd+Shift+B</code>, Windows-এ <code>Ctrl+Shift+B</code>)</span>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <a class="bookmarklet-btn" title="Drag me to your Bookmarks Bar" href="javascript:(function(){
-            var title = document.querySelector('h1, h2, .product-title, .title')?.innerText || document.title;
-            var imgEl = document.querySelector('img[src*=\'alicdn\'], img[src*=\'storage\'], .product-gallery img, img');
-            var imgUrl = imgEl ? imgEl.src : '';
-            var priceMatch = document.body.innerText.match(/৳\s*([0-9,]+)/) || document.body.innerText.match(/([0-9,]+)\s*BDT/);
-            var cost = priceMatch ? priceMatch[1].replace(/,/g, '') : '950';
-
-            var pName = prompt('⚡ Zayn Shop Importer\\n\\nProduct Title:', title.trim().slice(0, 80));
-            if (!pName) return;
-            var pPrice = prompt('Selling Price (BDT ৳):', cost);
-            if (!pPrice) return;
-            var pCat = prompt('Category (Jewelry & Accessories / Cute & Toys / Beauty & Skincare / Home & Living / Fashion & Wear):', 'Jewelry & Accessories');
-
-            var payload = {
-              action: 'add_product',
-              name: pName,
-              category: pCat || 'Jewelry & Accessories',
-              price: parseInt(pPrice, 10) || 950,
-              regular_price: Math.round((parseInt(pPrice, 10) || 950) * 1.25),
-              image: imgUrl,
-              description: 'Imported on pre-order from MoveDrop / global suppliers. Delivery 15-25 days across Bangladesh.',
-              badge: 'Pre-Order'
-            };
-
-            var url = 'https://script.google.com/macros/s/AKfycbz6_ZkMemBMd8kUDicKdQtaB-kdNgDonPSTEC1-W6ilwEji7MLcgFzXShKqAKsYxkuv1A/exec';
-            fetch(url, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              body: JSON.stringify(payload)
-            }).then(function(){
-              alert('✅ Product Added to Zayn Shop!\\n\\nTitle: ' + pName + '\\nPrice: ৳' + pPrice);
-            }).catch(function(err){
-              alert('Error adding product: ' + err);
-            });
-          })();">⚡ Import to Zayn Shop</a>
+          <a class="bookmarklet-btn" title="Drag me to your Bookmarks Bar" href="javascript:(function(){var s=document.createElement('script');s.src='https://photopixc-spec.github.io/preorder-zaynshop/importer.js?v='+Date.now();document.body.appendChild(s);})();">⚡ Import to Zayn Shop</a>
           <button type="button" class="btn-cancel-edit" style="display:inline-block;padding:8px 12px;font-size:11px" onclick="copyBookmarkletCode()">
             📋 Copy Script
           </button>
