@@ -7,6 +7,14 @@ let activeCategory = 'all';
 let currentProduct = null;
 let deliveryArea = 'dhaka'; // 'dhaka' or 'outside'
 
+// Pre-load saved delivery area from localStorage if available
+try {
+  const savedArea = localStorage.getItem('zayn_delivery_area');
+  if (savedArea === 'dhaka' || savedArea === 'outside') {
+    deliveryArea = savedArea;
+  }
+} catch (_) {}
+
 // ---- Tracking Initialization (Meta Pixel & GTM) ----
 function initTracking() {
   window.dataLayer = window.dataLayer || [];
@@ -165,7 +173,7 @@ function renderProducts() {
           ${p.regular_price ? `<span class="price-old">${currency}${p.regular_price.toLocaleString()}</span>` : ''}
         </div>
         <div class="prod-actions" onclick="event.stopPropagation()">
-          <button class="btn-card-cart" onclick="addToCart(${p.id})">
+          <button class="btn-card-cart" onclick="addToCart(${p.id}, 1, true)">
             🛒 Add to Bag
           </button>
           <button class="btn-card-buy" onclick="openDirectCheckout(${p.id})">
@@ -180,25 +188,48 @@ function renderProducts() {
 // ---- Cart Management ----
 function loadCart() {
   try {
-    const encoded = localStorage.getItem('zayn_cart') || '';
-    cart = encoded ? JSON.parse(atob(encoded)) : [];
+    const raw = localStorage.getItem('zayn_cart');
+    if (!raw) {
+      cart = [];
+    } else if (raw.startsWith('[') || raw.startsWith('{')) {
+      cart = JSON.parse(raw);
+    } else {
+      // Legacy base64 decoding with safe UTF-8 fallback
+      try {
+        cart = JSON.parse(decodeURIComponent(escape(atob(raw))));
+      } catch (_) {
+        cart = JSON.parse(atob(raw));
+      }
+    }
+    if (!Array.isArray(cart)) {
+      cart = [];
+    }
   } catch (e) {
+    console.warn('Could not parse cart from localStorage:', e);
     cart = [];
   }
   updateCartBadge();
   renderCartItems();
+  if (typeof renderCheckoutItems === 'function') {
+    renderCheckoutItems();
+  }
 }
 
 function saveCart() {
   try {
-    const encoded = btoa(JSON.stringify(cart));
-    localStorage.setItem('zayn_cart', encoded);
+    localStorage.setItem('zayn_cart', JSON.stringify(cart));
   } catch (e) {
-    console.error('Failed to save cart:', e);
+    console.error('Failed to save cart to localStorage:', e);
   }
   updateCartBadge();
   renderCartItems();
+  if (typeof renderCheckoutItems === 'function') {
+    renderCheckoutItems();
+  }
 }
+
+// Immediately load cart into memory on script evaluation
+loadCart();
 
 function updateCartBadge() {
   const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
@@ -220,54 +251,72 @@ async function ensureProductsLoaded() {
   }
 }
 
-async function addToCart(productId, qty = 1) {
-  await ensureProductsLoaded();
-  const p = allProducts.find(item => item.id === productId);
-  if (!p) return;
+function addToCart(productId, qty = 1, openDrawer = true) {
+  function doAdd(p) {
+    if (!p) return;
 
-  const existing = cart.find(item => item.id === productId);
-  if (existing) {
-    existing.qty += qty;
-  } else {
-    cart.push({
-      id: p.id,
-      name: p.name,
-      price: p.price,
-      regular_price: p.regular_price || 0,
-      image: p.image,
-      category: p.category,
-      qty: qty
+    const existing = cart.find(item => Number(item.id) === Number(productId));
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      cart.push({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        regular_price: p.regular_price || 0,
+        image: p.image,
+        category: p.category,
+        qty: qty
+      });
+    }
+
+    saveCart();
+
+    // Track AddToCart
+    trackEvent('AddToCart', {
+      content_name: p.name,
+      content_ids: [String(p.id)],
+      content_type: 'product',
+      value: p.price * qty,
+      currency: 'BDT'
     });
+
+    showToast(`✅ "${p.name}" added to bag!`);
+
+    if (openDrawer) {
+      openCartDrawer();
+    }
   }
 
-  saveCart();
+  // Fast path: if products are already cached in memory, add synchronously without any async delay
+  const existingProduct = allProducts.find(item => Number(item.id) === Number(productId));
+  if (existingProduct) {
+    doAdd(existingProduct);
+    return Promise.resolve(existingProduct);
+  }
 
-  // Track AddToCart
-  trackEvent('AddToCart', {
-    content_name: p.name,
-    content_ids: [String(p.id)],
-    content_type: 'product',
-    value: p.price * qty,
-    currency: 'BDT'
+  // Fallback: fetch products if not yet in memory
+  return ensureProductsLoaded().then(() => {
+    const p = allProducts.find(item => Number(item.id) === Number(productId));
+    doAdd(p);
+    return p;
   });
-
-  showToast(`✅ "${p.name}" added to bag!`);
 }
 
 function openDirectCheckout(productId, qty = 1) {
   // Add item to cart and navigate immediately to order.html
-  addToCart(productId, qty).then(() => {
+  Promise.resolve(addToCart(productId, qty, false)).then(() => {
     window.location.href = 'order.html';
   });
 }
 
 function updateCartItemQty(id, delta) {
-  const item = cart.find(i => i.id === id);
+  const item = cart.find(i => Number(i.id) === Number(id));
   if (!item) return;
 
   item.qty += delta;
   if (item.qty <= 0) {
-    cart = cart.filter(i => i.id !== id);
+    cart = cart.filter(i => Number(i.id) !== Number(id));
   }
   saveCart();
 }
@@ -291,6 +340,9 @@ function closeCartDrawer() {
 
 function setDeliveryArea(area) {
   deliveryArea = area;
+  try {
+    localStorage.setItem('zayn_delivery_area', area);
+  } catch (_) {}
   renderCartItems();
 }
 

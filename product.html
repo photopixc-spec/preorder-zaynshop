@@ -447,7 +447,7 @@
       if (!activePdpProduct) return;
       const input = document.getElementById('pdpQtyInput');
       const qty = input ? parseInt(input.value, 10) || 1 : 1;
-      addToCart(activePdpProduct.id, qty);
+      addToCart(activePdpProduct.id, qty, true);
     }
 
     function buyPdpNow() {

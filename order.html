@@ -563,38 +563,74 @@
     let checkoutDeliveryArea = 'dhaka';
 
     function initOrderPage() {
+      // Restore delivery area if user selected Outside Dhaka earlier
+      try {
+        const savedArea = localStorage.getItem('zayn_delivery_area');
+        if (savedArea === 'outside') {
+          checkoutDeliveryArea = 'outside';
+          const rDhaka = document.querySelector('input[name="orderArea"][value="dhaka"]');
+          const rOutside = document.querySelector('input[name="orderArea"][value="outside"]');
+          if (rOutside) rOutside.checked = true;
+          if (rDhaka) rDhaka.checked = false;
+          document.getElementById('areaCardDhaka')?.classList.remove('active');
+          document.getElementById('areaCardOutside')?.classList.add('active');
+        }
+      } catch (e) {}
+
+      // Explicitly load cart from localStorage
+      loadCart();
       renderCheckoutItems();
     }
 
     function updateOrderDeliveryArea(area) {
       checkoutDeliveryArea = area;
-      document.getElementById('areaCardDhaka').classList.toggle('active', area === 'dhaka');
-      document.getElementById('areaCardOutside').classList.toggle('active', area === 'outside');
+      try {
+        localStorage.setItem('zayn_delivery_area', area);
+      } catch (e) {}
+      document.getElementById('areaCardDhaka')?.classList.toggle('active', area === 'dhaka');
+      document.getElementById('areaCardOutside')?.classList.toggle('active', area === 'outside');
       renderCheckoutItems();
     }
 
     function renderCheckoutItems() {
       const container = document.getElementById('checkoutItemsContainer');
-      const currency = CONFIG.currencySymbol || '৳';
-      const deliveryDhaka = CONFIG.deliveryDhaka || 70;
-      const deliveryOutside = CONFIG.deliveryOutside || 130;
-      const advanceAmount = CONFIG.advanceAmount || 200;
+      if (!container) return;
+
+      const formBox = document.getElementById('customerFormBox');
+      const submitBtn = document.querySelector('.btn-submit-order');
+      const currency = (typeof CONFIG !== 'undefined' && CONFIG.currencySymbol) || '৳';
+      const deliveryDhaka = (typeof CONFIG !== 'undefined' && CONFIG.deliveryDhaka) || 70;
+      const deliveryOutside = (typeof CONFIG !== 'undefined' && CONFIG.deliveryOutside) || 130;
+      const advanceAmount = (typeof CONFIG !== 'undefined' && CONFIG.advanceAmount) || 200;
 
       if (!cart || !cart.length) {
         container.innerHTML = `
           <div class="empty-cart-state">
             <div class="empty-cart-icon">🛒</div>
-            <h3 style="font-size:18px;color:#0f172a">Your Shopping Bag is Empty</h3>
-            <p style="font-size:13px;color:#64748b;margin:8px 0 20px">Please add items from the store before checking out.</p>
-            <a href="index.html" class="btn-checkout" style="display:inline-block;width:auto;padding:10px 24px;">Browse Products</a>
+            <h3 style="font-size:18px;color:#0f172a;margin-bottom:8px">Your Shopping Bag is Empty</h3>
+            <p style="font-size:14px;color:#64748b;margin:0 0 20px">Please add your favorite items to bag before completing pre-order.</p>
+            <a href="index.html" class="btn-checkout" style="display:inline-block;width:auto;padding:12px 28px;text-decoration:none;border-radius:8px">Browse Pre-Order Products</a>
           </div>`;
         
+        if (formBox) formBox.style.display = 'none';
+        if (submitBtn) {
+          submitBtn.style.opacity = '0.5';
+          submitBtn.style.pointerEvents = 'none';
+        }
+
         document.getElementById('orderSubtotal').textContent = `${currency}0`;
         document.getElementById('orderDelivery').textContent = `${currency}0`;
         document.getElementById('orderTotal').textContent = `${currency}0`;
         document.getElementById('orderAdvance').textContent = `${currency}0`;
         document.getElementById('orderCodRemaining').textContent = `${currency}0`;
         return;
+      }
+
+      // Show form and activate submit button
+      if (formBox) formBox.style.display = 'block';
+      if (submitBtn) {
+        submitBtn.style.opacity = '1';
+        submitBtn.style.pointerEvents = 'auto';
       }
 
       container.innerHTML = `
@@ -645,6 +681,19 @@
       }
     }
 
+    // Auto convert Bengali numerals in phone input
+    document.addEventListener('DOMContentLoaded', () => {
+      initOrderPage();
+
+      const phoneInput = document.getElementById('custPhone');
+      if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+          const bnMap = { '০':'0', '১':'1', '২':'2', '৩':'3', '৪':'4', '৫':'5', '৬':'6', '৭':'7', '৮':'8', '৯':'9' };
+          this.value = this.value.replace(/[০-৯]/g, d => bnMap[d] || d);
+        });
+      }
+    });
+
     async function handleOrderSubmission(e) {
       if (e && e.preventDefault) e.preventDefault();
 
@@ -655,9 +704,13 @@
       }
 
       const name = document.getElementById('custName').value.trim();
-      const phone = document.getElementById('custPhone').value.trim();
+      let phone = document.getElementById('custPhone').value.trim();
       const address = document.getElementById('custAddress').value.trim();
       const note = document.getElementById('custNote')?.value.trim() || '';
+
+      // Normalize any Bengali digits in phone
+      const bnMap = { '০':'0', '১':'1', '২':'2', '৩':'3', '৪':'4', '৫':'5', '৬':'6', '৭':'7', '৮':'8', '৯':'9' };
+      phone = phone.replace(/[০-৯]/g, d => bnMap[d] || d);
 
       if (!name || !phone || !address) {
         alert('Please provide your name, phone number, and delivery address.');
@@ -761,13 +814,11 @@
 
       // Automatically open WhatsApp in new tab after short delay
       setTimeout(() => {
-        window.open(waUrl, '_blank');
-      }, 1000);
+        try {
+          window.open(waUrl, '_blank');
+        } catch (_) {}
+      }, 800);
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      initOrderPage();
-    });
   </script>
 </body>
 </html>
