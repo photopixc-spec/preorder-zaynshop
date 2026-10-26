@@ -59,12 +59,43 @@ function trackEvent(name, params = {}) {
   window.dataLayer.push({ event: name, ...params });
 }
 
+// ---- Universal Product Loader (Google Sheet Sync with Local Fallback) ----
+async function fetchStoreProducts() {
+  // 1. Try Google Sheet Webhook if configured
+  if (typeof CONFIG !== 'undefined' && CONFIG.orderWebhookUrl) {
+    try {
+      const res = await fetch(CONFIG.orderWebhookUrl);
+      const sheetProducts = await res.json();
+      if (Array.isArray(sheetProducts) && sheetProducts.length > 0) {
+        try {
+          sessionStorage.setItem('zayn_cached_products', JSON.stringify(sheetProducts));
+        } catch (_) {}
+        return sheetProducts;
+      }
+    } catch (sheetErr) {
+      console.warn('Google Sheet product fetch failed, fallback to local products.json:', sheetErr);
+    }
+  }
+
+  // 2. Check session cache
+  try {
+    const cached = sessionStorage.getItem('zayn_cached_products');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (_) {}
+
+  // 3. Fallback to local products.json
+  const res = await fetch('products.json');
+  return await res.json();
+}
+
 // ---- Load Products & Render ----
 async function loadProducts() {
   const grid = document.getElementById('productGrid');
   try {
-    const res = await fetch('products.json');
-    allProducts = await res.json();
+    allProducts = await fetchStoreProducts();
     
     // Check if category is passed via URL query
     const urlParams = new URLSearchParams(window.location.search);
@@ -243,10 +274,9 @@ function updateCartBadge() {
 async function ensureProductsLoaded() {
   if (!allProducts.length) {
     try {
-      const res = await fetch('products.json');
-      allProducts = await res.json();
+      allProducts = await fetchStoreProducts();
     } catch (e) {
-      console.error('Failed to fetch products.json for cart item lookup', e);
+      console.error('Failed to fetch products for cart item lookup', e);
     }
   }
 }

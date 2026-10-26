@@ -236,10 +236,11 @@
       }
 
       try {
-        const res = await fetch('products.json');
-        const products = await res.json();
+        const products = (typeof allProducts !== 'undefined' && allProducts.length)
+          ? allProducts 
+          : (typeof fetchStoreProducts === 'function' ? await fetchStoreProducts() : await fetch('products.json').then(r => r.json()));
         allProducts = products;
-        const p = products.find(item => item.id === id);
+        const p = products.find(item => Number(item.id) === Number(id));
 
         if (!p) {
           mainArea.innerHTML = `
