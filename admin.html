@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard — Zayn Shop Product Manager & Importer</title>
+  <title>Admin Dashboard — Zayn Shop Product Manager, Importer & Editor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -18,6 +18,7 @@
       --text: #1e293b;
       --text-muted: #64748b;
       --success: #10b981;
+      --blue: #2563eb;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -30,26 +31,27 @@
     .admin-header {
       background: #ffffff;
       border-bottom: 1px solid var(--border);
-      padding: 16px 24px;
+      padding: 14px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       position: sticky;
       top: 0;
       z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
     .admin-brand {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-    .admin-brand img { height: 36px; }
+    .admin-brand img { height: 34px; }
     .admin-brand h2 { font-size: 18px; font-weight: 800; color: var(--sec); }
     .admin-brand span { font-size: 11px; background: #fee2e2; color: var(--pri-dark); padding: 2px 8px; border-radius: 4px; font-weight: 700; }
     .admin-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
     .btn-view-store {
       text-decoration: none;
@@ -59,23 +61,85 @@
       font-size: 13px;
       padding: 8px 14px;
       border-radius: 8px;
+      transition: background 0.15s;
     }
     .btn-view-store:hover { background: #e2e8f0; }
 
     .admin-wrap {
-      max-width: 1200px;
-      margin: 24px auto;
+      max-width: 1250px;
+      margin: 20px auto;
       padding: 0 16px;
     }
 
-    /* Grid Layout */
+    /* Top Tools Banner */
+    .top-tools-banner {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+    .url-fetcher-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .url-fetcher-row input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .btn-fetch {
+      background: var(--sec);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .btn-fetch:hover { background: #334155; }
+
+    .bookmarklet-pill-box {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .bookmarklet-btn {
+      display: inline-block;
+      background: #ec4899;
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(236,72,153,0.25);
+    }
+    .bookmarklet-btn:hover { background: #db2777; }
+
+    /* Layout */
     .admin-grid {
       display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 24px;
+      grid-template-columns: 400px 1fr;
+      gap: 20px;
       align-items: start;
     }
-    @media (max-width: 900px) {
+    @media (max-width: 950px) {
       .admin-grid { grid-template-columns: 1fr; }
     }
 
@@ -85,7 +149,6 @@
       border: 1px solid var(--border);
       padding: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-      margin-bottom: 24px;
     }
     .card-title {
       font-size: 16px;
@@ -93,18 +156,23 @@
       color: var(--sec);
       margin-bottom: 16px;
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
       border-bottom: 1px solid var(--border);
       padding-bottom: 12px;
     }
+    .card-title-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-    /* Form Styles */
-    .form-group { margin-bottom: 14px; }
+    /* Form */
+    .form-group { margin-bottom: 12px; }
     .form-label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px; }
     .form-input, .form-select, .form-textarea {
       width: 100%;
-      padding: 10px 12px;
+      padding: 9px 12px;
       border: 1.5px solid var(--border);
       border-radius: 8px;
       font-size: 13px;
@@ -116,26 +184,42 @@
       border-color: var(--pri);
     }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .btn-add {
+    
+    .btn-submit-main {
       width: 100%;
       background: var(--pri);
       color: #fff;
       border: none;
       padding: 12px;
       border-radius: 8px;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: background 0.2s;
+      transition: background 0.15s;
+      margin-top: 8px;
     }
-    .btn-add:hover { background: var(--pri-dark); }
+    .btn-submit-main:hover { background: var(--pri-dark); }
+    .btn-submit-main.edit-mode { background: var(--blue); }
+    .btn-submit-main.edit-mode:hover { background: #1d4ed8; }
+
+    .btn-cancel-edit {
+      font-size: 11px;
+      background: #fee2e2;
+      color: #ef4444;
+      border: 1px solid #fecdd3;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     .img-preview {
       width: 100%;
-      height: 120px;
+      height: 110px;
       border: 1px dashed var(--border);
       border-radius: 8px;
       display: flex;
@@ -147,35 +231,11 @@
     }
     .img-preview img { max-height: 100%; max-width: 100%; object-fit: contain; }
 
-    /* Bookmarklet Box */
-    .bookmarklet-box {
-      background: #fdf2f8;
-      border: 1.5px dashed #f472b6;
-      border-radius: 10px;
-      padding: 14px;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .bookmarklet-btn {
-      display: inline-block;
-      background: #ec4899;
-      color: #ffffff;
-      padding: 10px 18px;
-      border-radius: 30px;
-      font-size: 14px;
-      font-weight: 800;
-      text-decoration: none;
-      cursor: move;
-      margin: 8px 0;
-      box-shadow: 0 4px 10px rgba(236,72,153,0.3);
-    }
-    .bookmarklet-btn:hover { background: #db2777; }
-
     /* Product Table */
     .table-tools {
       display: flex;
       gap: 10px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     .table-tools input {
       flex: 1;
@@ -195,6 +255,7 @@
       background: #f1f5f9;
       font-weight: 700;
       border-bottom: 1px solid var(--border);
+      white-space: nowrap;
     }
     .prod-table td {
       padding: 10px;
@@ -208,7 +269,23 @@
       border-radius: 6px;
       border: 1px solid var(--border);
     }
-    .btn-del {
+    .action-group {
+      display: flex;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .btn-action-edit {
+      background: #e0f2fe;
+      color: #0284c7;
+      border: 1px solid #bae6fd;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-action-edit:hover { background: #0284c7; color: #fff; }
+    .btn-action-del {
       background: #fee2e2;
       color: #ef4444;
       border: 1px solid #fecdd3;
@@ -218,7 +295,17 @@
       font-weight: 700;
       cursor: pointer;
     }
-    .btn-del:hover { background: #ef4444; color: #fff; }
+    .btn-action-del:hover { background: #ef4444; color: #fff; }
+
+    .status-badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+    .status-active { background: #ecfdf5; color: #059669; }
+    .status-hidden { background: #fef2f2; color: #dc2626; }
 
     /* Toast */
     #toast {
@@ -233,17 +320,18 @@
       font-weight: 700;
       display: none;
       z-index: 10000;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
     }
   </style>
 </head>
 <body>
 
+  <!-- Admin Header -->
   <header class="admin-header">
     <div class="admin-brand">
       <img src="images/logo.png" alt="Zayn Shop">
       <h2>Store Admin</h2>
-      <span>Live Manager</span>
+      <span>Product Manager & Editor</span>
     </div>
     <div class="admin-actions">
       <a href="index.html" target="_blank" class="btn-view-store">👁️ View Live Store</a>
@@ -252,66 +340,82 @@
 
   <main class="admin-wrap">
 
-    <!-- 1-Click MoveDrop Bookmarklet Box -->
-    <div class="bookmarklet-box">
-      <h3 style="font-size:16px;color:#9d174d;font-weight:800">⚡ MoveDrop 1-Click Importer Button</h3>
-      <p style="font-size:12px;color:#64748b;margin:4px 0;">
-        নিচের বাটনটি টেনে নিয়ে আপনার ব্রাউজারের <b>Bookmarks Bar</b>-এ ছেড়ে দিন (Drag and Drop):
-      </p>
-      <a class="bookmarklet-btn" href="javascript:(function(){
-        var title = document.querySelector('h1, h2, .product-title, .title')?.innerText || document.title;
-        var imgEl = document.querySelector('img[src*=\'alicdn\'], img[src*=\'storage\'], .product-gallery img, img');
-        var imgUrl = imgEl ? imgEl.src : '';
-        var priceMatch = document.body.innerText.match(/৳\s*([0-9,]+)/) || document.body.innerText.match(/([0-9,]+)\s*BDT/);
-        var cost = priceMatch ? priceMatch[1].replace(/,/g, '') : '950';
+    <!-- Top Tools: Smart URL Fetcher & MoveDrop Bookmarklet -->
+    <div class="top-tools-banner">
+      <label class="form-label" style="font-size:13px;font-weight:800;color:var(--sec)">
+        ⚡ Smart URL Auto-Fetcher (MoveDrop / AliExpress / 1688 / Product URL)
+      </label>
+      <div class="url-fetcher-row">
+        <input type="url" id="fetchUrlInput" placeholder="Paste product link (https://...) and tap Auto-Fetch…">
+        <button type="button" class="btn-fetch" id="btnAutoFetch" onclick="handleAutoFetch()">
+          <span>🔍</span> <span>Auto Fetch Details</span>
+        </button>
+      </div>
 
-        var pName = prompt('⚡ Zayn Shop Importer\\n\\nProduct Title:', title.trim().slice(0, 80));
-        if (!pName) return;
-        var pPrice = prompt('Selling Price (BDT ৳):', cost);
-        if (!pPrice) return;
-        var pCat = prompt('Category (Jewelry & Accessories / Cute & Toys / Beauty & Skincare / Home & Living / Fashion & Wear):', 'Jewelry & Accessories');
+      <div class="bookmarklet-pill-box">
+        <div style="font-size:12px;color:#64748b">
+          <b>MoveDrop ড্যাশবোর্ডে থাকা অবস্থায় ১-ক্লিকে আনতে:</b> ডানের বাটনটি টেনে আপনার বুকমার্ক বারে রাখুন 👉
+        </div>
+        <a class="bookmarklet-btn" href="javascript:(function(){
+          var title = document.querySelector('h1, h2, .product-title, .title')?.innerText || document.title;
+          var imgEl = document.querySelector('img[src*=\'alicdn\'], img[src*=\'storage\'], .product-gallery img, img');
+          var imgUrl = imgEl ? imgEl.src : '';
+          var priceMatch = document.body.innerText.match(/৳\s*([0-9,]+)/) || document.body.innerText.match(/([0-9,]+)\s*BDT/);
+          var cost = priceMatch ? priceMatch[1].replace(/,/g, '') : '950';
 
-        var payload = {
-          action: 'add_product',
-          name: pName,
-          category: pCat || 'Jewelry & Accessories',
-          price: parseInt(pPrice, 10) || 950,
-          regular_price: Math.round((parseInt(pPrice, 10) || 950) * 1.25),
-          image: imgUrl,
-          description: 'Imported on pre-order from MoveDrop / global suppliers. Delivery 15-25 days across Bangladesh.',
-          badge: 'Pre-Order'
-        };
+          var pName = prompt('⚡ Zayn Shop Importer\\n\\nProduct Title:', title.trim().slice(0, 80));
+          if (!pName) return;
+          var pPrice = prompt('Selling Price (BDT ৳):', cost);
+          if (!pPrice) return;
+          var pCat = prompt('Category (Jewelry & Accessories / Cute & Toys / Beauty & Skincare / Home & Living / Fashion & Wear):', 'Jewelry & Accessories');
 
-        var url = 'https://script.google.com/macros/s/AKfycbz6_ZkMemBMd8kUDicKdQtaB-kdNgDonPSTEC1-W6ilwEji7MLcgFzXShKqAKsYxkuv1A/exec';
-        fetch(url, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        }).then(function(){
-          alert('✅ Product Added to Zayn Shop!\\n\\nTitle: ' + pName + '\\nPrice: ৳' + pPrice);
-        }).catch(function(err){
-          alert('Error adding product: ' + err);
-        });
-      })();">⚡ Import to Zayn Shop</a>
-      <p style="font-size:11px;color:#94a3b8;">
-        💡 এরপর MoveDrop-এর যেকোনো প্রোডাক্ট পেজে গিয়ে এই বাটনে ক্লিক করলেই স্বয়ংক্রিয়ভাবে প্রোডাক্ট সাইটে যুক্ত হয়ে যাবে!
-      </p>
+          var payload = {
+            action: 'add_product',
+            name: pName,
+            category: pCat || 'Jewelry & Accessories',
+            price: parseInt(pPrice, 10) || 950,
+            regular_price: Math.round((parseInt(pPrice, 10) || 950) * 1.25),
+            image: imgUrl,
+            description: 'Imported on pre-order from MoveDrop / global suppliers. Delivery 15-25 days across Bangladesh.',
+            badge: 'Pre-Order'
+          };
+
+          var url = 'https://script.google.com/macros/s/AKfycbz6_ZkMemBMd8kUDicKdQtaB-kdNgDonPSTEC1-W6ilwEji7MLcgFzXShKqAKsYxkuv1A/exec';
+          fetch(url, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+          }).then(function(){
+            alert('✅ Product Added to Zayn Shop!\\n\\nTitle: ' + pName + '\\nPrice: ৳' + pPrice);
+          }).catch(function(err){
+            alert('Error adding product: ' + err);
+          });
+        })();">⚡ Import to Zayn Shop</a>
+      </div>
     </div>
 
+    <!-- Main Grid -->
     <div class="admin-grid">
 
-      <!-- Left Column: Add Product Form -->
+      <!-- Left Column: Add / Edit Product Form -->
       <div>
-        <div class="card">
+        <div class="card" id="formCard">
           <div class="card-title">
-            <span>➕</span>
-            <span>Add New Product</span>
+            <div class="card-title-left">
+              <span id="formIcon">➕</span>
+              <span id="formTitle">Add New Product</span>
+            </div>
+            <button type="button" class="btn-cancel-edit" id="btnCancelEdit" style="display:none" onclick="cancelEditMode()">
+              ✕ Cancel Edit
+            </button>
           </div>
 
-          <form id="addProductForm" onsubmit="handleManualAdd(event)">
+          <form id="productForm" onsubmit="handleFormSubmit(event)">
+            <input type="hidden" id="editProductId" value="">
+
             <div class="form-group">
-              <label class="form-label">Product Name *</label>
+              <label class="form-label">Product Name / Title *</label>
               <input type="text" id="prodName" class="form-input" required placeholder="e.g. Zircon Crystal Butterfly Pendant">
             </div>
 
@@ -347,28 +451,46 @@
 
             <div class="form-group">
               <label class="form-label">Description (Optional)</label>
-              <textarea id="prodDesc" class="form-textarea" rows="2" placeholder="Quality, material, package details..."></textarea>
+              <textarea id="prodDesc" class="form-textarea" rows="3" placeholder="Product details, material, package contents..."></textarea>
             </div>
 
-            <button type="submit" class="btn-add" id="btnAddSubmit">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Badge Tag</label>
+                <input type="text" id="prodBadge" class="form-input" value="Pre-Order" placeholder="Pre-Order">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select id="prodStatus" class="form-select">
+                  <option value="Active">🟢 Active (Visible on site)</option>
+                  <option value="Hidden">🔴 Hidden (Don't show)</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit-main" id="btnFormSubmit">
               <span>🚀</span>
-              <span>Publish Product to Store</span>
+              <span id="btnSubmitText">Publish Product to Store</span>
             </button>
           </form>
         </div>
       </div>
 
-      <!-- Right Column: Live Product List & 1-Click Delete -->
+      <!-- Right Column: Live Table with Edit & Delete -->
       <div>
         <div class="card">
           <div class="card-title">
-            <span>📋</span>
-            <span>All Live Products (<span id="prodCount">0</span>)</span>
+            <div class="card-title-left">
+              <span>📋</span>
+              <span>All Products (<span id="prodCount">0</span>)</span>
+            </div>
+            <button class="btn-action-edit" style="background:#f1f5f9;color:#334155;border-color:#cbd5e1" onclick="fetchLiveAdminProducts()">
+              🔄 Refresh List
+            </button>
           </div>
 
           <div class="table-tools">
             <input type="text" id="searchTable" placeholder="Search by name, ID, or category…" oninput="filterAdminTable()">
-            <button class="btn-del" style="background:#f1f5f9;color:#334155;border-color:#cbd5e1" onclick="fetchLiveAdminProducts()">🔄 Refresh</button>
           </div>
 
           <div style="overflow-x:auto;">
@@ -380,12 +502,13 @@
                   <th>Title</th>
                   <th>Category</th>
                   <th>Price</th>
-                  <th>Action</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="prodTableBody">
                 <tr>
-                  <td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">Loading products…</td>
+                  <td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">Loading products…</td>
                 </tr>
               </tbody>
             </table>
@@ -402,6 +525,7 @@
   <script src="config.js"></script>
   <script>
     let adminProducts = [];
+    let isEditing = false;
 
     function showToast(msg) {
       const toast = document.getElementById('toast');
@@ -413,15 +537,91 @@
     function updateImgPreview(url) {
       const box = document.getElementById('imgPreviewBox');
       if (url && url.startsWith('http')) {
-        box.innerHTML = `<img src="${url}" onerror="this.onerror=null;this.parentElement.innerHTML='<span style=\\'color:#ef4444;font-size:12px\\'>Invalid image link</span>';">`;
+        box.innerHTML = `<img src="${url}" onerror="this.onerror=null;this.parentElement.innerHTML='<span style=\\'color:#ef4444;font-size:12px\\'>Image link invalid</span>';">`;
+      } else if (url && url.startsWith('images/')) {
+        box.innerHTML = `<img src="${url}">`;
       } else {
         box.innerHTML = `<span style="font-size:12px;color:#94a3b8">Image preview appears here</span>`;
       }
     }
 
+    // Auto-fetch product details from public URL
+    async function handleAutoFetch() {
+      const urlInput = document.getElementById('fetchUrlInput');
+      const url = urlInput.value.trim();
+      const btn = document.getElementById('btnAutoFetch');
+
+      if (!url) {
+        alert('Please paste a product URL first.');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ Fetching…</span>';
+
+      try {
+        // Use CORS proxy to extract webpage metadata
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+        const res = await fetch(proxyUrl);
+        const json = await res.json();
+        const html = json.contents || '';
+
+        if (!html) throw new Error('Could not retrieve webpage contents.');
+
+        // Extract metadata
+        const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i) ||
+                        html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:title["']/i);
+        const titleTag = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+        const h1Tag = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+        const extractedTitle = ogTitle ? ogTitle[1] : (h1Tag ? h1Tag[1] : (titleTag ? titleTag[1] : ''));
+
+        const ogImg = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+                      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+        const imgTag = html.match(/<img[^>]*src=["'](https?:\/\/[^"']+\.(jpg|jpeg|png|webp))["']/i);
+        const extractedImg = ogImg ? ogImg[1] : (imgTag ? imgTag[1] : '');
+
+        const ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i) ||
+                       html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+        const extractedDesc = ogDesc ? ogDesc[1] : '';
+
+        const priceMatch = html.match(/৳\s*([0-9,]+)/) || html.match(/([0-9,]+)\s*BDT/) || html.match(/\$\s*([0-9.]+)/);
+        const extractedPrice = priceMatch ? priceMatch[1].replace(/,/g, '') : '';
+
+        // If title extracted is generic login
+        if (extractedTitle.includes('MoveDrop Dashboard') || extractedTitle.includes('Login')) {
+          alert('💡 MoveDrop Dashboard requires you to be logged in!\\n\\nTo import from MoveDrop with 1-click, use the pink "⚡ Import to Zayn Shop" bookmarklet button in your bookmarks bar while on the MoveDrop product tab!');
+          return;
+        }
+
+        // Auto-fill form fields
+        if (extractedTitle) document.getElementById('prodName').value = extractedTitle.trim();
+        if (extractedImg) {
+          document.getElementById('prodImage').value = extractedImg.trim();
+          updateImgPreview(extractedImg.trim());
+        }
+        if (extractedPrice) {
+          document.getElementById('prodPrice').value = extractedPrice;
+          document.getElementById('prodRegPrice').value = Math.round(Number(extractedPrice) * 1.25);
+        }
+        if (extractedDesc) document.getElementById('prodDesc').value = extractedDesc.trim();
+
+        showToast('✅ Auto-extracted details into the form below! Review and tap Publish.');
+
+        // Scroll to form
+        document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
+
+      } catch (err) {
+        alert('Could not auto-fetch from this URL directly: ' + err.message + '\\n\\nTip: You can paste the direct Image link and Title into the form below!');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>🔍</span> <span>Auto Fetch Details</span>';
+      }
+    }
+
+    // Load Live Products
     async function fetchLiveAdminProducts() {
       const tbody = document.getElementById('prodTableBody');
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">Loading latest products…</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">Loading latest products…</td></tr>';
       
       try {
         let products = null;
@@ -441,7 +641,7 @@
         document.getElementById('prodCount').textContent = products.length;
         renderAdminTable(products);
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#ef4444;padding:30px;">Failed to fetch live products.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">Failed to fetch live products.</td></tr>';
       }
     }
 
@@ -450,11 +650,13 @@
       const currency = CONFIG.currencySymbol || '৳';
 
       if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">No products found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">No products found.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = list.map(p => `
+      tbody.innerHTML = list.map(p => {
+        const isHidden = (p.status || '').toLowerCase() === 'hidden';
+        return `
         <tr>
           <td><img src="${p.image}" class="prod-thumb" onerror="this.onerror=null;this.src='images/hero_banner.jpg';"></td>
           <td style="font-weight:700;color:#64748b">#${p.id}</td>
@@ -462,12 +664,22 @@
           <td><span style="font-size:11px;background:#f1f5f9;padding:2px 8px;border-radius:4px;color:#475569">${escapeHtml(p.category)}</span></td>
           <td style="font-weight:800;color:var(--pri)">${currency}${Number(p.price).toLocaleString()}</td>
           <td>
-            <button type="button" class="btn-del" onclick="deleteProduct(${p.id}, '${escapeHtml(p.name).replace(/'/g, "\\'")}')">
-              🗑️ Delete
-            </button>
+            <span class="status-badge ${isHidden ? 'status-hidden' : 'status-active'}">
+              ${isHidden ? '🔴 Hidden' : '🟢 Active'}
+            </span>
           </td>
-        </tr>
-      `).join('');
+          <td>
+            <div class="action-group">
+              <button type="button" class="btn-action-edit" onclick="startEditProduct(${p.id})">
+                ✏️ Edit
+              </button>
+              <button type="button" class="btn-action-del" onclick="deleteProduct(${p.id}, '${escapeHtml(p.name).replace(/'/g, "\\'")}')">
+                🗑️ Delete
+              </button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
     }
 
     function filterAdminTable() {
@@ -480,31 +692,76 @@
       renderAdminTable(filtered);
     }
 
-    async function handleManualAdd(e) {
-      e.preventDefault();
-      const btn = document.getElementById('btnAddSubmit');
-      btn.disabled = true;
-      btn.innerHTML = '<span>⏳ Publishing to Store…</span>';
+    // Edit Product Mode
+    function startEditProduct(id) {
+      const p = adminProducts.find(item => Number(item.id) === Number(id));
+      if (!p) return;
 
+      isEditing = true;
+      document.getElementById('editProductId').value = p.id;
+      document.getElementById('prodName').value = p.name;
+      document.getElementById('prodCategory').value = p.category;
+      document.getElementById('prodPrice').value = p.price;
+      document.getElementById('prodRegPrice').value = p.regular_price || '';
+      document.getElementById('prodImage').value = p.image;
+      document.getElementById('prodDesc').value = p.description || '';
+      document.getElementById('prodBadge').value = p.badge || 'Pre-Order';
+      document.getElementById('prodStatus').value = (p.status || '').toLowerCase() === 'hidden' ? 'Hidden' : 'Active';
+      
+      updateImgPreview(p.image);
+
+      // UI changes for Edit Mode
+      document.getElementById('formIcon').textContent = '✏️';
+      document.getElementById('formTitle').textContent = `Editing #${p.id} (${p.name.slice(0, 24)}…)`;
+      document.getElementById('btnCancelEdit').style.display = 'inline-block';
+      const submitBtn = document.getElementById('btnFormSubmit');
+      submitBtn.classList.add('edit-mode');
+      document.getElementById('btnSubmitText').textContent = 'Save & Update Product';
+
+      // Scroll smoothly to form
+      document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelEditMode() {
+      isEditing = false;
+      document.getElementById('productForm').reset();
+      document.getElementById('editProductId').value = '';
+      document.getElementById('formIcon').textContent = '➕';
+      document.getElementById('formTitle').textContent = 'Add New Product';
+      document.getElementById('btnCancelEdit').style.display = 'none';
+      const submitBtn = document.getElementById('btnFormSubmit');
+      submitBtn.classList.remove('edit-mode');
+      document.getElementById('btnSubmitText').textContent = 'Publish Product to Store';
+      document.getElementById('imgPreviewBox').innerHTML = '<span style="font-size:12px;color:#94a3b8">Image preview appears here</span>';
+    }
+
+    // Submit Add or Edit Form
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnFormSubmit');
+      btn.disabled = true;
+
+      const editId = document.getElementById('editProductId').value;
       const name = document.getElementById('prodName').value.trim();
       const category = document.getElementById('prodCategory').value;
       const price = parseInt(document.getElementById('prodPrice').value, 10);
       const regPrice = parseInt(document.getElementById('prodRegPrice').value, 10) || Math.round(price * 1.25);
       const image = document.getElementById('prodImage').value.trim();
       const desc = document.getElementById('prodDesc').value.trim();
-
-      const newId = Math.floor(1000 + Math.random() * 9000);
+      const badge = document.getElementById('prodBadge').value.trim() || 'Pre-Order';
+      const status = document.getElementById('prodStatus').value;
 
       const payload = {
-        action: 'add_product',
-        id: newId,
+        action: isEditing ? 'update_product' : 'add_product',
+        id: isEditing ? Number(editId) : Math.floor(1000 + Math.random() * 9000),
         name: name,
         category: category,
         price: price,
         regular_price: regPrice,
         image: image,
-        description: desc || 'Premium imported product on pre-order. 15-25 days delivery across Bangladesh.',
-        badge: 'Pre-Order'
+        description: desc,
+        badge: badge,
+        status: status
       };
 
       try {
@@ -517,18 +774,22 @@
           });
         }
 
-        showToast(`✅ "${name}" added to Zayn Shop!`);
-        document.getElementById('addProductForm').reset();
-        document.getElementById('imgPreviewBox').innerHTML = '<span style="font-size:12px;color:#94a3b8">Image preview appears here</span>';
-        
+        if (isEditing) {
+          showToast(`✅ Product #${editId} updated successfully!`);
+          cancelEditMode();
+        } else {
+          showToast(`✅ "${name}" published to Zayn Shop!`);
+          document.getElementById('productForm').reset();
+          document.getElementById('imgPreviewBox').innerHTML = '<span style="font-size:12px;color:#94a3b8">Image preview appears here</span>';
+        }
+
         // Refresh live list
         setTimeout(() => { fetchLiveAdminProducts(); }, 1200);
 
       } catch (err) {
-        alert('Failed to add product: ' + err);
+        alert('Failed to save product: ' + err);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<span>🚀</span><span>Publish Product to Store</span>';
       }
     }
 
@@ -549,7 +810,6 @@
           });
         }
 
-        // Locally remove from array
         adminProducts = adminProducts.filter(p => Number(p.id) !== Number(id));
         document.getElementById('prodCount').textContent = adminProducts.length;
         renderAdminTable(adminProducts);

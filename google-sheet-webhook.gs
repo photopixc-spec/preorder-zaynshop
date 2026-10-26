@@ -505,6 +505,37 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
+    // --- ACTION: UPDATE PRODUCT (From Admin Edit) ---
+    if (data.action === "update_product") {
+      var prodSheet = ss.getSheetByName("Products");
+      if (!prodSheet) return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "No Products sheet" })).setMimeType(ContentService.MimeType.JSON);
+
+      var pData = prodSheet.getDataRange().getValues();
+      var targetId = String(data.id);
+      var updated = false;
+
+      for (var r = 1; r < pData.length; r++) {
+        if (String(pData[r][0]) === targetId) {
+          var rowNum = r + 1;
+          if (data.name !== undefined) prodSheet.getRange(rowNum, 2).setValue(data.name);
+          if (data.category !== undefined) prodSheet.getRange(rowNum, 3).setValue(data.category);
+          if (data.price !== undefined) prodSheet.getRange(rowNum, 4).setValue(Number(data.price));
+          if (data.regular_price !== undefined) prodSheet.getRange(rowNum, 5).setValue(Number(data.regular_price));
+          if (data.image !== undefined) prodSheet.getRange(rowNum, 6).setValue(data.image);
+          if (data.description !== undefined) prodSheet.getRange(rowNum, 7).setValue(data.description);
+          if (data.badge !== undefined) prodSheet.getRange(rowNum, 8).setValue(data.badge);
+          if (data.status !== undefined) prodSheet.getRange(rowNum, 9).setValue(data.status);
+          updated = true;
+          break;
+        }
+      }
+
+      return ContentService.createTextOutput(JSON.stringify({
+        status: updated ? "success" : "not_found",
+        message: updated ? "Product updated successfully!" : "Product ID not found"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
     // --- ACTION: DELETE / HIDE PRODUCT ---
     if (data.action === "delete_product") {
       var prodSheet = ss.getSheetByName("Products");
