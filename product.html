@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://script.googleapis.com https://www.googleapis.com;">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details — Zayn Shop</title>
+  <meta name="description" content="Product details for Zayn Shop Pre-Order Collection.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style_ecom.css">
+  <style>
+    .detail-container {
+      max-width: 1000px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+    .breadcrumb {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+    .breadcrumb a {
+      color: var(--pri, #e11d48);
+      text-decoration: none;
+    }
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+    .product-detail-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      padding: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+    @media (max-width: 768px) {
+      .product-detail-card {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 24px;
+      }
+    }
+    .detail-img-wrap {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      position: relative;
+    }
+    .detail-img {
+      max-width: 100%;
+      height: auto;
+      max-height: 420px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .detail-info {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .detail-cat-badge {
+      display: inline-block;
+      align-self: flex-start;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .detail-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+    .detail-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .detail-price {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--pri, #e11d48);
+    }
+    .detail-old-price {
+      font-size: 18px;
+      color: #94a3b8;
+      text-decoration: line-through;
+    }
+    .detail-discount-pill {
+      background: #fee2e2;
+      color: #dc2626;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+    .detail-meta-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .meta-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #334155;
+    }
+    .meta-line b {
+      color: #0f172a;
+    }
+    .advance-alert {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #9f1239;
+      line-height: 1.4;
+    }
+    .detail-desc {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.6;
+      padding: 12px 0;
+      border-top: 1px solid #f1f5f9;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .detail-qty-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    .qty-picker {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: #ffffff;
+      overflow: hidden;
+    }
+    .qty-picker button {
+      background: #f8fafc;
+      border: none;
+      width: 38px;
+      height: 38px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #334155;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+    .qty-picker button:hover {
+      background: #e2e8f0;
+    }
+    .qty-picker input {
+      width: 48px;
+      height: 38px;
+      border: none;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .detail-actions-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-detail-cart {
+      flex: 1;
+      min-width: 160px;
+      padding: 14px 20px;
+      background: #ffffff;
+      border: 2px solid var(--pri, #e11d48);
+      color: var(--pri, #e11d48);
+      font-size: 15px;
+      font-weight: 800;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-detail-cart:hover {
+      background: #fff1f2;
+    }
+    .btn-detail-buy {
+      flex: 1.2;
+      min-width: 180px;
+      padding: 14px 20px;
+      background: var(--pri, #e11d48);
+      border: 2px solid var(--pri, #e11d48);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
+    }
+    .btn-detail-buy:hover {
+      background: #be123c;
+      border-color: #be123c;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #64748b;
+      text-decoration: none;
+      margin-top: 16px;
+    }
+    .back-link:hover {
+      color: var(--pri, #e11d48);
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Announcement Bar -->
+  <div class="top-bar">
+    ✈️ Global Pre-Order Collection • Delivery 7–15 business days • Cash on Delivery available across Bangladesh
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-wrap">
+        <span class="brand-name">ZAYN SHOP</span>
+        <span class="brand-sub">PRE-ORDER COLLECTION</span>
+      </a>
+      <div class="header-actions">
+        <a href="index.html" style="text-decoration:none;font-size:14px;font-weight:700;color:#334155;padding:8px 12px;border-radius:8px;background:#f1f5f9">
+          ← All Products
+        </a>
+        <button class="btn-header-cart" onclick="openCartDrawer()">
+          <span>🛒 Bag</span>
+          <span class="cart-badge-count" style="display:none">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Product Detail Content -->
+  <main class="detail-container">
+    <div class="breadcrumb" id="breadcrumb">
+      <a href="index.html">Home</a> &gt; <span>Product</span>
+    </div>
+
+    <div id="productDetailArea">
+      <div style="text-align:center;padding:60px 20px;color:#64748b;">
+        Loading product details…
+      </div>
+    </div>
+
+    <a href="index.html" class="back-link">← Continue Shopping All Products</a>
+  </main>
+
+  <!-- Cart Drawer -->
+  <div class="cart-overlay" id="cartOverlay" onclick="closeCartDrawer()"></div>
+  <aside class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h3 style="font-size:17px;font-weight:800">🛍️ Your Shopping Bag</h3>
+      <button style="background:none;border:none;font-size:18px;cursor:pointer;font-weight:800" onclick="closeCartDrawer()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItemsList"></div>
+    <div class="cart-footer" id="cartFooter">
+      <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:#475569">Select Delivery Area:</div>
+      <div class="delivery-radio-group">
+        <label class="delivery-option">
+          <input type="radio" name="deliveryArea" value="dhaka" checked onchange="setDeliveryArea('dhaka')">
+          <span>Inside Dhaka (৳70)</span>
+        </label>
+        <label class="delivery-option">
+          <input type="radio" name="deliveryArea" value="outside" onchange="setDeliveryArea('outside')">
+          <span>Outside Dhaka (৳130)</span>
+        </label>
+      </div>
+      <div class="cart-summary-line"><span>Subtotal:</span><span id="cartSubtotal">৳0</span></div>
+      <div class="cart-summary-line"><span>Delivery Charge:</span><span id="cartDelivery">৳70</span></div>
+      <div class="cart-total-line"><span>Total Payable:</span><span id="cartTotal" style="color:var(--pri)">৳0</span></div>
+      <p style="font-size:11px;color:#64748b;margin-bottom:12px;background:#fff1f2;padding:6px 10px;border-radius:6px;border:1px solid #fecdd3">
+        ⚠️ <b>Pre-order condition:</b> An advance payment of 200 BDT is required to confirm the order. The remaining amount will be paid Cash on Delivery.
+      </p>
+      <button class="btn-checkout" onclick="window.location.href='order.html'">⚡ Complete Pre-order</button>
+    </div>
+  </aside>
+
+  <div id="toast"></div>
+
+  <!-- Scripts -->
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    let currentDetailProduct = null;
+
+    async function loadProductDetailPage() {
+      const params = new URLSearchParams(window.location.search);
+      const id = parseInt(params.get('id'), 10);
+      const container = document.getElementById('productDetailArea');
+
+      if (!id) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:60px 20px;background:#fff;border-radius:12px;">
+            <h3>Product not found</h3>
+            <p style="color:#64748b;margin-top:8px">No product ID was specified.</p>
+            <a href="index.html" class="btn-checkout" style="display:inline-block;width:auto;margin-top:16px;padding:10px 20px;">Browse Products</a>
+          </div>`;
+        return;
+      }
+
+      try {
+        const res = await fetch('products.json');
+        const products = await res.json();
+        allProducts = products;
+        const p = products.find(item => item.id === id);
+
+        if (!p) {
+          container.innerHTML = `
+            <div style="text-align:center;padding:60px 20px;background:#fff;border-radius:12px;">
+              <h3>Product not found</h3>
+              <p style="color:#64748b;margin-top:8px">We could not find the requested product (ID #${id}).</p>
+              <a href="index.html" class="btn-checkout" style="display:inline-block;width:auto;margin-top:16px;padding:10px 20px;">Browse All Products</a>
+            </div>`;
+          return;
+        }
+
+        currentDetailProduct = p;
+        document.title = `${p.name} — Zayn Shop Pre-Order`;
+
+        // Update breadcrumb
+        document.getElementById('breadcrumb').innerHTML = `
+          <a href="index.html">Home</a> &gt; <span>${escapeHtml(p.category)}</span> &gt; <b>${escapeHtml(p.name)}</b>
+        `;
+
+        const discount = p.regular_price && p.regular_price > p.price
+          ? Math.round(((p.regular_price - p.price) / p.regular_price) * 100)
+          : 0;
+
+        const currency = CONFIG.currencySymbol || '৳';
+
+        container.innerHTML = `
+          <div class="product-detail-card">
+            <div class="detail-img-wrap">
+              <span class="badge-preorder" style="top:12px;left:12px">Pre-Order (${CONFIG.deliveryTime})</span>
+              ${discount > 0 ? `<span class="badge-discount" style="top:12px;right:12px">${discount}% off</span>` : ''}
+              <img src="${p.image}" alt="${escapeHtml(p.name)}" class="detail-img">
+            </div>
+
+            <div class="detail-info">
+              <span class="detail-cat-badge">${escapeHtml(p.category)}</span>
+              <h1 class="detail-title">${escapeHtml(p.name)}</h1>
+
+              <div class="detail-price-row">
+                <span class="detail-price">${currency}${p.price.toLocaleString()}</span>
+                ${p.regular_price ? `<span class="detail-old-price">${currency}${p.regular_price.toLocaleString()}</span>` : ''}
+                ${discount > 0 ? `<span class="detail-discount-pill">${discount}% OFF</span>` : ''}
+              </div>
+
+              <div class="detail-meta-box">
+                <div class="meta-line">
+                  <span>📦</span>
+                  <span><b>Status:</b> In Stock for Pre-Order</span>
+                </div>
+                <div class="meta-line">
+                  <span>✈️</span>
+                  <span><b>Delivery:</b> ${CONFIG.deliveryTime} across Bangladesh</span>
+                </div>
+                <div class="meta-line">
+                  <span>💵</span>
+                  <span><b>Payment:</b> Cash on Delivery with ${currency}${CONFIG.advanceAmount} advance</span>
+                </div>
+              </div>
+
+              <div class="advance-alert">
+                ⚠️ <b>Pre-Order Notice:</b> ${escapeHtml(CONFIG.advanceNotice)}
+              </div>
+
+              <div class="detail-desc">
+                ${escapeHtml(p.description)}
+              </div>
+
+              <div class="detail-qty-row">
+                <span style="font-size:13px;font-weight:700;color:#334155">Quantity:</span>
+                <div class="qty-picker">
+                  <button type="button" onclick="changeDetailQty(-1)">−</button>
+                  <input type="number" id="detailQtyInput" value="1" min="1" readonly>
+                  <button type="button" onclick="changeDetailQty(1)">+</button>
+                </div>
+              </div>
+
+              <div class="detail-actions-row">
+                <button type="button" class="btn-detail-cart" onclick="addCurrentDetailToBag()">
+                  🛒 Add to Bag
+                </button>
+                <button type="button" class="btn-detail-buy" onclick="buyCurrentDetailNow()">
+                  ⚡ Order Now
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Track ViewContent
+        trackEvent('ViewContent', {
+          content_name: p.name,
+          content_ids: [String(p.id)],
+          content_type: 'product',
+          value: p.price,
+          currency: 'BDT'
+        });
+
+      } catch (err) {
+        console.error('Failed to load product detail:', err);
+        container.innerHTML = '<p style="text-align:center;color:#ef4444;padding:40px;">Failed to load product details.</p>';
+      }
+    }
+
+    function changeDetailQty(delta) {
+      const input = document.getElementById('detailQtyInput');
+      if (!input) return;
+      let val = parseInt(input.value, 10) + delta;
+      if (val < 1) val = 1;
+      input.value = val;
+    }
+
+    function addCurrentDetailToBag() {
+      if (!currentDetailProduct) return;
+      const input = document.getElementById('detailQtyInput');
+      const qty = input ? parseInt(input.value, 10) || 1 : 1;
+      addToCart(currentDetailProduct.id, qty);
+    }
+
+    function buyCurrentDetailNow() {
+      if (!currentDetailProduct) return;
+      const input = document.getElementById('detailQtyInput');
+      const qty = input ? parseInt(input.value, 10) || 1 : 1;
+      openDirectCheckout(currentDetailProduct.id, qty);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadProductDetailPage);
+  </script>
+</body>
+</html>

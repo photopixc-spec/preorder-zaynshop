@@ -12,7 +12,7 @@ function initTracking() {
   window.dataLayer = window.dataLayer || [];
 
   // 1. Meta Pixel
-  if (CONFIG.metaPixelId) {
+  if (typeof CONFIG !== 'undefined' && CONFIG.metaPixelId) {
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -26,7 +26,7 @@ function initTracking() {
   }
 
   // 2. Google Tag Manager
-  if (CONFIG.gtmId) {
+  if (typeof CONFIG !== 'undefined' && CONFIG.gtmId) {
     (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -39,7 +39,6 @@ function initTracking() {
 }
 
 function trackEvent(name, params = {}) {
-  // Console logging for verification with Marketing Inspector AI
   console.log(`[Tracking Event] ${name}:`, params);
 
   // Meta Pixel
@@ -54,6 +53,9 @@ function trackEvent(name, params = {}) {
 
 // ---- Load Products & Render ----
 async function loadProducts() {
+  const grid = document.getElementById('productGrid');
+  if (!grid) return;
+
   try {
     const res = await fetch('products.json');
     allProducts = await res.json();
@@ -61,18 +63,19 @@ async function loadProducts() {
     renderCategoryPills();
   } catch (err) {
     console.error('Failed to load products:', err);
-    document.getElementById('productGrid').innerHTML = '<p style="text-align:center;padding:40px;color:#ef4444">প্রোডাক্ট লোড করতে সমস্যা হয়েছে।</p>';
+    grid.innerHTML = '<p style="text-align:center;padding:40px;color:#ef4444">Failed to load products. Please refresh the page.</p>';
   }
 }
 
 function renderCategoryPills() {
-  const categories = ['all', ...new Set(allProducts.map(p => p.category))];
   const container = document.getElementById('categoryPills');
   if (!container) return;
 
+  const categories = ['all', ...new Set(allProducts.map(p => p.category))];
+
   container.innerHTML = categories.map(cat => `
     <button class="cat-pill ${cat === activeCategory ? 'active' : ''}" onclick="setCategory('${cat}')">
-      ${cat === 'all' ? '✨ সকল পণ্য (' + allProducts.length + ')' : cat}
+      ${cat === 'all' ? '✨ All Products (' + allProducts.length + ')' : escapeHtml(cat)}
     </button>
   `).join('');
 }
@@ -91,14 +94,17 @@ function renderProducts() {
 
   const filtered = allProducts.filter(p => {
     const matchCat = activeCategory === 'all' || p.category === activeCategory;
-    const matchSearch = !searchInput || p.name.toLowerCase().includes(searchInput) || p.description.toLowerCase().includes(searchInput);
+    const matchSearch = !searchInput || p.name.toLowerCase().includes(searchInput) || (p.description && p.description.toLowerCase().includes(searchInput));
     return matchCat && matchSearch;
   });
 
   if (!filtered.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#64748b"><h3>কোনো প্রোডাক্ট মেলেনি!</h3><p>অনুসন্ধানের শব্দ পরিবর্তন করে চেষ্টা করুন।</p></div>';
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#64748b"><h3>No products found!</h3><p>Try searching with different keywords.</p></div>';
     return;
   }
+
+  const currency = typeof CONFIG !== 'undefined' ? CONFIG.currencySymbol : '৳';
+  const deliveryTime = typeof CONFIG !== 'undefined' ? CONFIG.deliveryTime : '7–15 business days';
 
   grid.innerHTML = filtered.map(p => {
     const discount = p.regular_price && p.regular_price > p.price 
@@ -106,25 +112,25 @@ function renderProducts() {
       : 0;
 
     return `
-    <div class="product-card" onclick="openProductModal(${p.id})">
+    <div class="product-card" onclick="window.location='product.html?id=${p.id}'" style="cursor:pointer">
       <div class="prod-img-wrap">
-        <span class="badge-preorder">Pre-Order (${CONFIG.deliveryTime})</span>
-        ${discount > 0 ? `<span class="badge-discount">${discount}% ছাড়</span>` : ''}
+        <span class="badge-preorder">Pre-Order (${deliveryTime})</span>
+        ${discount > 0 ? `<span class="badge-discount">${discount}% off</span>` : ''}
         <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" class="prod-img">
       </div>
       <div class="prod-body">
-        <div class="prod-cat">${p.category}</div>
+        <div class="prod-cat">${escapeHtml(p.category)}</div>
         <h3 class="prod-title">${escapeHtml(p.name)}</h3>
         <div class="prod-price-row">
-          <span class="price-current">${CONFIG.currencySymbol}${p.price.toLocaleString()}</span>
-          ${p.regular_price ? `<span class="price-old">${CONFIG.currencySymbol}${p.regular_price.toLocaleString()}</span>` : ''}
+          <span class="price-current">${currency}${p.price.toLocaleString()}</span>
+          ${p.regular_price ? `<span class="price-old">${currency}${p.regular_price.toLocaleString()}</span>` : ''}
         </div>
         <div class="prod-actions" onclick="event.stopPropagation()">
           <button class="btn-card-cart" onclick="addToCart(${p.id})">
-            🛒 ব্যাগে রাখুন
+            🛒 Add to Bag
           </button>
           <button class="btn-card-buy" onclick="openDirectCheckout(${p.id})">
-            ⚡ অর্ডার করুন
+            ⚡ Order Now
           </button>
         </div>
       </div>
@@ -132,86 +138,51 @@ function renderProducts() {
   }).join('');
 }
 
-// ---- Product Modal (Quick View) ----
-function openProductModal(id) {
-  const p = allProducts.find(item => item.id === id);
-  if (!p) return;
-  currentProduct = p;
-
-  // Track ViewContent
-  trackEvent('ViewContent', {
-    content_name: p.name,
-    content_ids: [String(p.id)],
-    content_type: 'product',
-    value: p.price,
-    currency: 'BDT'
-  });
-
-  document.getElementById('modalImg').src = p.image;
-  document.getElementById('modalTitle').textContent = p.name;
-  document.getElementById('modalCat').textContent = p.category;
-  document.getElementById('modalPrice').textContent = `${CONFIG.currencySymbol}${p.price.toLocaleString()}`;
-  document.getElementById('modalOldPrice').textContent = p.regular_price ? `${CONFIG.currencySymbol}${p.regular_price.toLocaleString()}` : '';
-  document.getElementById('modalDesc').textContent = p.description;
-  document.getElementById('modalQty').value = 1;
-
-  document.getElementById('productModal').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-}
-
-function closeProductModal() {
-  document.getElementById('productModal').style.display = 'none';
-  document.body.style.overflow = 'auto';
-  currentProduct = null;
-}
-
-function updateModalQty(delta) {
-  const qtyEl = document.getElementById('modalQty');
-  let q = parseInt(qtyEl.value) + delta;
-  if (q < 1) q = 1;
-  qtyEl.value = q;
-}
-
-function addModalToCart() {
-  if (!currentProduct) return;
-  const qty = parseInt(document.getElementById('modalQty').value) || 1;
-  addToCart(currentProduct.id, qty);
-  closeProductModal();
-  openCartDrawer();
-}
-
-function buyModalNow() {
-  if (!currentProduct) return;
-  const qty = parseInt(document.getElementById('modalQty').value) || 1;
-  openDirectCheckout(currentProduct.id, qty);
-  closeProductModal();
-}
-
 // ---- Cart Management ----
 function loadCart() {
   try {
-    cart = JSON.parse(localStorage.getItem('zayn_cart') || '[]');
+    const encoded = localStorage.getItem('zayn_cart') || '';
+    cart = encoded ? JSON.parse(atob(encoded)) : [];
   } catch (e) {
     cart = [];
   }
   updateCartBadge();
+  renderCartItems();
 }
 
 function saveCart() {
-  localStorage.setItem('zayn_cart', JSON.stringify(cart));
+  try {
+    const encoded = btoa(JSON.stringify(cart));
+    localStorage.setItem('zayn_cart', encoded);
+  } catch (e) {
+    console.error('Failed to save cart:', e);
+  }
   updateCartBadge();
   renderCartItems();
 }
 
 function updateCartBadge() {
   const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
-  document.querySelectorAll('.cart-badge-count').forEach(el => {
+  const badgeEls = document.querySelectorAll('.cart-badge-count');
+  badgeEls.forEach(el => {
     el.textContent = totalCount;
-    el.style.display = totalCount > 0 ? 'inline-flex' : 'none';
+    el.style.display = totalCount > 0 ? 'inline-block' : 'none';
   });
 }
 
-function addToCart(productId, qty = 1) {
+async function ensureProductsLoaded() {
+  if (!allProducts.length) {
+    try {
+      const res = await fetch('products.json');
+      allProducts = await res.json();
+    } catch (e) {
+      console.error('Failed to fetch products.json for cart item lookup', e);
+    }
+  }
+}
+
+async function addToCart(productId, qty = 1) {
+  await ensureProductsLoaded();
   const p = allProducts.find(item => item.id === productId);
   if (!p) return;
 
@@ -223,7 +194,9 @@ function addToCart(productId, qty = 1) {
       id: p.id,
       name: p.name,
       price: p.price,
+      regular_price: p.regular_price || 0,
       image: p.image,
+      category: p.category,
       qty: qty
     });
   }
@@ -239,7 +212,14 @@ function addToCart(productId, qty = 1) {
     currency: 'BDT'
   });
 
-  showToast(`✅ "${p.name}" ব্যাগে যোগ করা হয়েছে!`);
+  showToast(`✅ "${p.name}" added to bag!`);
+}
+
+function openDirectCheckout(productId, qty = 1) {
+  // Add item to cart and navigate immediately to order.html
+  addToCart(productId, qty).then(() => {
+    window.location.href = 'order.html';
+  });
 }
 
 function updateCartItemQty(id, delta) {
@@ -255,14 +235,18 @@ function updateCartItemQty(id, delta) {
 
 function openCartDrawer() {
   renderCartItems();
-  document.getElementById('cartDrawer').classList.add('open');
-  document.getElementById('cartOverlay').classList.add('open');
+  const drawer = document.getElementById('cartDrawer');
+  const overlay = document.getElementById('cartOverlay');
+  if (drawer) drawer.classList.add('open');
+  if (overlay) overlay.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
 function closeCartDrawer() {
-  document.getElementById('cartDrawer').classList.remove('open');
-  document.getElementById('cartOverlay').classList.remove('open');
+  const drawer = document.getElementById('cartDrawer');
+  const overlay = document.getElementById('cartOverlay');
+  if (drawer) drawer.classList.remove('open');
+  if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = 'auto';
 }
 
@@ -275,192 +259,73 @@ function renderCartItems() {
   const list = document.getElementById('cartItemsList');
   if (!list) return;
 
+  const currency = typeof CONFIG !== 'undefined' ? CONFIG.currencySymbol : '৳';
+  const deliveryDhaka = typeof CONFIG !== 'undefined' ? CONFIG.deliveryDhaka : 70;
+  const deliveryOutside = typeof CONFIG !== 'undefined' ? CONFIG.deliveryOutside : 130;
+
   if (!cart.length) {
     list.innerHTML = `
       <div style="text-align:center;padding:50px 20px;color:#94a3b8">
         <div style="font-size:48px;margin-bottom:12px">🛒</div>
-        <h4>আপনার ব্যাগ খালি!</h4>
-        <p style="font-size:13px;margin-top:6px">পছন্দের পণ্যটি ব্যাগে যোগ করুন।</p>
+        <h4>Your bag is empty!</h4>
+        <p style="font-size:13px;margin-top:6px">Add your favorite items to bag.</p>
       </div>`;
-    document.getElementById('cartFooter').style.display = 'none';
+    const footer = document.getElementById('cartFooter');
+    if (footer) footer.style.display = 'none';
     return;
   }
 
-  document.getElementById('cartFooter').style.display = 'block';
+  const footer = document.getElementById('cartFooter');
+  if (footer) footer.style.display = 'block';
 
   list.innerHTML = cart.map(item => `
     <div class="cart-item">
       <img src="${item.image}" alt="${escapeHtml(item.name)}" class="cart-item-img">
       <div class="cart-item-info">
         <h4 class="cart-item-title">${escapeHtml(item.name)}</h4>
-        <div class="cart-item-price">${CONFIG.currencySymbol}${item.price.toLocaleString()} × ${item.qty}</div>
+        <div class="cart-item-price">${currency}${item.price.toLocaleString()} × ${item.qty}</div>
         <div class="qty-control">
           <button onclick="updateCartItemQty(${item.id}, -1)">−</button>
           <span>${item.qty}</span>
           <button onclick="updateCartItemQty(${item.id}, 1)">+</button>
         </div>
       </div>
-      <button class="cart-item-del" onclick="updateCartItemQty(${item.id}, -9999)" title="মুছে ফেলুন">✕</button>
+      <button class="cart-item-del" onclick="updateCartItemQty(${item.id}, -9999)" title="Remove item">✕</button>
     </div>
   `).join('');
 
   // Calculate totals
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const delivery = deliveryArea === 'dhaka' ? CONFIG.deliveryDhaka : CONFIG.deliveryOutside;
+  const delivery = deliveryArea === 'dhaka' ? deliveryDhaka : deliveryOutside;
   const total = subtotal + delivery;
 
-  document.getElementById('cartSubtotal').textContent = `${CONFIG.currencySymbol}${subtotal.toLocaleString()}`;
-  document.getElementById('cartDelivery').textContent = `${CONFIG.currencySymbol}${delivery}`;
-  document.getElementById('cartTotal').textContent = `${CONFIG.currencySymbol}${total.toLocaleString()}`;
-}
+  const subtotalEl = document.getElementById('cartSubtotal');
+  const deliveryEl = document.getElementById('cartDelivery');
+  const totalEl = document.getElementById('cartTotal');
 
-// ---- Checkout Modal & Order Placement ----
-let checkoutItems = [];
-
-function openDirectCheckout(productId, qty = 1) {
-  const p = allProducts.find(item => item.id === productId);
-  if (!p) return;
-  checkoutItems = [{
-    id: p.id,
-    name: p.name,
-    price: p.price,
-    image: p.image,
-    qty: qty
-  }];
-  showCheckoutModal();
-}
-
-function openCartCheckout() {
-  if (!cart.length) return;
-  checkoutItems = [...cart];
-  closeCartDrawer();
-  showCheckoutModal();
-}
-
-function showCheckoutModal() {
-  const subtotal = checkoutItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const delivery = deliveryArea === 'dhaka' ? CONFIG.deliveryDhaka : CONFIG.deliveryOutside;
-  const total = subtotal + delivery;
-
-  // Track InitiateCheckout
-  trackEvent('InitiateCheckout', {
-    num_items: checkoutItems.length,
-    value: total,
-    currency: 'BDT'
-  });
-
-  // Render Order Summary in modal
-  document.getElementById('coItemsList').innerHTML = checkoutItems.map(item => `
-    <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px dashed #e2e8f0">
-      <span>${escapeHtml(item.name)} × ${item.qty}</span>
-      <b>${CONFIG.currencySymbol}${(item.price * item.qty).toLocaleString()}</b>
-    </div>
-  `).join('');
-
-  document.getElementById('coTotal').textContent = `${CONFIG.currencySymbol}${total.toLocaleString()}`;
-  document.getElementById('coAdvance').textContent = `${CONFIG.currencySymbol}${CONFIG.advanceAmount}`;
-
-  document.getElementById('checkoutModal').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-}
-
-function closeCheckoutModal() {
-  document.getElementById('checkoutModal').style.display = 'none';
-  document.body.style.overflow = 'auto';
-}
-
-function handleCheckoutSubmit(e) {
-  e.preventDefault();
-
-  const name = document.getElementById('coName').value.trim();
-  const phone = document.getElementById('coPhone').value.trim();
-  const address = document.getElementById('coAddress').value.trim();
-  const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'Cash on Delivery';
-  const note = document.getElementById('coNote').value.trim();
-
-  if (!name || !phone || !address) {
-    alert('দয়া করে নাম, মোবাইল নম্বর এবং সম্পূর্ণ ঠিকানা দিন!');
-    return;
-  }
-
-  const subtotal = checkoutItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const delivery = deliveryArea === 'dhaka' ? CONFIG.deliveryDhaka : CONFIG.deliveryOutside;
-  const total = subtotal + delivery;
-  const orderId = 'ZS-' + Math.floor(100000 + Math.random() * 900000);
-
-  // Track Purchase Event!
-  trackEvent('Purchase', {
-    content_name: 'Pre-Order Purchase',
-    content_ids: checkoutItems.map(i => String(i.id)),
-    content_type: 'product',
-    value: total,
-    currency: 'BDT',
-    num_items: checkoutItems.length
-  });
-
-  // Build WhatsApp Message
-  let itemsText = checkoutItems.map((item, idx) => `${idx + 1}. ${item.name} (Qty: ${item.qty}) — ${CONFIG.currencySymbol}${(item.price * item.qty).toLocaleString()}`).join('\n');
-
-  const waMsg = 
-    `🛍️ *New Pre-Order from Zayn Shop*\n` +
-    `──────────────────────────\n` +
-    `📦 *Order ID:* #${orderId}\n` +
-    `👤 *Customer Name:* ${name}\n` +
-    `📞 *Mobile Phone:* ${phone}\n` +
-    `📍 *Full Address:* ${address}\n` +
-    `🚚 *Delivery Area:* ${deliveryArea === 'dhaka' ? 'Inside Dhaka (৳70)' : 'Outside Dhaka (৳130)'}\n` +
-    `💳 *Payment Choice:* ${paymentMethod}\n` +
-    (note ? `📝 *Customer Note:* ${note}\n` : '') +
-    `──────────────────────────\n` +
-    `📋 *Ordered Products:*\n${itemsText}\n` +
-    `──────────────────────────\n` +
-    `💰 *Subtotal:* ${CONFIG.currencySymbol}${subtotal.toLocaleString()}\n` +
-    `🚚 *Delivery Charge:* ${CONFIG.currencySymbol}${delivery}\n` +
-    `💵 *Total Payable:* ${CONFIG.currencySymbol}${total.toLocaleString()}\n` +
-    `⚠️ *Pre-order Advance:* ${CONFIG.currencySymbol}${CONFIG.advanceAmount} (পেমেন্ট করে স্ক্রিনশট পাঠাবেন)\n` +
-    `──────────────────────────\n` +
-    `ধন্যবাদ! আমি অর্ডারটি কনফার্ম করতে চাই।`;
-
-  const waUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(waMsg)}`;
-
-  // Clear cart if items were from cart
-  cart = [];
-  saveCart();
-  closeCheckoutModal();
-
-  // Show Thank You Screen
-  showThankYouScreen(orderId, total, waUrl);
-}
-
-function showThankYouScreen(orderId, total, waUrl) {
-  document.getElementById('tyOrderId').textContent = `#${orderId}`;
-  document.getElementById('tyTotal').textContent = `${CONFIG.currencySymbol}${total.toLocaleString()}`;
-  document.getElementById('tyWaBtn').href = waUrl;
-
-  document.getElementById('thankYouModal').style.display = 'flex';
-  document.body.style.overflow = 'hidden';
-
-  // Automatically open WhatsApp in new tab after 1.5s
-  setTimeout(() => {
-    window.open(waUrl, '_blank');
-  }, 1200);
-}
-
-function closeThankYouModal() {
-  document.getElementById('thankYouModal').style.display = 'none';
-  document.body.style.overflow = 'auto';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (subtotalEl) subtotalEl.textContent = `${currency}${subtotal.toLocaleString()}`;
+  if (deliveryEl) deliveryEl.textContent = `${currency}${delivery}`;
+  if (totalEl) totalEl.textContent = `${currency}${total.toLocaleString()}`;
 }
 
 // ---- Utility Helpers ----
 function escapeHtml(str) {
   if (!str) return '';
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function showToast(msg) {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    document.body.appendChild(toast);
+  }
   toast.textContent = msg;
   toast.classList.add('show');
   setTimeout(() => { toast.classList.remove('show'); }, 3000);
@@ -472,7 +337,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadCart();
   loadProducts();
 
-  // Search input live filter
+  // Live search filtering
   document.getElementById('searchQuery')?.addEventListener('input', () => {
     renderProducts();
   });

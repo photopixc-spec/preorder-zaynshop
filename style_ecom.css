@@ -1,0 +1,87 @@
+/* style_ecom.css – modern, responsive e‑commerce UI (free, no external libs) */
+:root {
+  --pri: #0d6efd;      /* primary blue */
+  --sec: #6c757d;      /* secondary gray */
+  --bg: #f8f9fa;      /* page background */
+  --card-bg: #fff;    /* cards */
+  --text: #212529;    /* body text */
+  --radius: 8px;      /* border radius */
+}
+body {
+  font-family: 'Hind Siliguri', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+}
+header.site-header, .top-bar {
+  background: var(--pri);
+  color: #fff;
+}
+.header-container, .top-bar {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 20px;
+}
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+.product-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+}
+.product-card img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+}
+.btn {
+  background: var(--pri);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 8px;
+}
+.btn:hover {
+  background: #0b5ed7;
+}
+.cart-drawer {
+  background: var(--card-bg);
+  width: 320px;
+  max-width: 80%;
+  right: -350px;
+  top: 0;
+  bottom: 0;
+  position: fixed;
+  transition: right 0.3s;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.2);
+  padding: 20px;
+}
+.cart-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+}
+.cart-drawer.open { right: 0; }
+.cart-overlay.show { display: block; }
+/* responsive tweaks */
+@media (max-width: 600px) {
+  .header-container, .top-bar { padding: 8px 12px; }
+  .product-grid { padding: 10px; gap: 8px; }
+}

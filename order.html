@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://script.googleapis.com https://www.googleapis.com;">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete Pre-Order — Zayn Shop</title>
+  <meta name="description" content="Secure Checkout and Pre-Order Confirmation for Zayn Shop.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style_ecom.css">
+  <style>
+    .checkout-wrap {
+      max-width: 1100px;
+      margin: 24px auto 60px;
+      padding: 0 16px;
+    }
+    .checkout-header-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .checkout-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+    .checkout-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .checkout-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+    }
+    .card-box {
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .card-box-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 12px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+    .form-label span.req {
+      color: var(--pri, #e11d48);
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #0f172a;
+      box-sizing: border-box;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--pri, #e11d48);
+      box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.12);
+    }
+    .area-radios {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 500px) {
+      .area-radios {
+        grid-template-columns: 1fr;
+      }
+    }
+    .area-card {
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s ease;
+    }
+    .area-card.active {
+      border-color: var(--pri, #e11d48);
+      background: #fff1f2;
+    }
+    .area-card input {
+      accent-color: var(--pri, #e11d48);
+    }
+    .area-card-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .area-card-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .area-card-cost {
+      font-size: 12px;
+      color: #64748b;
+    }
+    .checkout-items-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .checkout-item-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .checkout-item-row:last-child {
+      border-bottom: none;
+    }
+    .checkout-item-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #f8fafc;
+      flex-shrink: 0;
+    }
+    .checkout-item-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .checkout-item-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #0f172a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .checkout-item-sub {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .checkout-item-qty {
+      display: flex;
+      align-items: center;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .checkout-item-qty button {
+      background: #f8fafc;
+      border: none;
+      padding: 4px 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .checkout-item-qty span {
+      padding: 4px 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .checkout-item-total {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+      min-width: 70px;
+      text-align: right;
+    }
+    .checkout-item-remove {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    .checkout-item-remove:hover {
+      color: #ef4444;
+    }
+    .payment-notice-box {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 12px;
+    }
+    .payment-badge {
+      display: inline-block;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    .mfs-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      margin: 4px 4px 4px 0;
+    }
+    .summary-sidebar {
+      position: sticky;
+      top: 90px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #475569;
+      margin-bottom: 10px;
+    }
+    .summary-row.total-row {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      border-top: 2px dashed #e2e8f0;
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+    .summary-row.advance-row {
+      font-size: 14px;
+      font-weight: 700;
+      color: #be123c;
+      background: #fff1f2;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #fecdd3;
+      margin: 10px 0;
+    }
+    .summary-row.cod-row {
+      font-size: 14px;
+      font-weight: 700;
+      color: #047857;
+      background: #ecfdf5;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #a7f3d0;
+      margin-bottom: 16px;
+    }
+    .btn-submit-order {
+      width: 100%;
+      background: #25d366;
+      color: #ffffff;
+      border: none;
+      padding: 16px 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+      transition: background 0.2s ease, transform 0.1s ease;
+    }
+    .btn-submit-order:hover {
+      background: #1ebc59;
+      transform: translateY(-1px);
+    }
+    .empty-cart-state {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .empty-cart-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .thankyou-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 16px;
+    }
+    .thankyou-card {
+      background: #ffffff;
+      border-radius: 16px;
+      max-width: 500px;
+      width: 100%;
+      padding: 32px 24px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Announcement Bar -->
+  <div class="top-bar">
+    ✈️ Global Pre-Order Collection • Delivery 7–15 business days • Cash on Delivery available across Bangladesh
+  </div>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-wrap">
+        <span class="brand-name">ZAYN SHOP</span>
+        <span class="brand-sub">PRE-ORDER COLLECTION</span>
+      </a>
+      <div class="header-actions">
+        <a href="index.html" style="text-decoration:none;font-size:14px;font-weight:700;color:#334155;padding:8px 14px;border-radius:8px;background:#f1f5f9">
+          ← Continue Shopping
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Checkout Container -->
+  <main class="checkout-wrap">
+    <h1 class="checkout-header-title">⚡ Complete Your Pre-Order</h1>
+    <p class="checkout-subtitle">Review your bag, provide delivery details, and confirm your order via WhatsApp.</p>
+
+    <div class="checkout-grid" id="checkoutGrid">
+      <!-- Left Column: Items & Customer Form -->
+      <div class="checkout-left">
+        <!-- Bag Items Box -->
+        <div class="card-box">
+          <div class="card-box-title">
+            <span>🛍️</span>
+            <span>Items in Your Pre-Order</span>
+          </div>
+          <div id="checkoutItemsContainer">
+            <div style="text-align:center;padding:20px;color:#64748b;">Loading cart items…</div>
+          </div>
+        </div>
+
+        <!-- Customer Delivery Form Box -->
+        <div class="card-box" id="customerFormBox">
+          <div class="card-box-title">
+            <span>📍</span>
+            <span>Delivery & Contact Information</span>
+          </div>
+
+          <form id="orderForm" onsubmit="handleOrderSubmission(event)">
+            <div class="form-group">
+              <label class="form-label" for="custName">
+                Full Name <span class="req">*</span>
+              </label>
+              <input type="text" id="custName" class="form-input" required placeholder="e.g. Tanvir Ahmed">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="custPhone">
+                Mobile Phone Number <span class="req">*</span>
+              </label>
+              <input type="tel" id="custPhone" class="form-input" required placeholder="e.g. 01819740112" pattern="[0-9+ -]{11,15}">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="custAddress">
+                Full Delivery Address <span class="req">*</span>
+              </label>
+              <textarea id="custAddress" class="form-textarea" rows="3" required placeholder="House/Flat number, Road, Area, Thana, District"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">
+                Delivery Area <span class="req">*</span>
+              </label>
+              <div class="area-radios">
+                <label class="area-card active" id="areaCardDhaka">
+                  <input type="radio" name="orderArea" value="dhaka" checked onchange="updateOrderDeliveryArea('dhaka')">
+                  <div class="area-card-info">
+                    <span class="area-card-name">Inside Dhaka</span>
+                    <span class="area-card-cost">Delivery Charge: ৳70</span>
+                  </div>
+                </label>
+                <label class="area-card" id="areaCardOutside">
+                  <input type="radio" name="orderArea" value="outside" onchange="updateOrderDeliveryArea('outside')">
+                  <div class="area-card-info">
+                    <span class="area-card-name">Outside Dhaka</span>
+                    <span class="area-card-cost">Delivery Charge: ৳130</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="custNote">
+                Order Notes / Instructions (Optional)
+              </label>
+              <textarea id="custNote" class="form-textarea" rows="2" placeholder="Color preference, ring size, delivery timing instructions..."></textarea>
+            </div>
+
+            <!-- Payment & Advance Notice Box -->
+            <div class="payment-notice-box">
+              <span class="payment-badge">Payment Method: Cash on Delivery</span>
+              <p style="font-size:13px;color:#334155;line-height:1.5;margin:6px 0;">
+                ⚠️ <b>Pre-Order Condition:</b> To confirm your reservation, an advance of <b>৳200</b> is required. The remaining amount will be paid Cash on Delivery at your doorstep.
+              </p>
+              <div style="font-size:12px;color:#64748b;margin-top:8px;">
+                Send ৳200 advance via Send Money to personal account:
+              </div>
+              <div style="margin-top:6px;">
+                <span class="mfs-pill">📱 bKash: <b>01819740112</b></span>
+                <span class="mfs-pill">📱 Nagad: <b>01819740112</b></span>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right Column: Order Summary Sidebar -->
+      <div class="checkout-right">
+        <div class="card-box summary-sidebar">
+          <div class="card-box-title">
+            <span>📋</span>
+            <span>Order Summary</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Items Subtotal:</span>
+            <span id="orderSubtotal">৳0</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Delivery Charge:</span>
+            <span id="orderDelivery">৳70</span>
+          </div>
+
+          <div class="summary-row total-row">
+            <span>Total Order Amount:</span>
+            <span id="orderTotal" style="color:var(--pri)">৳0</span>
+          </div>
+
+          <div class="summary-row advance-row">
+            <span>Advance Required:</span>
+            <span id="orderAdvance">৳200</span>
+          </div>
+
+          <div class="summary-row cod-row">
+            <span>Remaining Cash on Delivery:</span>
+            <span id="orderCodRemaining">৳0</span>
+          </div>
+
+          <button type="button" class="btn-submit-order" onclick="triggerOrderSubmit()">
+            <span>💬</span>
+            <span>Confirm Order via WhatsApp</span>
+          </button>
+
+          <p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:12px;">
+            🔒 Safe & Direct WhatsApp Confirmation with Zayn Shop Support
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Thank You Overlay Modal -->
+  <div class="thankyou-overlay" id="thankYouModal">
+    <div class="thankyou-card">
+      <div style="font-size:54px;margin-bottom:12px">🎉</div>
+      <h2 style="font-size:22px;font-weight:800;color:#0f172a;">Pre-Order Submitted!</h2>
+      <p style="font-size:14px;color:#64748b;margin:8px 0 16px;">
+        Your Order ID is <b id="tyOrderId" style="color:var(--pri)">#ZS-000000</b>.
+      </p>
+      <div style="background:#f8fafc;padding:14px;border-radius:10px;text-align:left;font-size:13px;margin-bottom:20px;border:1px solid #e2e8f0;">
+        <div style="margin-bottom:6px">💰 <b>Total Payable:</b> <span id="tyTotal">৳0</span></div>
+        <div style="margin-bottom:6px">⚠️ <b>Advance Due:</b> ৳200 (Send to bKash/Nagad 01819740112)</div>
+        <div>💬 <b>Next Step:</b> Tap below to send your order details and payment screenshot on WhatsApp.</div>
+      </div>
+      <a id="tyWaLink" href="#" target="_blank" class="btn-submit-order" style="text-decoration:none;margin-bottom:10px;">
+        <span>💬</span>
+        <span>Open WhatsApp to Confirm</span>
+      </a>
+      <a href="index.html" style="display:inline-block;font-size:13px;font-weight:700;color:#64748b;text-decoration:none;margin-top:8px;">
+        Back to Homepage
+      </a>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <!-- Scripts -->
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script>
+    let checkoutDeliveryArea = 'dhaka';
+
+    function initOrderPage() {
+      renderCheckoutItems();
+    }
+
+    function updateOrderDeliveryArea(area) {
+      checkoutDeliveryArea = area;
+      document.getElementById('areaCardDhaka').classList.toggle('active', area === 'dhaka');
+      document.getElementById('areaCardOutside').classList.toggle('active', area === 'outside');
+      renderCheckoutItems();
+    }
+
+    function renderCheckoutItems() {
+      const container = document.getElementById('checkoutItemsContainer');
+      const currency = CONFIG.currencySymbol || '৳';
+      const deliveryDhaka = CONFIG.deliveryDhaka || 70;
+      const deliveryOutside = CONFIG.deliveryOutside || 130;
+      const advanceAmount = CONFIG.advanceAmount || 200;
+
+      if (!cart || !cart.length) {
+        container.innerHTML = `
+          <div class="empty-cart-state">
+            <div class="empty-cart-icon">🛒</div>
+            <h3 style="font-size:18px;color:#0f172a">Your Shopping Bag is Empty</h3>
+            <p style="font-size:13px;color:#64748b;margin:8px 0 20px">Please add items from the store before checking out.</p>
+            <a href="index.html" class="btn-checkout" style="display:inline-block;width:auto;padding:10px 24px;">Browse Products</a>
+          </div>`;
+        
+        document.getElementById('orderSubtotal').textContent = `${currency}0`;
+        document.getElementById('orderDelivery').textContent = `${currency}0`;
+        document.getElementById('orderTotal').textContent = `${currency}0`;
+        document.getElementById('orderAdvance').textContent = `${currency}0`;
+        document.getElementById('orderCodRemaining').textContent = `${currency}0`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="checkout-items-list">
+          ${cart.map(item => `
+            <div class="checkout-item-row">
+              <img src="${item.image}" alt="${escapeHtml(item.name)}" class="checkout-item-thumb">
+              <div class="checkout-item-meta">
+                <div class="checkout-item-name">${escapeHtml(item.name)}</div>
+                <div class="checkout-item-sub">${currency}${item.price.toLocaleString()} each</div>
+              </div>
+              <div class="checkout-item-qty">
+                <button type="button" onclick="modifyOrderItemQty(${item.id}, -1)">−</button>
+                <span>${item.qty}</span>
+                <button type="button" onclick="modifyOrderItemQty(${item.id}, 1)">+</button>
+              </div>
+              <div class="checkout-item-total">
+                ${currency}${(item.price * item.qty).toLocaleString()}
+              </div>
+              <button type="button" class="checkout-item-remove" onclick="modifyOrderItemQty(${item.id}, -9999)" title="Remove item">✕</button>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      // Calculations
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const delivery = checkoutDeliveryArea === 'dhaka' ? deliveryDhaka : deliveryOutside;
+      const total = subtotal + delivery;
+      const remainingCod = Math.max(0, total - advanceAmount);
+
+      document.getElementById('orderSubtotal').textContent = `${currency}${subtotal.toLocaleString()}`;
+      document.getElementById('orderDelivery').textContent = `${currency}${delivery}`;
+      document.getElementById('orderTotal').textContent = `${currency}${total.toLocaleString()}`;
+      document.getElementById('orderAdvance').textContent = `${currency}${advanceAmount}`;
+      document.getElementById('orderCodRemaining').textContent = `${currency}${remainingCod.toLocaleString()}`;
+    }
+
+    function modifyOrderItemQty(id, delta) {
+      updateCartItemQty(id, delta);
+      renderCheckoutItems();
+    }
+
+    function triggerOrderSubmit() {
+      const form = document.getElementById('orderForm');
+      if (form.reportValidity()) {
+        handleOrderSubmission(new Event('submit'));
+      }
+    }
+
+    async function handleOrderSubmission(e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      if (!cart || !cart.length) {
+        alert('Your shopping bag is empty! Please add products first.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const name = document.getElementById('custName').value.trim();
+      const phone = document.getElementById('custPhone').value.trim();
+      const address = document.getElementById('custAddress').value.trim();
+      const note = document.getElementById('custNote')?.value.trim() || '';
+
+      if (!name || !phone || !address) {
+        alert('Please provide your name, phone number, and delivery address.');
+        return;
+      }
+
+      const currency = CONFIG.currencySymbol || '৳';
+      const deliveryDhaka = CONFIG.deliveryDhaka || 70;
+      const deliveryOutside = CONFIG.deliveryOutside || 130;
+      const advanceAmount = CONFIG.advanceAmount || 200;
+
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+      const delivery = checkoutDeliveryArea === 'dhaka' ? deliveryDhaka : deliveryOutside;
+      const total = subtotal + delivery;
+      const remainingCod = Math.max(0, total - advanceAmount);
+      const orderId = 'ZS-' + Math.floor(100000 + Math.random() * 900000);
+
+      // Track Purchase Event
+      trackEvent('Purchase', {
+        content_name: 'Pre-Order Purchase',
+        content_ids: cart.map(i => String(i.id)),
+        content_type: 'product',
+        value: total,
+        currency: 'BDT',
+        num_items: cart.length
+      });
+
+      // Prepare order payload for Webhook (Google Sheets)
+      const orderPayload = {
+        orderId: orderId,
+        customerName: name,
+        customerPhone: phone,
+        deliveryAddress: address,
+        deliveryArea: checkoutDeliveryArea === 'dhaka' ? 'Inside Dhaka' : 'Outside Dhaka',
+        deliveryCharge: delivery,
+        advanceAmount: advanceAmount,
+        remainingCod: remainingCod,
+        totalAmount: total,
+        note: note,
+        items: cart.map(i => ({
+          id: i.id,
+          name: i.name,
+          price: i.price,
+          qty: i.qty,
+          subtotal: i.price * i.qty
+        })),
+        timestamp: new Date().toISOString()
+      };
+
+      if (CONFIG.orderWebhookUrl) {
+        try {
+          fetch(CONFIG.orderWebhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderPayload)
+          }).catch(err => console.error('Webhook error:', err));
+        } catch (err) {
+          console.error('Webhook call failed:', err);
+        }
+      }
+
+      // Build WhatsApp prefilled message
+      let itemsListText = cart.map((item, idx) => 
+        `${idx + 1}. ${item.name}\n   Qty: ${item.qty} × ${currency}${item.price.toLocaleString()} = ${currency}${(item.price * item.qty).toLocaleString()}`
+      ).join('\n');
+
+      const waMsg = 
+        `🛍️ *New Pre-Order from Zayn Shop*\n` +
+        `──────────────────────────\n` +
+        `📦 *Order ID:* #${orderId}\n` +
+        `👤 *Name:* ${name}\n` +
+        `📞 *Phone:* ${phone}\n` +
+        `📍 *Address:* ${address}\n` +
+        `🚚 *Area:* ${checkoutDeliveryArea === 'dhaka' ? 'Inside Dhaka (৳70)' : 'Outside Dhaka (৳130)'}\n` +
+        (note ? `📝 *Note:* ${note}\n` : '') +
+        `──────────────────────────\n` +
+        `📋 *Ordered Items:*\n${itemsListText}\n` +
+        `──────────────────────────\n` +
+        `💰 *Subtotal:* ${currency}${subtotal.toLocaleString()}\n` +
+        `🚚 *Delivery Charge:* ${currency}${delivery}\n` +
+        `💵 *Total Order Amount:* ${currency}${total.toLocaleString()}\n` +
+        `⚠️ *Advance Required:* ${currency}${advanceAmount} (via bKash/Nagad: 01819740112)\n` +
+        `📦 *Remaining on Delivery (COD):* ${currency}${remainingCod.toLocaleString()}\n` +
+        `──────────────────────────\n` +
+        `Thank you! I would like to confirm my pre-order.`;
+
+      const cleanWaNumber = (CONFIG.whatsappNumber || '8801819740112').replace(/[^0-9]/g, '');
+      const waUrl = `https://wa.me/${cleanWaNumber}?text=${encodeURIComponent(waMsg)}`;
+
+      // Clear Cart
+      cart = [];
+      saveCart();
+
+      // Show Thank You Screen
+      document.getElementById('tyOrderId').textContent = `#${orderId}`;
+      document.getElementById('tyTotal').textContent = `${currency}${total.toLocaleString()}`;
+      document.getElementById('tyWaLink').href = waUrl;
+      document.getElementById('thankYouModal').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+
+      // Automatically open WhatsApp in new tab after short delay
+      setTimeout(() => {
+        window.open(waUrl, '_blank');
+      }, 1000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initOrderPage();
+    });
+  </script>
+</body>
+</html>

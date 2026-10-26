@@ -2,17 +2,18 @@
 const CONFIG = {
   brandName: "Zayn Shop",
   subTitle: "Pre-Order Global Collection",
-  whatsappNumber: "8801819740112", // আপনার WhatsApp নম্বর (যাতে অর্ডার আসবে)
+  whatsappNumber: "8801819740112", // WhatsApp number for orders
   supportPhone: "01819740112",
   currencySymbol: "৳",
   deliveryDhaka: 70,
   deliveryOutside: 130,
   advanceAmount: 200,
-  advanceNotice: "প্রি-অর্ডার কনফার্ম করার জন্য ২০০ টাকা অগ্রিম প্রযোজ্য। বাকি টাকা ক্যাশ অন ডেলিভারিতে পরিশোধ করবেন।",
-  deliveryTime: "৭ থেকে ১৫ কার্যদিবস",
+  advanceNotice: "An advance payment of 200 BDT is required to confirm the pre-order. The remaining amount will be paid Cash on Delivery.",
+  deliveryTime: "7–15 business days",
   
-  // ট্র্যাকিং ট্যাগ সেটিংস (এখানে আপনার আসল আইডি বসাতে পারবেন)
-  gtmId: "",        // যেমন: "GTM-XXXXXXX"
-  metaPixelId: "",  // যেমন: "1234567890123456"
-  googleAnalyticsId: "" // যেমন: "G-XXXXXXXXXX"
+  // Tracking Tag Settings
+  orderWebhookUrl: "", // Google Apps Script Web App URL for order logging (optional)
+  gtmId: "",           // e.g. "GTM-XXXXXXX"
+  metaPixelId: "",     // e.g. "1234567890123456"
+  googleAnalyticsId: "" // e.g. "G-XXXXXXXXXX"
 };
