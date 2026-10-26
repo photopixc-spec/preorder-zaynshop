@@ -54,17 +54,49 @@ function trackEvent(name, params = {}) {
 // ---- Load Products & Render ----
 async function loadProducts() {
   const grid = document.getElementById('productGrid');
-  if (!grid) return;
-
   try {
     const res = await fetch('products.json');
     allProducts = await res.json();
-    renderProducts();
+    
+    // Check if category is passed via URL query
+    const urlParams = new URLSearchParams(window.location.search);
+    const catQuery = urlParams.get('cat');
+    if (catQuery && (catQuery === 'all' || allProducts.some(p => p.category === catQuery))) {
+      activeCategory = catQuery;
+    }
+
+    renderCategoryNav();
     renderCategoryPills();
+    if (grid) renderProducts();
   } catch (err) {
     console.error('Failed to load products:', err);
-    grid.innerHTML = '<p style="text-align:center;padding:40px;color:#ef4444">Failed to load products. Please refresh the page.</p>';
+    if (grid) grid.innerHTML = '<p style="text-align:center;padding:40px;color:#ef4444">Failed to load products. Please refresh the page.</p>';
   }
+}
+
+function renderCategoryNav() {
+  const container = document.getElementById('categoryNavInner');
+  if (!container) return;
+
+  const categories = [
+    { id: 'all', name: 'All Products', icon: '✨' },
+    { id: 'Jewelry & Accessories', name: 'Jewelry & Accessories', icon: '💎' },
+    { id: 'Cute & Toys', name: 'Cute & Toys', icon: '🧸' },
+    { id: 'Beauty & Skincare', name: 'Beauty & Skincare', icon: '💄' },
+    { id: 'Home & Living', name: 'Home & Living', icon: '🏡' },
+    { id: 'Fashion & Wear', name: 'Fashion & Wear', icon: '👗' }
+  ];
+
+  const isHome = window.location.pathname.endsWith('index.html') || window.location.pathname.endsWith('/') || !window.location.pathname.includes('.html');
+
+  container.innerHTML = categories.map(cat => {
+    const isActive = cat.id === activeCategory;
+    if (isHome) {
+      return `<a href="javascript:void(0)" class="category-nav-link ${isActive ? 'active' : ''}" onclick="setCategory('${cat.id}')"><span>${cat.icon}</span> <span>${cat.name}</span></a>`;
+    } else {
+      return `<a href="index.html?cat=${encodeURIComponent(cat.id)}" class="category-nav-link ${isActive ? 'active' : ''}"><span>${cat.icon}</span> <span>${cat.name}</span></a>`;
+    }
+  }).join('');
 }
 
 function renderCategoryPills() {
@@ -82,8 +114,15 @@ function renderCategoryPills() {
 
 function setCategory(cat) {
   activeCategory = cat;
+  renderCategoryNav();
   renderCategoryPills();
   renderProducts();
+
+  // Scroll gently toward product grid if user is high up on the page
+  const grid = document.getElementById('productGrid');
+  if (grid && window.scrollY > 450) {
+    grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 function renderProducts() {
