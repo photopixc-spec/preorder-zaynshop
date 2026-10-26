@@ -477,12 +477,29 @@ var ORIGINAL_PRODUCTS = [
 function doPost(e) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var data = JSON.parse(e.postData.contents);
+    var data = {};
+    if (e && e.postData && e.postData.contents) {
+      try {
+        data = JSON.parse(e.postData.contents);
+      } catch (err) {
+        data = e.parameter || {};
+      }
+    } else if (e && e.parameter) {
+      data = e.parameter;
+    }
 
     // --- ACTION: ADD NEW PRODUCT (From Admin / Importer Bookmarklet) ---
     if (data.action === "add_product") {
       var prodSheet = ss.getSheetByName("Products");
-      if (!prodSheet) prodSheet = importAllOriginalProducts();
+      if (!prodSheet) {
+        prodSheet = ss.insertSheet("Products");
+      }
+      if (prodSheet.getLastRow() === 0) {
+        var headers = ["ID", "Name", "Category", "Price (৳)", "Regular Price (৳)", "Image URL", "Description", "Badge", "Status"];
+        prodSheet.appendRow(headers);
+        prodSheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#e2e8f0");
+        prodSheet.setFrozenRows(1);
+      }
 
       var newId = data.id || Math.floor(1000 + Math.random() * 9000);
       var newRow = [
@@ -629,7 +646,8 @@ function doGet(e) {
 
     var data = sheet.getDataRange().getValues();
     if (data.length <= 1) {
-      return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+      importAllOriginalProducts();
+      data = sheet.getDataRange().getValues();
     }
 
     var products = [];
