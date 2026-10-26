@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Zayn Shop Product Manager & Importer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pri: #e11d48;
+      --pri-dark: #be123c;
+      --sec: #0f172a;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --success: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Hind Siliguri', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+    .admin-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-brand img { height: 36px; }
+    .admin-brand h2 { font-size: 18px; font-weight: 800; color: var(--sec); }
+    .admin-brand span { font-size: 11px; background: #fee2e2; color: var(--pri-dark); padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+    .admin-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-view-store {
+      text-decoration: none;
+      background: #f1f5f9;
+      color: var(--sec);
+      font-weight: 700;
+      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 8px;
+    }
+    .btn-view-store:hover { background: #e2e8f0; }
+
+    .admin-wrap {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    /* Grid Layout */
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .admin-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--sec);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+
+    /* Form Styles */
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      color: var(--sec);
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--pri);
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn-add {
+      width: 100%;
+      background: var(--pri);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    .btn-add:hover { background: var(--pri-dark); }
+    .img-preview {
+      width: 100%;
+      height: 120px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .img-preview img { max-height: 100%; max-width: 100%; object-fit: contain; }
+
+    /* Bookmarklet Box */
+    .bookmarklet-box {
+      background: #fdf2f8;
+      border: 1.5px dashed #f472b6;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .bookmarklet-btn {
+      display: inline-block;
+      background: #ec4899;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: move;
+      margin: 8px 0;
+      box-shadow: 0 4px 10px rgba(236,72,153,0.3);
+    }
+    .bookmarklet-btn:hover { background: #db2777; }
+
+    /* Product Table */
+    .table-tools {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .table-tools input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .prod-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .prod-table th {
+      text-align: left;
+      padding: 10px;
+      background: #f1f5f9;
+      font-weight: 700;
+      border-bottom: 1px solid var(--border);
+    }
+    .prod-table td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .prod-thumb {
+      width: 44px;
+      height: 44px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .btn-del {
+      background: #fee2e2;
+      color: #ef4444;
+      border: 1px solid #fecdd3;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-del:hover { background: #ef4444; color: #fff; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      display: none;
+      z-index: 10000;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="admin-header">
+    <div class="admin-brand">
+      <img src="images/logo.png" alt="Zayn Shop">
+      <h2>Store Admin</h2>
+      <span>Live Manager</span>
+    </div>
+    <div class="admin-actions">
+      <a href="index.html" target="_blank" class="btn-view-store">👁️ View Live Store</a>
+    </div>
+  </header>
+
+  <main class="admin-wrap">
+
+    <!-- 1-Click MoveDrop Bookmarklet Box -->
+    <div class="bookmarklet-box">
+      <h3 style="font-size:16px;color:#9d174d;font-weight:800">⚡ MoveDrop 1-Click Importer Button</h3>
+      <p style="font-size:12px;color:#64748b;margin:4px 0;">
+        নিচের বাটনটি টেনে নিয়ে আপনার ব্রাউজারের <b>Bookmarks Bar</b>-এ ছেড়ে দিন (Drag and Drop):
+      </p>
+      <a class="bookmarklet-btn" href="javascript:(function(){
+        var title = document.querySelector('h1, h2, .product-title, .title')?.innerText || document.title;
+        var imgEl = document.querySelector('img[src*=\'alicdn\'], img[src*=\'storage\'], .product-gallery img, img');
+        var imgUrl = imgEl ? imgEl.src : '';
+        var priceMatch = document.body.innerText.match(/৳\s*([0-9,]+)/) || document.body.innerText.match(/([0-9,]+)\s*BDT/);
+        var cost = priceMatch ? priceMatch[1].replace(/,/g, '') : '950';
+
+        var pName = prompt('⚡ Zayn Shop Importer\\n\\nProduct Title:', title.trim().slice(0, 80));
+        if (!pName) return;
+        var pPrice = prompt('Selling Price (BDT ৳):', cost);
+        if (!pPrice) return;
+        var pCat = prompt('Category (Jewelry & Accessories / Cute & Toys / Beauty & Skincare / Home & Living / Fashion & Wear):', 'Jewelry & Accessories');
+
+        var payload = {
+          action: 'add_product',
+          name: pName,
+          category: pCat || 'Jewelry & Accessories',
+          price: parseInt(pPrice, 10) || 950,
+          regular_price: Math.round((parseInt(pPrice, 10) || 950) * 1.25),
+          image: imgUrl,
+          description: 'Imported on pre-order from MoveDrop / global suppliers. Delivery 15-25 days across Bangladesh.',
+          badge: 'Pre-Order'
+        };
+
+        var url = 'https://script.google.com/macros/s/AKfycbz6_ZkMemBMd8kUDicKdQtaB-kdNgDonPSTEC1-W6ilwEji7MLcgFzXShKqAKsYxkuv1A/exec';
+        fetch(url, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        }).then(function(){
+          alert('✅ Product Added to Zayn Shop!\\n\\nTitle: ' + pName + '\\nPrice: ৳' + pPrice);
+        }).catch(function(err){
+          alert('Error adding product: ' + err);
+        });
+      })();">⚡ Import to Zayn Shop</a>
+      <p style="font-size:11px;color:#94a3b8;">
+        💡 এরপর MoveDrop-এর যেকোনো প্রোডাক্ট পেজে গিয়ে এই বাটনে ক্লিক করলেই স্বয়ংক্রিয়ভাবে প্রোডাক্ট সাইটে যুক্ত হয়ে যাবে!
+      </p>
+    </div>
+
+    <div class="admin-grid">
+
+      <!-- Left Column: Add Product Form -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>➕</span>
+            <span>Add New Product</span>
+          </div>
+
+          <form id="addProductForm" onsubmit="handleManualAdd(event)">
+            <div class="form-group">
+              <label class="form-label">Product Name *</label>
+              <input type="text" id="prodName" class="form-input" required placeholder="e.g. Zircon Crystal Butterfly Pendant">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Category *</label>
+              <select id="prodCategory" class="form-select">
+                <option value="Jewelry & Accessories">💎 Jewelry & Accessories</option>
+                <option value="Cute & Toys">🧸 Cute & Toys</option>
+                <option value="Beauty & Skincare">💄 Beauty & Skincare</option>
+                <option value="Home & Living">🏡 Home & Living</option>
+                <option value="Fashion & Wear">👗 Fashion & Wear</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Selling Price (৳) *</label>
+                <input type="number" id="prodPrice" class="form-input" required placeholder="850">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Regular / Old Price (৳)</label>
+                <input type="number" id="prodRegPrice" class="form-input" placeholder="1100">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Image URL (Direct link or MoveDrop CDN) *</label>
+              <input type="url" id="prodImage" class="form-input" required placeholder="https://..." oninput="updateImgPreview(this.value)">
+              <div class="img-preview" id="imgPreviewBox">
+                <span style="font-size:12px;color:#94a3b8">Image preview appears here</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description (Optional)</label>
+              <textarea id="prodDesc" class="form-textarea" rows="2" placeholder="Quality, material, package details..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-add" id="btnAddSubmit">
+              <span>🚀</span>
+              <span>Publish Product to Store</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Product List & 1-Click Delete -->
+      <div>
+        <div class="card">
+          <div class="card-title">
+            <span>📋</span>
+            <span>All Live Products (<span id="prodCount">0</span>)</span>
+          </div>
+
+          <div class="table-tools">
+            <input type="text" id="searchTable" placeholder="Search by name, ID, or category…" oninput="filterAdminTable()">
+            <button class="btn-del" style="background:#f1f5f9;color:#334155;border-color:#cbd5e1" onclick="fetchLiveAdminProducts()">🔄 Refresh</button>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="prod-table">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="prodTableBody">
+                <tr>
+                  <td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">Loading products…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <div id="toast"></div>
+
+  <script src="config.js"></script>
+  <script>
+    let adminProducts = [];
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    function updateImgPreview(url) {
+      const box = document.getElementById('imgPreviewBox');
+      if (url && url.startsWith('http')) {
+        box.innerHTML = `<img src="${url}" onerror="this.onerror=null;this.parentElement.innerHTML='<span style=\\'color:#ef4444;font-size:12px\\'>Invalid image link</span>';">`;
+      } else {
+        box.innerHTML = `<span style="font-size:12px;color:#94a3b8">Image preview appears here</span>`;
+      }
+    }
+
+    async function fetchLiveAdminProducts() {
+      const tbody = document.getElementById('prodTableBody');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">Loading latest products…</td></tr>';
+      
+      try {
+        let products = null;
+        if (CONFIG.orderWebhookUrl) {
+          const res = await fetch(CONFIG.orderWebhookUrl);
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            products = data;
+          }
+        }
+        if (!products) {
+          const res = await fetch('products.json');
+          products = await res.json();
+        }
+
+        adminProducts = products;
+        document.getElementById('prodCount').textContent = products.length;
+        renderAdminTable(products);
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#ef4444;padding:30px;">Failed to fetch live products.</td></tr>';
+      }
+    }
+
+    function renderAdminTable(list) {
+      const tbody = document.getElementById('prodTableBody');
+      const currency = CONFIG.currencySymbol || '৳';
+
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8">No products found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(p => `
+        <tr>
+          <td><img src="${p.image}" class="prod-thumb" onerror="this.onerror=null;this.src='images/hero_banner.jpg';"></td>
+          <td style="font-weight:700;color:#64748b">#${p.id}</td>
+          <td style="font-weight:700;color:#0f172a;max-width:240px">${escapeHtml(p.name)}</td>
+          <td><span style="font-size:11px;background:#f1f5f9;padding:2px 8px;border-radius:4px;color:#475569">${escapeHtml(p.category)}</span></td>
+          <td style="font-weight:800;color:var(--pri)">${currency}${Number(p.price).toLocaleString()}</td>
+          <td>
+            <button type="button" class="btn-del" onclick="deleteProduct(${p.id}, '${escapeHtml(p.name).replace(/'/g, "\\'")}')">
+              🗑️ Delete
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function filterAdminTable() {
+      const q = document.getElementById('searchTable').value.toLowerCase().trim();
+      const filtered = adminProducts.filter(p => 
+        String(p.id).includes(q) ||
+        p.name.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q)
+      );
+      renderAdminTable(filtered);
+    }
+
+    async function handleManualAdd(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnAddSubmit');
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ Publishing to Store…</span>';
+
+      const name = document.getElementById('prodName').value.trim();
+      const category = document.getElementById('prodCategory').value;
+      const price = parseInt(document.getElementById('prodPrice').value, 10);
+      const regPrice = parseInt(document.getElementById('prodRegPrice').value, 10) || Math.round(price * 1.25);
+      const image = document.getElementById('prodImage').value.trim();
+      const desc = document.getElementById('prodDesc').value.trim();
+
+      const newId = Math.floor(1000 + Math.random() * 9000);
+
+      const payload = {
+        action: 'add_product',
+        id: newId,
+        name: name,
+        category: category,
+        price: price,
+        regular_price: regPrice,
+        image: image,
+        description: desc || 'Premium imported product on pre-order. 15-25 days delivery across Bangladesh.',
+        badge: 'Pre-Order'
+      };
+
+      try {
+        if (CONFIG.orderWebhookUrl) {
+          await fetch(CONFIG.orderWebhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        showToast(`✅ "${name}" added to Zayn Shop!`);
+        document.getElementById('addProductForm').reset();
+        document.getElementById('imgPreviewBox').innerHTML = '<span style="font-size:12px;color:#94a3b8">Image preview appears here</span>';
+        
+        // Refresh live list
+        setTimeout(() => { fetchLiveAdminProducts(); }, 1200);
+
+      } catch (err) {
+        alert('Failed to add product: ' + err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>🚀</span><span>Publish Product to Store</span>';
+      }
+    }
+
+    async function deleteProduct(id, name) {
+      if (!confirm(`Are you sure you want to delete "${name}" (ID #${id}) from the store?`)) {
+        return;
+      }
+
+      showToast(`Deleting #${id}…`);
+
+      try {
+        if (CONFIG.orderWebhookUrl) {
+          await fetch(CONFIG.orderWebhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'delete_product', id: id })
+          });
+        }
+
+        // Locally remove from array
+        adminProducts = adminProducts.filter(p => Number(p.id) !== Number(id));
+        document.getElementById('prodCount').textContent = adminProducts.length;
+        renderAdminTable(adminProducts);
+        showToast(`🗑️ Product #${id} deleted from store!`);
+
+      } catch (err) {
+        alert('Failed to delete product: ' + err);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchLiveAdminProducts();
+    });
+  </script>
+</body>
+</html>
