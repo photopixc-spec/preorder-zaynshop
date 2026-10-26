@@ -13,19 +13,16 @@
   
   // Extract Title
   let title = '';
-  // Check input/textarea on MoveDrop Product tab
   const titleInput = document.querySelector('textarea, input[placeholder*="title" i], input[placeholder*="Title" i], .title-input');
   if (titleInput && titleInput.value && titleInput.value.trim().length > 5) {
     title = titleInput.value.trim();
   }
-  // Check headings
   if (!title) {
     const hEl = document.querySelector('h1, h2, .product-title, .title, [class*="product_title"]');
     if (hEl && hEl.innerText && hEl.innerText.trim().length > 5) {
       title = hEl.innerText.trim();
     }
   }
-  // Check document title
   if (!title) {
     title = (document.title || '').replace(/[-|].*$/, '').trim();
   }
@@ -37,7 +34,6 @@
     if (s.includes('avatar') || s.includes('logo') || s.includes('icon') || s.includes('badge') || s.includes('.svg')) return false;
     return s.includes('alicdn') || s.includes('1688') || s.includes('cib') || s.includes('storage') || s.includes('.jpg') || s.includes('.png') || s.includes('.webp') || s.includes('.jpeg');
   });
-  // Unique images
   const uniqueImgs = [...new Set(allImgs)];
   let selectedImg = uniqueImgs[0] || 'https://photopixc-spec.github.io/preorder-zaynshop/images/hero_banner.jpg';
 
@@ -45,7 +41,6 @@
   let detectedSalePrice = '';
   let detectedRegPrice = '';
 
-  // Look for inputs where user entered prices (e.g. 1111, 2222)
   const numberInputs = Array.from(document.querySelectorAll('input')).map(inp => inp.value.replace(/[^0-9]/g, '')).filter(v => {
     const n = parseInt(v, 10);
     return n >= 100 && n <= 100000;
@@ -60,7 +55,6 @@
     detectedSalePrice = numberInputs[0];
     detectedRegPrice = Math.round(Number(numberInputs[0]) * 1.25);
   } else {
-    // Check page text for ৳ price
     const bdtMatch = document.body.innerText.match(/৳\s*([0-9,]+)/) || document.body.innerText.match(/([0-9,]+)\s*BDT/);
     if (bdtMatch) {
       detectedSalePrice = bdtMatch[1].replace(/,/g, '');
@@ -95,6 +89,94 @@
     descText = 'Imported on pre-order from MoveDrop / global suppliers. Delivery 15-25 days across Bangladesh.';
   }
 
+  // Define global submit handler
+  window.__zaynShopSubmit = async function(btn) {
+    const btnText = document.getElementById('zayn-btn-text');
+    const statusMsg = document.getElementById('zayn-status-msg');
+
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.75';
+    }
+    if (btnText) btnText.textContent = '⏳ Importing to Zayn Shop…';
+    if (statusMsg) {
+      statusMsg.style.display = 'block';
+      statusMsg.style.color = '#0284c7';
+      statusMsg.innerHTML = 'Connecting to Google Sheets…';
+    }
+
+    try {
+      const nameVal = (document.getElementById('zayn-title')?.value || '').trim();
+      const priceVal = parseInt(document.getElementById('zayn-price')?.value, 10);
+      const regPriceVal = parseInt(document.getElementById('zayn-reg-price')?.value, 10) || Math.round(priceVal * 1.25);
+      const catVal = document.getElementById('zayn-category')?.value || 'Jewelry & Accessories';
+      const imgVal = (document.getElementById('zayn-img-url')?.value || '').trim();
+      const descVal = (document.getElementById('zayn-desc')?.value || '').trim();
+
+      if (!nameVal) {
+        alert('Product title cannot be empty.');
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+        if (btnText) btnText.textContent = '🚀 Import to Zayn Shop Store';
+        return;
+      }
+      if (!priceVal || isNaN(priceVal)) {
+        alert('Please enter a valid price (e.g. 1111).');
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+        if (btnText) btnText.textContent = '🚀 Import to Zayn Shop Store';
+        return;
+      }
+
+      const payload = {
+        action: 'add_product',
+        id: Math.floor(1000 + Math.random() * 9000),
+        name: nameVal,
+        category: catVal,
+        price: priceVal,
+        regular_price: regPriceVal,
+        image: imgVal,
+        description: descVal,
+        badge: 'Pre-Order',
+        status: 'Active'
+      };
+
+      const webhookUrl = 'https://script.google.com/macros/s/AKfycbz6_ZkMemBMd8kUDicKdQtaB-kdNgDonPSTEC1-W6ilwEji7MLcgFzXShKqAKsYxkuv1A/exec';
+
+      // Send to Google Sheet Webhook
+      await fetch(webhookUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+
+      if (btn) {
+        btn.style.background = '#059669';
+        btn.style.opacity = '1';
+      }
+      if (btnText) btnText.textContent = '✅ Product Imported Successfully!';
+      if (statusMsg) {
+        statusMsg.style.color = '#059669';
+        statusMsg.innerHTML = '🎉 <b>Product successfully added to Zayn Shop!</b><br><span style="font-size:11px;color:#64748b">Check your Google Sheet & website.</span>';
+      }
+
+      alert('🎉 Success! Product added to Zayn Shop!\n\nTitle: ' + nameVal + '\nPrice: ৳' + priceVal);
+
+      setTimeout(() => {
+        const modal = document.getElementById('zayn-shop-importer-modal');
+        if (modal) modal.remove();
+      }, 2000);
+
+    } catch (err) {
+      if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+      if (btnText) btnText.textContent = '🚀 Try Again';
+      if (statusMsg) {
+        statusMsg.style.color = '#e11d48';
+        statusMsg.textContent = 'Error: ' + err.message;
+      }
+      alert('Import error: ' + err.message);
+    }
+  };
+
   // --- 2. CREATE FLOATING MODAL OVER MOVEDROP ---
   const modal = document.createElement('div');
   modal.id = 'zayn-shop-importer-modal';
@@ -106,12 +188,13 @@
     max-width: 90vw;
     background: #ffffff;
     border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.08);
-    z-index: 9999999;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.1);
+    z-index: 2147483647 !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: #1e293b;
     overflow: hidden;
     animation: zaynSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto !important;
   `;
 
   // Inject CSS Keyframe
@@ -132,6 +215,7 @@
         outline: none;
         box-sizing: border-box;
         transition: border-color 0.2s;
+        pointer-events: auto !important;
       }
       .zayn-inp:focus { border-color: #f43f5e; box-shadow: 0 0 0 3px rgba(244,63,94,0.15); }
       .zayn-thumb-strip {
@@ -231,12 +315,12 @@
       </div>
 
       <!-- Submit Button -->
-      <button type="button" id="zayn-submit-btn" style="
+      <button type="button" id="zayn-submit-btn" onclick="window.__zaynShopSubmit(this)" style="
         width: 100%;
         background: linear-gradient(135deg, #e11d48, #f43f5e);
         color: #ffffff;
         border: none;
-        padding: 12px;
+        padding: 13px;
         border-radius: 10px;
         font-size: 14px;
         font-weight: 800;
@@ -245,8 +329,10 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        box-shadow: 0 4px 12px rgba(225,29,72,0.35);
-        transition: transform 0.15s, opacity 0.15s;
+        box-shadow: 0 4px 14px rgba(225,29,72,0.4);
+        position: relative;
+        z-index: 2147483647 !important;
+        pointer-events: auto !important;
       ">
         <span>🚀</span>
         <span id="zayn-btn-text">Import to Zayn Shop Store</span>
@@ -258,78 +344,16 @@
 
   document.body.appendChild(modal);
 
-  // --- 3. SUBMIT ACTION ---
-  document.getElementById('zayn-submit-btn').addEventListener('click', async function() {
-    const btn = document.getElementById('zayn-submit-btn');
-    const btnText = document.getElementById('zayn-btn-text');
-    const statusMsg = document.getElementById('zayn-status-msg');
-
-    const nameVal = document.getElementById('zayn-title').value.trim();
-    const priceVal = parseInt(document.getElementById('zayn-price').value, 10);
-    const regPriceVal = parseInt(document.getElementById('zayn-reg-price').value, 10) || Math.round(priceVal * 1.25);
-    const catVal = document.getElementById('zayn-category').value;
-    const imgVal = document.getElementById('zayn-img-url').value.trim();
-    const descVal = document.getElementById('zayn-desc').value.trim();
-
-    if (!nameVal) {
-      alert('Product title cannot be empty.');
-      return;
-    }
-    if (!priceVal || isNaN(priceVal)) {
-      alert('Please enter a valid selling price.');
-      return;
-    }
-
-    btn.disabled = true;
-    btn.style.opacity = '0.75';
-    btnText.textContent = '⏳ Importing to Store…';
-
-    const payload = {
-      action: 'add_product',
-      id: Math.floor(1000 + Math.random() * 9000),
-      name: nameVal,
-      category: catVal,
-      price: priceVal,
-      regular_price: regPriceVal,
-      image: imgVal,
-      description: descVal,
-      badge: 'Pre-Order',
-      status: 'Active'
-    };
-
-    const webhookUrl = 'https://script.google.com/macros/s/AKfycbz6_ZkMemBMd8kUDicKdQtaB-kdNgDonPSTEC1-W6ilwEji7MLcgFzXShKqAKsYxkuv1A/exec';
-
-    try {
-      await fetch(webhookUrl, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
+  // Bind direct event listener as backup
+  setTimeout(() => {
+    const sBtn = document.getElementById('zayn-submit-btn');
+    if (sBtn) {
+      sBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        window.__zaynShopSubmit(this);
       });
-
-      statusMsg.style.display = 'block';
-      statusMsg.style.color = '#059669';
-      statusMsg.innerHTML = '🎉 <b>Successfully Imported to Zayn Shop!</b><br><span style="font-size:11px;color:#64748b">Product is now live on your website and Google Sheet!</span>';
-      
-      btn.style.background = '#059669';
-      btnText.textContent = '✅ Imported Successfully!';
-
-      setTimeout(() => {
-        modal.style.animation = 'none';
-        modal.style.transition = 'opacity 0.4s, transform 0.4s';
-        modal.style.opacity = '0';
-        modal.style.transform = 'translateY(-20px)';
-        setTimeout(() => modal.remove(), 400);
-      }, 2500);
-
-    } catch (err) {
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btnText.textContent = '🚀 Try Again';
-      statusMsg.style.display = 'block';
-      statusMsg.style.color = '#e11d48';
-      statusMsg.textContent = 'Error importing: ' + err.message;
     }
-  });
+  }, 50);
 
 })();
