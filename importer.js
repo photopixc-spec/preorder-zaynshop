@@ -234,7 +234,17 @@
         return;
       }
 
+      let adminToken = '';
+      try {
+        adminToken = localStorage.getItem('zayn_admin_token') || '';
+      } catch (_) {}
+      if (!adminToken) {
+        adminToken = prompt('Enter Zayn Shop Admin Security Token:', 'zayn_secret_token_2026') || 'zayn_secret_token_2026';
+        try { localStorage.setItem('zayn_admin_token', adminToken.trim()); } catch (_) {}
+      }
+
       const payload = {
+        adminToken: adminToken.trim(),
         action: 'add_product',
         id: Math.floor(1000 + Math.random() * 9000),
         name: nameVal,
@@ -242,6 +252,7 @@
         price: priceVal,
         regular_price: regPriceVal,
         image: imgVal,
+        additional_images: uniqueImgs.slice(1, 6).join('\n'),
         description: descVal,
         badge: 'Pre-Order',
         status: 'Active'

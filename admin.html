@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard — Zayn Shop Product Manager, Importer & Editor</title>
+  <title>Admin Dashboard — Zayn Shop (Local Secure Portal)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -31,7 +31,7 @@
     .admin-header {
       background: #ffffff;
       border-bottom: 1px solid var(--border);
-      padding: 14px 24px;
+      padding: 12px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -45,25 +45,51 @@
       align-items: center;
       gap: 12px;
     }
-    .admin-brand img { height: 34px; }
-    .admin-brand h2 { font-size: 18px; font-weight: 800; color: var(--sec); }
-    .admin-brand span { font-size: 11px; background: #fee2e2; color: var(--pri-dark); padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+    .admin-brand img { height: 32px; }
+    .admin-brand h2 { font-size: 17px; font-weight: 800; color: var(--sec); }
+    .admin-brand span.badge-sec { font-size: 11px; background: #fee2e2; color: var(--pri-dark); padding: 2px 8px; border-radius: 4px; font-weight: 700; }
+    
+    .admin-nav-tabs {
+      display: flex;
+      gap: 8px;
+    }
+    .nav-tab-btn {
+      background: none;
+      border: 1.5px solid transparent;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #64748b;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .nav-tab-btn:hover { background: #f1f5f9; color: var(--sec); }
+    .nav-tab-btn.active {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: var(--blue);
+    }
+
     .admin-actions {
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    .btn-view-store {
-      text-decoration: none;
+    .btn-token-config {
       background: #f1f5f9;
-      color: var(--sec);
+      color: #334155;
       font-weight: 700;
-      font-size: 13px;
-      padding: 8px 14px;
+      font-size: 12px;
+      padding: 7px 12px;
       border-radius: 8px;
-      transition: background 0.15s;
+      border: 1px solid #cbd5e1;
+      cursor: pointer;
     }
-    .btn-view-store:hover { background: #e2e8f0; }
+    .btn-token-config:hover { background: #e2e8f0; }
 
     .admin-wrap {
       max-width: 1250px;
@@ -76,48 +102,9 @@
       background: #ffffff;
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 18px 20px;
+      padding: 16px 20px;
       margin-bottom: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-    }
-    .url-fetcher-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      margin-top: 8px;
-    }
-    .url-fetcher-row input {
-      flex: 1;
-      padding: 10px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 13px;
-    }
-    .btn-fetch {
-      background: var(--sec);
-      color: #fff;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-    }
-    .btn-fetch:hover { background: #334155; }
-
-    .bookmarklet-pill-box {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px dashed var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
     }
     .bookmarklet-btn {
       display: inline-block;
@@ -130,12 +117,11 @@
       text-decoration: none;
       box-shadow: 0 4px 10px rgba(236,72,153,0.25);
     }
-    .bookmarklet-btn:hover { background: #db2777; }
 
     /* Layout */
     .admin-grid {
       display: grid;
-      grid-template-columns: 400px 1fr;
+      grid-template-columns: 420px 1fr;
       gap: 20px;
       align-items: start;
     }
@@ -149,6 +135,7 @@
       border: 1px solid var(--border);
       padding: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      margin-bottom: 20px;
     }
     .card-title {
       font-size: 16px;
@@ -161,36 +148,32 @@
       border-bottom: 1px solid var(--border);
       padding-bottom: 12px;
     }
-    .card-title-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
 
     /* Form */
     .form-group { margin-bottom: 12px; }
     .form-label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px; }
     .form-input, .form-select, .form-textarea {
       width: 100%;
-      padding: 9px 12px;
+      padding: 8px 12px;
       border: 1.5px solid var(--border);
       border-radius: 8px;
       font-size: 13px;
       font-family: inherit;
       color: var(--sec);
+      outline: none;
     }
     .form-input:focus, .form-select:focus, .form-textarea:focus {
-      outline: none;
-      border-color: var(--pri);
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    
+
     .btn-submit-main {
       width: 100%;
       background: var(--pri);
       color: #fff;
       border: none;
-      padding: 12px;
+      padding: 11px;
       border-radius: 8px;
       font-size: 14px;
       font-weight: 800;
@@ -204,7 +187,6 @@
     }
     .btn-submit-main:hover { background: var(--pri-dark); }
     .btn-submit-main.edit-mode { background: var(--blue); }
-    .btn-submit-main.edit-mode:hover { background: #1d4ed8; }
 
     .btn-cancel-edit {
       font-size: 11px;
@@ -217,33 +199,7 @@
       cursor: pointer;
     }
 
-    .img-preview {
-      width: 100%;
-      height: 110px;
-      border: 1px dashed var(--border);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #fafafa;
-      margin-top: 6px;
-      overflow: hidden;
-    }
-    .img-preview img { max-height: 100%; max-width: 100%; object-fit: contain; }
-
-    /* Product Table */
-    .table-tools {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .table-tools input {
-      flex: 1;
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 13px;
-    }
+    /* Tables */
     .prod-table {
       width: 100%;
       border-collapse: collapse;
@@ -269,390 +225,479 @@
       border-radius: 6px;
       border: 1px solid var(--border);
     }
-    .action-group {
-      display: flex;
-      gap: 6px;
-      white-space: nowrap;
+    .status-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
     }
+    .status-active { background: #dcfce7; color: #15803d; }
+    .status-hidden { background: #fee2e2; color: #b91c1c; }
+    .status-instock { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+    .status-preorder { background: #f1f5f9; color: #475569; }
+
     .btn-action-edit {
       background: #e0f2fe;
       color: #0284c7;
       border: 1px solid #bae6fd;
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       cursor: pointer;
     }
-    .btn-action-edit:hover { background: #0284c7; color: #fff; }
     .btn-action-del {
       background: #fee2e2;
       color: #ef4444;
       border: 1px solid #fecdd3;
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       cursor: pointer;
     }
-    .btn-action-del:hover { background: #ef4444; color: #fff; }
 
-    .status-badge {
-      display: inline-block;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-weight: 700;
-    }
-    .status-active { background: #ecfdf5; color: #059669; }
-    .status-hidden { background: #fef2f2; color: #dc2626; }
-
-    /* Toast */
-    #toast {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #0f172a;
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 700;
+    /* Public Deploy Warning Banner */
+    .public-lock-banner {
+      background: #fee2e2;
+      border: 2px solid #ef4444;
+      color: #991b1b;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      margin: 30px auto;
+      max-width: 700px;
       display: none;
-      z-index: 10000;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
     }
   </style>
 </head>
 <body>
+  <!-- Public Lock Warning (If deployed on public web) -->
+  <div class="public-lock-banner" id="publicLockBanner">
+    <div style="font-size:42px;margin-bottom:8px">🔒</div>
+    <h2 style="font-size:20px;margin-bottom:6px">Access Denied on Public Server</h2>
+    <p style="font-size:13px;line-height:1.6;color:#7f1d1d">
+      নিরাপত্তার স্বার্থে অ্যাডমিন প্যানেলটি পাবলিক ওয়েবসাইট থেকে লক করা হয়েছে। অনুগ্রহ করে আপনার কম্পিউটারে ডাউনলোড করা ফোল্ডার থেকে লোকালভাবে এই ফাইলটি রান করুন।
+    </p>
+  </div>
 
-  <!-- Admin Header -->
-  <header class="admin-header">
-    <div class="admin-brand">
-      <img src="images/logo.png" alt="Zayn Shop">
-      <h2>Store Admin</h2>
-      <span>Product Manager & Editor</span>
-    </div>
-    <div class="admin-actions">
-      <a href="index.html" target="_blank" class="btn-view-store">👁️ View Live Store</a>
-    </div>
-  </header>
+  <div id="adminApp">
+    <!-- Header -->
+    <header class="admin-header">
+      <div class="admin-brand">
+        <img src="images/logo.png" alt="Zayn Shop" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
+        <h2>Zayn Shop Admin</h2>
+        <span class="badge-sec">🔒 Local Secure Portal</span>
+      </div>
 
-  <main class="admin-wrap">
-
-    <!-- Top Tools: Smart URL Fetcher & MoveDrop Bookmarklet -->
-    <div class="top-tools-banner">
-      <label class="form-label" style="font-size:13px;font-weight:800;color:var(--sec)">
-        ⚡ Smart URL / Image Link Auto-Filler (AliExpress / Image Link / Product URL)
-      </label>
-      <div class="url-fetcher-row">
-        <input type="url" id="fetchUrlInput" placeholder="Paste product link or direct image link (https://...) and tap Auto-Fetch…">
-        <button type="button" class="btn-fetch" id="btnAutoFetch" onclick="handleAutoFetch()">
-          <span>🔍</span> <span>Auto Fetch Details</span>
+      <nav class="admin-nav-tabs">
+        <button type="button" class="nav-tab-btn active" onclick="switchAdminTab('products', this)">
+          <span>📦</span> <span>Products</span>
         </button>
+        <button type="button" class="nav-tab-btn" onclick="switchAdminTab('orders', this)">
+          <span>📋</span> <span>Orders (<span id="tabOrderCount">0</span>)</span>
+        </button>
+        <button type="button" class="nav-tab-btn" onclick="switchAdminTab('coupons', this)">
+          <span>🏷️</span> <span>Coupons</span>
+        </button>
+        <button type="button" class="nav-tab-btn" onclick="switchAdminTab('reviews', this)">
+          <span>⭐</span> <span>Reviews</span>
+        </button>
+      </nav>
+
+      <div class="admin-actions">
+        <button type="button" class="btn-token-config" onclick="configureAdminToken()">
+          🔑 Change Secret Token
+        </button>
+        <a href="index.html" target="_blank" style="text-decoration:none;background:#2563eb;color:#fff;font-weight:700;font-size:12px;padding:7px 14px;border-radius:8px">
+          View Store ↗
+        </a>
+      </div>
+    </header>
+
+    <div class="admin-wrap">
+      <!-- MoveDrop Bookmarklet Banner -->
+      <div class="top-tools-banner">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:14px;font-weight:800;color:var(--sec)">⚡ MoveDrop 1-Click Product Importer Bookmarklet</div>
+            <div style="font-size:12px;color:var(--text-muted)">ব্রাউজারের বুকমার্কস বারে নিচের বাটনটি ড্র্যাগ করে রেখে দিন। MoveDrop-এ যেকোনো প্রোডাক্ট পেজে ১-ক্লিকে শিটে ইম্পোর্ট হবে।</div>
+          </div>
+          <a class="bookmarklet-btn" href="javascript:(function(){var s=document.createElement('script');s.src='https://photopixc-spec.github.io/preorder-zaynshop/importer.js?v='+Date.now();document.body.appendChild(s);})();">
+            + Zayn MoveDrop Importer
+          </a>
+        </div>
       </div>
 
-      <div class="bookmarklet-pill-box">
-        <div style="font-size:12px;color:#475569;line-height:1.5">
-          <b>MoveDrop ড্যাশবোর্ড থেকে ১-ক্লিকে আনতে:</b> ডানের গোলাপি বাটনটি মাউস দিয়ে টেনে আপনার ব্রাউজারের বুকমার্ক বারে রেখে দিন 👉<br>
-          <span style="color:#64748b;font-size:11px">(বুকমার্ক বার দেখতে কিবোর্ডে চাপুন: Mac-এ <code>Cmd+Shift+B</code>, Windows-এ <code>Ctrl+Shift+B</code>)</span>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <a class="bookmarklet-btn" title="Drag me to your Bookmarks Bar" href="javascript:(function(){var s=document.createElement('script');s.src='https://photopixc-spec.github.io/preorder-zaynshop/importer.js?v='+Date.now();document.body.appendChild(s);})();">⚡ Import to Zayn Shop</a>
-          <button type="button" class="btn-cancel-edit" style="display:inline-block;padding:8px 12px;font-size:11px" onclick="copyBookmarkletCode()">
-            📋 Copy Script
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main Grid -->
-    <div class="admin-grid">
-
-      <!-- Left Column: Add / Edit Product Form -->
-      <div>
-        <div class="card" id="formCard">
-          <div class="card-title">
-            <div class="card-title-left">
-              <span id="formIcon">➕</span>
-              <span id="formTitle">Add New Product</span>
+      <!-- ==============================================
+           TAB 1: PRODUCTS MANAGER
+           ============================================== -->
+      <div id="tabContent-products" class="tab-pane active">
+        <div class="admin-grid">
+          <!-- Left: Product Add / Edit Form -->
+          <div class="card" id="formCard">
+            <div class="card-title">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span id="formIcon">➕</span>
+                <span id="formTitle">Add New Product</span>
+              </div>
+              <button type="button" id="btnCancelEdit" class="btn-cancel-edit" style="display:none" onclick="cancelEditMode()">Cancel Edit</button>
             </div>
-            <button type="button" class="btn-cancel-edit" id="btnCancelEdit" style="display:none" onclick="cancelEditMode()">
-              ✕ Cancel Edit
-            </button>
+
+            <form id="productForm" onsubmit="handleProductSubmit(event)">
+              <input type="hidden" id="editProductId">
+
+              <div class="form-group">
+                <label class="form-label" for="prodName">Product Title *</label>
+                <input type="text" id="prodName" required class="form-input" placeholder="e.g. Zircon Butterfly Necklace Set">
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="prodPrice">Price (৳) *</label>
+                  <input type="number" id="prodPrice" required class="form-input" placeholder="950">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="prodRegPrice">Regular Price (৳)</label>
+                  <input type="number" id="prodRegPrice" class="form-input" placeholder="1200">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="prodCategory">Category *</label>
+                  <select id="prodCategory" class="form-select">
+                    <option value="Jewelry & Accessories">💎 Jewelry & Accessories</option>
+                    <option value="Beauty & Skincare">💄 Beauty & Skincare</option>
+                    <option value="Kids & Toys">🧸 Kids & Toys</option>
+                    <option value="Home & Living">🏡 Home & Living</option>
+                    <option value="Winter Collection">❄️ Winter Collection</option>
+                    <option value="Gifts">🎁 Gifts</option>
+                    <option value="DIY & Crafts">🎨 DIY & Crafts</option>
+                    <option value="Bags & Pouches">👜 Bags & Pouches</option>
+                    <option value="Pet Supplies">🐾 Pet Supplies</option>
+                    <option value="Stationery & Books">📚 Stationery & Books</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="prodBadge">Stock Type / Badge</label>
+                  <select id="prodBadge" class="form-select">
+                    <option value="Pre-Order">✈️ Pre-Order (15–25 Days)</option>
+                    <option value="In Stock">🟢 Ready Stock (2–3 Days)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="prodStockQty">Stock Quantity (Optional)</label>
+                  <input type="number" id="prodStockQty" class="form-input" placeholder="e.g. 10 or leave empty">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="prodStatus">Store Status</label>
+                  <select id="prodStatus" class="form-select">
+                    <option value="Active">🟢 Active (Visible)</option>
+                    <option value="Hidden">🔴 Hidden</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Variants: Sizes & Colors -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="prodSizes">Sizes (Comma separated)</label>
+                  <input type="text" id="prodSizes" class="form-input" placeholder="e.g. S, M, L, XL">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="prodColors">Colors (Comma separated)</label>
+                  <input type="text" id="prodColors" class="form-input" placeholder="e.g. Gold, Silver, Rose Gold">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="prodImage">Main Image URL *</label>
+                <input type="text" id="prodImage" required class="form-input" placeholder="images/prod_19.jpg or https://..." oninput="updateImgPreview(this.value)">
+                <div class="img-preview" id="imgPreviewBox">
+                  <span style="font-size:12px;color:#94a3b8">Image preview appears here</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="prodAddlImages">Additional Images Gallery (URLs, one per line)</label>
+                <textarea id="prodAddlImages" class="form-textarea" rows="2" placeholder="https://image2.jpg&#10;https://image3.jpg"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="prodDesc">Description & Specifications</label>
+                <textarea id="prodDesc" class="form-textarea" rows="3" placeholder="Product details, material, care, etc."></textarea>
+              </div>
+
+              <button type="submit" id="btnFormSubmit" class="btn-submit-main">
+                <span id="btnSubmitText">Publish Product to Store</span>
+              </button>
+            </form>
           </div>
 
-          <form id="productForm" onsubmit="handleFormSubmit(event)">
-            <input type="hidden" id="editProductId" value="">
-
-            <div class="form-group">
-              <label class="form-label">Product Name / Title *</label>
-              <input type="text" id="prodName" class="form-input" required placeholder="e.g. Zircon Crystal Butterfly Pendant">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Category *</label>
-              <select id="prodCategory" class="form-select">
-                <option value="Jewelry & Accessories">💎 Jewelry & Accessories</option>
-                <option value="Cute & Toys">🧸 Cute & Toys</option>
-                <option value="Beauty & Skincare">💄 Beauty & Skincare</option>
-                <option value="Home & Living">🏡 Home & Living</option>
-                <option value="Fashion & Wear">👗 Fashion & Wear</option>
-              </select>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Selling Price (৳) *</label>
-                <input type="number" id="prodPrice" class="form-input" required placeholder="850">
+          <!-- Right: Products Table -->
+          <div class="card">
+            <div class="card-title">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span>📋</span>
+                <span>Products List (<span id="prodCount">0</span>)</span>
               </div>
-              <div class="form-group">
-                <label class="form-label">Regular / Old Price (৳)</label>
-                <input type="number" id="prodRegPrice" class="form-input" placeholder="1100">
-              </div>
+              <button type="button" onclick="fetchLiveAdminProducts()" style="background:#f1f5f9;border:1px solid #cbd5e1;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">
+                🔄 Refresh
+              </button>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Image URL (Direct link or MoveDrop CDN) *</label>
-              <input type="url" id="prodImage" class="form-input" required placeholder="https://..." oninput="updateImgPreview(this.value)">
-              <div class="img-preview" id="imgPreviewBox">
-                <span style="font-size:12px;color:#94a3b8">Image preview appears here</span>
-              </div>
+            <div style="margin-bottom:12px">
+              <input type="text" id="searchTable" class="form-input" placeholder="Search by name, ID or category…" oninput="filterAdminTable()">
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Description (Optional)</label>
-              <textarea id="prodDesc" class="form-textarea" rows="3" placeholder="Product details, material, package contents..."></textarea>
+            <div style="overflow-x:auto">
+              <table class="prod-table">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Badge / Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="prodTableBody">
+                  <tr><td colspan="8" style="text-align:center;padding:30px;color:#94a3b8">Loading products…</td></tr>
+                </tbody>
+              </table>
             </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Badge Tag</label>
-                <input type="text" id="prodBadge" class="form-input" value="Pre-Order" placeholder="Pre-Order">
-              </div>
-              <div class="form-group">
-                <label class="form-label">Status</label>
-                <select id="prodStatus" class="form-select">
-                  <option value="Active">🟢 Active (Visible on site)</option>
-                  <option value="Hidden">🔴 Hidden (Don't show)</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" class="btn-submit-main" id="btnFormSubmit">
-              <span>🚀</span>
-              <span id="btnSubmitText">Publish Product to Store</span>
-            </button>
-          </form>
+          </div>
         </div>
       </div>
 
-      <!-- Right Column: Live Table with Edit & Delete -->
-      <div>
+      <!-- ==============================================
+           TAB 2: ORDERS MANAGER
+           ============================================== -->
+      <div id="tabContent-orders" class="tab-pane" style="display:none">
         <div class="card">
           <div class="card-title">
-            <div class="card-title-left">
+            <div style="display:flex;align-items:center;gap:6px">
               <span>📋</span>
-              <span>All Products (<span id="prodCount">0</span>)</span>
+              <span>Customer Orders Management</span>
             </div>
-            <button class="btn-action-edit" style="background:#f1f5f9;color:#334155;border-color:#cbd5e1" onclick="fetchLiveAdminProducts()">
-              🔄 Refresh List
+            <button type="button" onclick="loadAdminOrders()" style="background:#f1f5f9;border:1px solid #cbd5e1;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer">
+              🔄 Refresh Orders
             </button>
           </div>
 
-          <div class="table-tools">
-            <input type="text" id="searchTable" placeholder="Search by name, ID, or category…" oninput="filterAdminTable()">
-          </div>
-
-          <div style="overflow-x:auto;">
+          <div style="overflow-x:auto">
             <table class="prod-table">
               <thead>
                 <tr>
-                  <th>Image</th>
-                  <th>ID</th>
-                  <th>Title</th>
-                  <th>Category</th>
-                  <th>Price</th>
+                  <th>Order ID</th>
+                  <th>Date</th>
+                  <th>Customer</th>
+                  <th>Phone</th>
+                  <th>Area / Address</th>
+                  <th>Items</th>
+                  <th>Subtotal</th>
+                  <th>Total</th>
+                  <th>Advance (৳200)</th>
                   <th>Status</th>
-                  <th>Actions</th>
+                  <th>Courier Tracking</th>
+                  <th>Action</th>
                 </tr>
               </thead>
-              <tbody id="prodTableBody">
-                <tr>
-                  <td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">Loading products…</td>
-                </tr>
+              <tbody id="ordersTableBody">
+                <tr><td colspan="12" style="text-align:center;padding:30px;color:#94a3b8">Loading orders…</td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
+      <!-- ==============================================
+           TAB 3: COUPONS MANAGER
+           ============================================== -->
+      <div id="tabContent-coupons" class="tab-pane" style="display:none">
+        <div class="admin-grid">
+          <!-- Create Coupon -->
+          <div class="card">
+            <div class="card-title">
+              <span>🏷️ Create Promo / Coupon Code</span>
+            </div>
+            <form onsubmit="handleCreateCoupon(event)">
+              <div class="form-group">
+                <label class="form-label">Coupon Code *</label>
+                <input type="text" id="coupCode" required class="form-input" placeholder="e.g. SAVE100" style="text-transform:uppercase;font-weight:700">
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Discount Type</label>
+                  <select id="coupType" class="form-select">
+                    <option value="flat">Flat ৳ Amount</option>
+                    <option value="percentage">Percentage (%)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Discount Value *</label>
+                  <input type="number" id="coupValue" required class="form-input" placeholder="100">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Min Order (৳)</label>
+                  <input type="number" id="coupMinOrder" class="form-input" placeholder="e.g. 1000">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Expiry Date</label>
+                  <input type="date" id="coupExpiry" class="form-input">
+                </div>
+              </div>
+
+              <button type="submit" class="btn-submit-main" style="background:#0f172a">
+                Create Coupon Code
+              </button>
+            </form>
+          </div>
+
+          <!-- Coupons List -->
+          <div class="card">
+            <div class="card-title">
+              <span>Active Coupons</span>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="prod-table">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Type</th>
+                    <th>Value</th>
+                    <th>Min Order</th>
+                    <th>Used</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="couponsTableBody">
+                  <tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">Loading coupons…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================================
+           TAB 4: REVIEWS MODERATION
+           ============================================== -->
+      <div id="tabContent-reviews" class="tab-pane" style="display:none">
+        <div class="card">
+          <div class="card-title">
+            <span>⭐ Customer Reviews Moderation Queue</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="prod-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Product ID</th>
+                  <th>Customer</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="reviewsTableBody">
+                <tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">Loading reviews…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-  </main>
+  <div id="toast" style="position:fixed;bottom:24px;right:24px;background:#0f172a;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;font-weight:700;display:none;z-index:99999;"></div>
 
-  <div id="toast"></div>
-
-  <script src="config.js"></script>
+  <!-- Scripts -->
+  <script src="config.js?v=4"></script>
   <script>
     let adminProducts = [];
     let isEditing = false;
+    let adminSecretToken = localStorage.getItem('zayn_admin_token') || 'zayn_secret_token_2026';
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    // Verify local or restricted environment
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.location.hostname.includes('github.io')) {
+        document.getElementById('publicLockBanner').style.display = 'block';
+        document.getElementById('adminApp').style.display = 'none';
+        return;
+      }
+
+      fetchLiveAdminProducts();
+    });
+
+    function getAdminToken() {
+      return adminSecretToken;
+    }
+
+    function configureAdminToken() {
+      const current = adminSecretToken;
+      const newToken = prompt('Enter Admin Security Token (must match Apps Script token):', current);
+      if (newToken && newToken.trim()) {
+        adminSecretToken = newToken.trim();
+        localStorage.setItem('zayn_admin_token', adminSecretToken);
+        showToast('🔑 Admin token saved!');
+        fetchLiveAdminProducts();
+      }
+    }
+
+    function switchAdminTab(tabName, btn) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+      document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+      const target = document.getElementById('tabContent-' + tabName);
+      if (target) target.style.display = 'block';
+      if (btn) btn.classList.add('active');
+
+      if (tabName === 'orders') loadAdminOrders();
+      if (tabName === 'coupons') loadAdminCoupons();
+      if (tabName === 'reviews') loadAdminReviews();
     }
 
     function updateImgPreview(url) {
       const box = document.getElementById('imgPreviewBox');
-      if (url && url.startsWith('http')) {
-        box.innerHTML = `<img src="${url}" onerror="this.onerror=null;this.parentElement.innerHTML='<span style=\\'color:#ef4444;font-size:12px\\'>Image link invalid</span>';">`;
-      } else if (url && url.startsWith('images/')) {
-        box.innerHTML = `<img src="${url}">`;
+      if (url && url.trim()) {
+        box.innerHTML = `<img src="${url.trim()}" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">`;
       } else {
-        box.innerHTML = `<span style="font-size:12px;color:#94a3b8">Image preview appears here</span>`;
-      }
-    }
-
-    function copyBookmarkletCode() {
-      const btn = document.querySelector('.bookmarklet-btn');
-      if (btn && btn.href) {
-        navigator.clipboard.writeText(btn.href).then(() => {
-          alert('✅ বুকমার্কলেট কোড কপি হয়েছে!\n\nব্যবহার করার নিয়ম:\n১. ব্রাউজারের বুকমার্ক বারে Right Click করে "Add page" বা "Add Bookmark" দিন।\n২. Name লিখুন: ⚡ Import to Zayn Shop\n৩. URL বক্সে এই কপি করা কোডটি Paste করে Save দিন!\n\nএরপর MoveDrop-এ যে কোনো প্রোডাক্ট পেজে গিয়ে এই বুকমার্কে ১টি ক্লিক করলেই প্রোডাক্ট সাইটে যোগ হয়ে যাবে!');
-        }).catch(() => {
-          prompt('বুকমার্কলেট কোডটি কপি করতে Ctrl+C বা Cmd+C চাপুন:', btn.href);
-        });
-      }
-    }
-
-    // Auto-fetch product details from public URL or direct image
-    async function handleAutoFetch() {
-      const urlInput = document.getElementById('fetchUrlInput');
-      const url = urlInput.value.trim();
-      const btn = document.getElementById('btnAutoFetch');
-
-      if (!url) {
-        alert('অনুগ্রহ করে আগে কোনো লিংক পেস্ট করুন।');
-        return;
-      }
-
-      // 1. Direct Image URL detection (Instant fill!)
-      if (url.match(/\.(jpg|jpeg|png|webp|gif)($|\?)/i) || url.includes('alicdn.com') || url.includes('storage.googleapis.com')) {
-        document.getElementById('prodImage').value = url;
-        updateImgPreview(url);
-        showToast('✅ ছবির লিংক পেয়ে গেছি! নিচের ফর্মে নাম ও দাম লিখে সেভ করুন।');
-        document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
-        document.getElementById('prodName').focus();
-        return;
-      }
-
-      // 2. MoveDrop URL detection (MoveDrop requires private login session)
-      if (url.toLowerCase().includes('movedrop')) {
-        alert('💡 MoveDrop নোটিশ:\n\nMoveDrop ওয়েবসাইটটি আপনার ব্যক্তিগত অ্যাকাউন্টে সুরক্ষিত ও লগইন অবস্থায় থাকে। বাইরের কোনো সাধারণ সার্ভার আপনার লগইন ছাড়া ভেতরের তথ্য পড়তে পারে না।\n\n👉 MoveDrop থেকে ১-ক্লিকে আনতে:\nউপরে দেওয়া "⚡ Import to Zayn Shop" বাটনটি আপনার ব্রাউজারের বুকমার্ক বারে রেখে MoveDrop পেজে ১টি ক্লিক করুন!\n\nঅথবা: MoveDrop-এর ছবির ওপর মাউস দিয়ে Right Click করে "Copy image address" নিয়ে নিচের ফর্মে পেস্ট করে দিন (মাত্র ৫ সেকেন্ডের কাজ!)।');
-        document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerHTML = '<span>⏳ স্ক্যান হচ্ছে…</span>';
-
-      try {
-        let html = '';
-
-        // Try primary proxy with 8s timeout
-        try {
-          const c1 = new AbortController();
-          const t1 = setTimeout(() => c1.abort(), 8000);
-          const res1 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { signal: c1.signal });
-          clearTimeout(t1);
-          if (res1.ok) {
-            const data1 = await res1.json();
-            html = data1.contents || '';
-          }
-        } catch(e) {
-          console.warn('Proxy 1 failed, trying fallback...', e);
-        }
-
-        // Try fallback proxy if primary failed
-        if (!html) {
-          try {
-            const c2 = new AbortController();
-            const t2 = setTimeout(() => c2.abort(), 8000);
-            const res2 = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`, { signal: c2.signal });
-            clearTimeout(t2);
-            if (res2.ok) {
-              html = await res2.text();
-            }
-          } catch(e) {
-            console.warn('Proxy 2 failed...', e);
-          }
-        }
-
-        if (!html) {
-          throw new Error('এই সাইটটি পাবলিক স্ক্র্যাপার ব্লক করেছে।');
-        }
-
-        // Extract metadata
-        const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i) ||
-                        html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:title["']/i);
-        const titleTag = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-        const h1Tag = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
-        const extractedTitle = ogTitle ? ogTitle[1] : (h1Tag ? h1Tag[1] : (titleTag ? titleTag[1] : ''));
-
-        const ogImg = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
-                      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
-        const imgTag = html.match(/<img[^>]*src=["'](https?:\/\/[^"']+\.(jpg|jpeg|png|webp))["']/i);
-        const extractedImg = ogImg ? ogImg[1] : (imgTag ? imgTag[1] : '');
-
-        const ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i) ||
-                       html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
-        const extractedDesc = ogDesc ? ogDesc[1] : '';
-
-        const priceMatch = html.match(/৳\s*([0-9,]+)/) || html.match(/([0-9,]+)\s*BDT/) || html.match(/\$\s*([0-9.]+)/);
-        const extractedPrice = priceMatch ? priceMatch[1].replace(/,/g, '') : '';
-
-        // Auto-fill form fields
-        if (extractedTitle) document.getElementById('prodName').value = extractedTitle.trim();
-        if (extractedImg) {
-          document.getElementById('prodImage').value = extractedImg.trim();
-          updateImgPreview(extractedImg.trim());
-        }
-        if (extractedPrice) {
-          document.getElementById('prodPrice').value = extractedPrice;
-          document.getElementById('prodRegPrice').value = Math.round(Number(extractedPrice) * 1.25);
-        }
-        if (extractedDesc) document.getElementById('prodDesc').value = extractedDesc.trim();
-
-        showToast('✅ স্বয়ংক্রিয়ভাবে তথ্য নিচে ফর্মে বসানো হয়েছে!');
-        document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
-
-      } catch (err) {
-        alert('💡 এই ওয়েবসাইট থেকে সরাসরি তথ্য আনা সম্ভব হয়নি (' + err.message + ')\n\nসহজ সমাধান:\n১. ছবির লিংকটি সরাসরি নিচের "Image URL" বক্সে পেস্ট করুন।\n২. প্রোডাক্টের নাম ও প্রাইস নিচের ফর্মে বসিয়ে "Publish" বাটনে ক্লিক করুন (মাত্র কয়েক সেকেন্ডের কাজ!)।');
-        document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<span>🔍</span> <span>Auto Fetch Details</span>';
+        box.innerHTML = '<span style="font-size:12px;color:#94a3b8">Image preview appears here</span>';
       }
     }
 
     // Load Live Products
     async function fetchLiveAdminProducts() {
       const tbody = document.getElementById('prodTableBody');
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">Loading latest products…</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:#94a3b8">Loading latest products…</td></tr>';
       
       try {
         let products = null;
         if (CONFIG.orderWebhookUrl) {
-          const res = await fetch(CONFIG.orderWebhookUrl);
+          const sep = CONFIG.orderWebhookUrl.includes('?') ? '&' : '?';
+          const res = await fetch(CONFIG.orderWebhookUrl + sep + 't=' + Date.now());
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {
             products = data;
           }
         }
         if (!products) {
-          const res = await fetch('products.json');
+          const res = await fetch('products.json?v=' + Date.now());
           products = await res.json();
         }
 
@@ -660,7 +705,7 @@
         document.getElementById('prodCount').textContent = products.length;
         renderAdminTable(products);
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:30px;">Failed to fetch live products.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#ef4444;padding:30px;">Failed to fetch live products.</td></tr>';
       }
     }
 
@@ -669,19 +714,27 @@
       const currency = CONFIG.currencySymbol || '৳';
 
       if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#94a3b8">No products found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:#94a3b8">No products found.</td></tr>';
         return;
       }
 
       tbody.innerHTML = list.map(p => {
         const isHidden = (p.status || '').toLowerCase() === 'hidden';
+        const isReady = (p.badge || '').toLowerCase().includes('ready') || (p.badge || '').toLowerCase().includes('in stock') || (p.stock_status || '').toLowerCase() === 'in stock';
+
         return `
         <tr>
           <td><img src="${p.image}" class="prod-thumb" onerror="this.onerror=null;this.src='images/hero_banner.jpg';"></td>
           <td style="font-weight:700;color:#64748b">#${p.id}</td>
-          <td style="font-weight:700;color:#0f172a;max-width:240px">${escapeHtml(p.name)}</td>
+          <td style="font-weight:700;color:#0f172a;max-width:220px">${escapeHtml(p.name)}</td>
           <td><span style="font-size:11px;background:#f1f5f9;padding:2px 8px;border-radius:4px;color:#475569">${escapeHtml(p.category)}</span></td>
           <td style="font-weight:800;color:var(--pri)">${currency}${Number(p.price).toLocaleString()}</td>
+          <td>
+            <span class="status-badge ${isReady ? 'status-instock' : 'status-preorder'}">
+              ${isReady ? '🟢 Ready Stock' : '✈️ Pre-Order'}
+            </span>
+            ${p.stock_qty ? `<div style="font-size:10px;color:#64748b;margin-top:2px">Qty: ${p.stock_qty}</div>` : ''}
+          </td>
           <td>
             <span class="status-badge ${isHidden ? 'status-hidden' : 'status-active'}">
               ${isHidden ? '🔴 Hidden' : '🟢 Active'}
@@ -693,7 +746,7 @@
                 ✏️ Edit
               </button>
               <button type="button" class="btn-action-del" onclick="deleteProduct(${p.id}, '${escapeHtml(p.name).replace(/'/g, "\\'")}')">
-                🗑️ Delete
+                🗑️
               </button>
             </div>
           </td>
@@ -711,7 +764,6 @@
       renderAdminTable(filtered);
     }
 
-    // Edit Product Mode
     function startEditProduct(id) {
       const p = adminProducts.find(item => Number(item.id) === Number(id));
       if (!p) return;
@@ -723,21 +775,22 @@
       document.getElementById('prodPrice').value = p.price;
       document.getElementById('prodRegPrice').value = p.regular_price || '';
       document.getElementById('prodImage').value = p.image;
+      document.getElementById('prodAddlImages').value = Array.isArray(p.additional_images) ? p.additional_images.join('\n') : (p.additional_images || '');
       document.getElementById('prodDesc').value = p.description || '';
-      document.getElementById('prodBadge').value = p.badge || 'Pre-Order';
+      document.getElementById('prodBadge').value = (p.badge || '').toLowerCase().includes('in stock') || (p.badge || '').toLowerCase().includes('ready') ? 'In Stock' : 'Pre-Order';
+      document.getElementById('prodStockQty').value = p.stock_qty || '';
+      document.getElementById('prodSizes').value = Array.isArray(p.sizes) ? p.sizes.join(', ') : (p.sizes || '');
+      document.getElementById('prodColors').value = Array.isArray(p.colors) ? p.colors.join(', ') : (p.colors || '');
       document.getElementById('prodStatus').value = (p.status || '').toLowerCase() === 'hidden' ? 'Hidden' : 'Active';
       
       updateImgPreview(p.image);
 
-      // UI changes for Edit Mode
       document.getElementById('formIcon').textContent = '✏️';
-      document.getElementById('formTitle').textContent = `Editing #${p.id} (${p.name.slice(0, 24)}…)`;
+      document.getElementById('formTitle').textContent = `Editing #${p.id}`;
       document.getElementById('btnCancelEdit').style.display = 'inline-block';
       const submitBtn = document.getElementById('btnFormSubmit');
       submitBtn.classList.add('edit-mode');
       document.getElementById('btnSubmitText').textContent = 'Save & Update Product';
-
-      // Scroll smoothly to form
       document.getElementById('formCard').scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -754,8 +807,7 @@
       document.getElementById('imgPreviewBox').innerHTML = '<span style="font-size:12px;color:#94a3b8">Image preview appears here</span>';
     }
 
-    // Submit Add or Edit Form
-    async function handleFormSubmit(e) {
+    async function handleProductSubmit(e) {
       e.preventDefault();
       const btn = document.getElementById('btnFormSubmit');
       btn.disabled = true;
@@ -766,11 +818,16 @@
       const price = parseInt(document.getElementById('prodPrice').value, 10);
       const regPrice = parseInt(document.getElementById('prodRegPrice').value, 10) || Math.round(price * 1.25);
       const image = document.getElementById('prodImage').value.trim();
+      const addlImages = document.getElementById('prodAddlImages').value.trim();
       const desc = document.getElementById('prodDesc').value.trim();
-      const badge = document.getElementById('prodBadge').value.trim() || 'Pre-Order';
+      const badge = document.getElementById('prodBadge').value;
+      const stockQty = document.getElementById('prodStockQty').value;
+      const sizes = document.getElementById('prodSizes').value.trim();
+      const colors = document.getElementById('prodColors').value.trim();
       const status = document.getElementById('prodStatus').value;
 
       const payload = {
+        adminToken: getAdminToken(),
         action: isEditing ? 'update_product' : 'add_product',
         id: isEditing ? Number(editId) : Math.floor(1000 + Math.random() * 9000),
         name: name,
@@ -778,14 +835,19 @@
         price: price,
         regular_price: regPrice,
         image: image,
+        additional_images: addlImages,
         description: desc,
         badge: badge,
+        stock_qty: stockQty,
+        stock_status: badge === 'In Stock' ? 'In Stock' : 'Pre-Order',
+        sizes: sizes,
+        colors: colors,
         status: status
       };
 
       try {
         if (CONFIG.orderWebhookUrl) {
-          await fetch(CONFIG.orderWebhookUrl, {
+          const res = await fetch(CONFIG.orderWebhookUrl, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -794,64 +856,305 @@
         }
 
         if (isEditing) {
-          showToast(`✅ Product #${editId} updated successfully!`);
+          showToast(`✅ Product #${editId} updated!`);
           cancelEditMode();
         } else {
-          showToast(`✅ "${name}" published to Zayn Shop!`);
+          showToast(`✅ "${name}" added to Zayn Shop!`);
           document.getElementById('productForm').reset();
           document.getElementById('imgPreviewBox').innerHTML = '<span style="font-size:12px;color:#94a3b8">Image preview appears here</span>';
         }
 
-        // Refresh live list
         setTimeout(() => { fetchLiveAdminProducts(); }, 1200);
-
       } catch (err) {
-        alert('Failed to save product: ' + err);
+        alert('Error saving product: ' + err);
       } finally {
         btn.disabled = false;
       }
     }
 
     async function deleteProduct(id, name) {
-      if (!confirm(`Are you sure you want to delete "${name}" (ID #${id}) from the store?`)) {
-        return;
-      }
+      if (!confirm(`Are you sure you want to delete "${name}" (ID #${id})?`)) return;
 
       showToast(`Deleting #${id}…`);
-
       try {
         if (CONFIG.orderWebhookUrl) {
           await fetch(CONFIG.orderWebhookUrl, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'delete_product', id: id })
+            body: JSON.stringify({
+              adminToken: getAdminToken(),
+              action: 'delete_product',
+              id: id
+            })
           });
         }
-
         adminProducts = adminProducts.filter(p => Number(p.id) !== Number(id));
         document.getElementById('prodCount').textContent = adminProducts.length;
         renderAdminTable(adminProducts);
-        showToast(`🗑️ Product #${id} deleted from store!`);
+        showToast(`🗑️ Product #${id} deleted!`);
+      } catch (err) {
+        alert('Delete failed: ' + err);
+      }
+    }
+
+    // Load Live Admin Data (Orders, Coupons, Reviews)
+    async function loadAdminOrders() {
+      const tbody = document.getElementById('ordersTableBody');
+      tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:20px;color:#64748b">Loading orders from Google Sheets…</td></tr>';
+
+      try {
+        const sep = CONFIG.orderWebhookUrl.includes('?') ? '&' : '?';
+        const res = await fetch(CONFIG.orderWebhookUrl + sep + 'action=get_admin_data&adminToken=' + encodeURIComponent(getAdminToken()));
+        const data = await res.json();
+
+        if (data.status === 'unauthorized') {
+          tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:#ef4444;padding:20px;">❌ Invalid Admin Token. Click "Change Secret Token" in the top bar.</td></tr>';
+          return;
+        }
+
+        const orders = data.orders || [];
+        document.getElementById('tabOrderCount').textContent = orders.length;
+
+        if (!orders.length) {
+          tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;padding:20px;color:#94a3b8">No orders found.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = orders.map(o => `
+          <tr>
+            <td style="font-weight:800;color:#0f172a">#${escapeHtml(o.orderId)}</td>
+            <td style="font-size:11px;color:#64748b">${escapeHtml(o.timestamp)}</td>
+            <td style="font-weight:700">${escapeHtml(o.customerName)}</td>
+            <td><a href="tel:${escapeHtml(o.customerPhone)}" style="color:#2563eb;font-weight:700;text-decoration:none">${escapeHtml(o.customerPhone)}</a></td>
+            <td style="font-size:11px;max-width:180px">${escapeHtml(o.deliveryArea)}<br><span style="color:#64748b">${escapeHtml(o.deliveryAddress)}</span></td>
+            <td style="font-size:11px;white-space:pre-line;max-width:160px">${escapeHtml(o.orderedItems)}</td>
+            <td>৳${Number(o.subtotal).toLocaleString()}</td>
+            <td style="font-weight:800;color:var(--pri)">৳${Number(o.totalAmount).toLocaleString()}</td>
+            <td><span style="font-size:11px;font-weight:700;color:#059669">৳${o.advanceAmount}</span></td>
+            <td>
+              <select style="font-size:12px;padding:4px;border-radius:4px" onchange="updateOrderStatus('${o.orderId}', this.value)">
+                <option value="Pending Advance" ${o.status === 'Pending Advance' ? 'selected' : ''}>Pending Advance</option>
+                <option value="Confirmed" ${o.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+              </select>
+            </td>
+            <td>
+              <input type="text" value="${escapeHtml(o.courierTracking || '')}" placeholder="Tracking ID/URL" style="width:110px;font-size:11px;padding:3px 6px" onchange="updateCourierTracking('${o.orderId}', this.value)">
+            </td>
+            <td>
+              <a href="https://wa.me/${String(o.customerPhone).replace(/[^0-9]/g, '')}" target="_blank" style="text-decoration:none;font-size:14px" title="Chat on WhatsApp">💬</a>
+            </td>
+          </tr>
+        `).join('');
 
       } catch (err) {
-        alert('Failed to delete product: ' + err);
+        tbody.innerHTML = '<tr><td colspan="12" style="text-align:center;color:#ef4444;padding:20px;">Failed to load orders.</td></tr>';
+      }
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+      showToast(`Updating #${orderId}…`);
+      try {
+        await fetch(CONFIG.orderWebhookUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            adminToken: getAdminToken(),
+            action: 'update_order_status',
+            orderId: orderId,
+            status: newStatus
+          })
+        });
+        showToast(`✅ #${orderId} marked as ${newStatus}`);
+      } catch (err) {
+        alert('Update error: ' + err);
+      }
+    }
+
+    async function updateCourierTracking(orderId, trackingVal) {
+      showToast(`Saving tracking for #${orderId}…`);
+      try {
+        await fetch(CONFIG.orderWebhookUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            adminToken: getAdminToken(),
+            action: 'update_order_status',
+            orderId: orderId,
+            courierTracking: trackingVal
+          })
+        });
+        showToast(`✅ Tracking saved for #${orderId}`);
+      } catch (err) {
+        alert('Tracking update error: ' + err);
+      }
+    }
+
+    // Load Coupons
+    async function loadAdminCoupons() {
+      const tbody = document.getElementById('couponsTableBody');
+      try {
+        const sep = CONFIG.orderWebhookUrl.includes('?') ? '&' : '?';
+        const res = await fetch(CONFIG.orderWebhookUrl + sep + 'action=get_admin_data&adminToken=' + encodeURIComponent(getAdminToken()));
+        const data = await res.json();
+        const coupons = data.coupons || [];
+
+        if (!coupons.length) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">No coupons created yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = coupons.map(c => `
+          <tr>
+            <td style="font-weight:800;color:var(--sec)">${escapeHtml(c.code)}</td>
+            <td>${escapeHtml(c.type)}</td>
+            <td style="font-weight:800;color:#059669">${c.type === 'percentage' ? c.value + '%' : '৳' + c.value}</td>
+            <td>৳${c.minOrder || 0}</td>
+            <td>${c.timesUsed || 0}</td>
+            <td><span class="status-badge ${c.status.toLowerCase() === 'active' ? 'status-active' : 'status-hidden'}">${escapeHtml(c.status)}</span></td>
+            <td>
+              <button type="button" class="btn-action-del" onclick="deleteCoupon('${escapeHtml(c.code)}')">Delete</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:20px;">Failed to load coupons.</td></tr>';
+      }
+    }
+
+    async function handleCreateCoupon(e) {
+      e.preventDefault();
+      const code = document.getElementById('coupCode').value.trim().toUpperCase();
+      const type = document.getElementById('coupType').value;
+      const val = Number(document.getElementById('coupValue').value);
+      const min = Number(document.getElementById('coupMinOrder').value) || 0;
+      const exp = document.getElementById('coupExpiry').value;
+
+      showToast(`Creating coupon ${code}…`);
+      try {
+        await fetch(CONFIG.orderWebhookUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            adminToken: getAdminToken(),
+            action: 'manage_coupon',
+            subAction: 'add',
+            code: code,
+            type: type,
+            value: val,
+            minOrder: min,
+            expiry: exp,
+            status: 'Active'
+          })
+        });
+        showToast(`✅ Coupon ${code} created!`);
+        setTimeout(() => loadAdminCoupons(), 1000);
+      } catch (err) {
+        alert('Coupon create error: ' + err);
+      }
+    }
+
+    async function deleteCoupon(code) {
+      if (!confirm(`Delete coupon "${code}"?`)) return;
+      try {
+        await fetch(CONFIG.orderWebhookUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            adminToken: getAdminToken(),
+            action: 'manage_coupon',
+            subAction: 'delete',
+            code: code
+          })
+        });
+        showToast(`🗑️ Coupon ${code} deleted!`);
+        setTimeout(() => loadAdminCoupons(), 1000);
+      } catch (err) {
+        alert('Coupon delete error: ' + err);
+      }
+    }
+
+    // Reviews Moderation
+    async function loadAdminReviews() {
+      const tbody = document.getElementById('reviewsTableBody');
+      try {
+        const sep = CONFIG.orderWebhookUrl.includes('?') ? '&' : '?';
+        const res = await fetch(CONFIG.orderWebhookUrl + sep + 'action=get_admin_data&adminToken=' + encodeURIComponent(getAdminToken()));
+        const data = await res.json();
+        const reviews = data.reviews || [];
+
+        if (!reviews.length) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8">No reviews in queue.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = reviews.map(r => `
+          <tr>
+            <td style="font-size:11px;color:#64748b">${escapeHtml(r.timestamp)}</td>
+            <td style="font-weight:700">#${r.productId}</td>
+            <td style="font-weight:700">${escapeHtml(r.customerName)}</td>
+            <td style="color:#f59e0b">${'★'.repeat(r.rating || 5)}</td>
+            <td style="font-size:12px;max-width:280px">${escapeHtml(r.comment)}</td>
+            <td>
+              <span class="status-badge ${r.status === 'Approved' ? 'status-active' : (r.status === 'Rejected' ? 'status-hidden' : 'status-preorder')}">
+                ${escapeHtml(r.status)}
+              </span>
+            </td>
+            <td>
+              <div class="action-group">
+                <button type="button" class="btn-action-edit" style="background:#dcfce7;color:#15803d;border-color:#bbf7d0" onclick="moderateReview(${r.rowIndex}, 'Approved')">Approve</button>
+                <button type="button" class="btn-action-del" onclick="moderateReview(${r.rowIndex}, 'Rejected')">Reject</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ef4444;padding:20px;">Failed to load reviews.</td></tr>';
+      }
+    }
+
+    async function moderateReview(rowIndex, newStatus) {
+      showToast(`Marking review as ${newStatus}…`);
+      try {
+        await fetch(CONFIG.orderWebhookUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            adminToken: getAdminToken(),
+            action: 'moderate_review',
+            rowIndex: rowIndex,
+            status: newStatus
+          })
+        });
+        showToast(`✅ Review marked as ${newStatus}!`);
+        setTimeout(() => loadAdminReviews(), 1000);
+      } catch (err) {
+        alert('Review moderation error: ' + err);
       }
     }
 
     function escapeHtml(str) {
       if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      fetchLiveAdminProducts();
-    });
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      if (t) {
+        t.textContent = msg;
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 3000);
+      }
+    }
   </script>
 </body>
 </html>

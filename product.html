@@ -31,6 +31,9 @@
       </div>
 
       <div class="header-actions">
+        <a href="track.html" style="text-decoration:none;font-size:13px;font-weight:700;color:#334155;padding:8px 12px;border-radius:8px;background:#f1f5f9;display:inline-flex;align-items:center;gap:4px">
+          <span>📦</span> <span>Track Order</span>
+        </a>
         <a href="index.html" style="text-decoration:none;font-size:13px;font-weight:700;color:#334155;padding:8px 12px;border-radius:8px;background:#f1f5f9">
           ← All Products
         </a>
@@ -212,6 +215,15 @@
     </div>
   </aside>
 
+  
+  <!-- Lightbox Zoom Modal -->
+  <div id="pdpLightbox" class="pdp-lightbox-modal" onclick="closeLightbox()">
+    <div class="pdp-lightbox-content" onclick="event.stopPropagation()">
+      <button type="button" class="pdp-lightbox-close" onclick="closeLightbox()">✕</button>
+      <img id="lightboxImg" src="" alt="Full View">
+    </div>
+  </div>
+
   <div id="toast"></div>
 
   <!-- Scripts -->
@@ -219,6 +231,41 @@
   <script src="app.js?v=4"></script>
   <script>
     let activePdpProduct = null;
+    let currentSelectedSize = '';
+    let currentSelectedColor = '';
+
+    function openLightbox(src) {
+      const box = document.getElementById('pdpLightbox');
+      const img = document.getElementById('lightboxImg');
+      if (box && img) {
+        img.src = src;
+        box.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeLightbox() {
+      const box = document.getElementById('pdpLightbox');
+      if (box) {
+        box.classList.remove('open');
+        document.body.style.overflow = 'auto';
+      }
+    }
+
+    function selectVariant(type, value, btn) {
+      if (type === 'size') {
+        currentSelectedSize = value;
+        const lbl = document.getElementById('selectedSizeLabel');
+        if (lbl) lbl.textContent = value;
+        document.querySelectorAll('#sizeOptionsWrap .pdp-variant-pill').forEach(b => b.classList.remove('active'));
+      } else if (type === 'color') {
+        currentSelectedColor = value;
+        const lbl = document.getElementById('selectedColorLabel');
+        if (lbl) lbl.textContent = value;
+        document.querySelectorAll('#colorOptionsWrap .pdp-variant-pill').forEach(b => b.classList.remove('active'));
+      }
+      if (btn) btn.classList.add('active');
+    }
 
     async function initProductPage() {
       const params = new URLSearchParams(window.location.search);
@@ -235,7 +282,6 @@
         return;
       }
 
-      // Show loader while fetching real-time data
       mainArea.innerHTML = `
         <div style="text-align:center;padding:80px 20px;color:#64748b;">
           <div style="font-size:24px;margin-bottom:10px;">⏳</div>
@@ -260,7 +306,7 @@
         }
 
         activePdpProduct = p;
-        document.title = `${p.name} — Zayn Shop Pre-Order`;
+        document.title = `${p.name} — Zayn Shop`;
 
         // Update Breadcrumb
         document.getElementById('bcCat').textContent = p.category;
@@ -268,49 +314,72 @@
 
         const currency = CONFIG.currencySymbol || '৳';
         const deliveryTime = CONFIG.deliveryTime || '15–25 Days';
+        const readyDelivery = (typeof CONFIG !== 'undefined' && CONFIG.readyStockDeliveryTime) || '২–৩ Days';
         const advanceAmount = CONFIG.advanceAmount || 200;
+
+        const inStock = (p.badge || '').toLowerCase().includes('ready') || (p.badge || '').toLowerCase().includes('in stock') || (p.stock_status || '').toLowerCase() === 'in stock';
+        const effectiveDelivery = inStock ? readyDelivery : deliveryTime;
+
         const discount = p.regular_price && p.regular_price > p.price
           ? Math.round(((p.regular_price - p.price) / p.regular_price) * 100)
           : 0;
 
-        // Clean WhatsApp prefilled link for this specific product
+        // Image Gallery list
+        let allImgs = [p.image];
+        if (p.additional_images && Array.isArray(p.additional_images)) {
+          allImgs = allImgs.concat(p.additional_images);
+        } else if (typeof p.additional_images === 'string' && p.additional_images.trim()) {
+          allImgs = allImgs.concat(p.additional_images.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean));
+        }
+        allImgs = [...new Set(allImgs.filter(Boolean))];
+
+        // Variants
+        let sizesList = [];
+        if (Array.isArray(p.sizes)) sizesList = p.sizes;
+        else if (typeof p.sizes === 'string' && p.sizes.trim()) sizesList = p.sizes.split(',').map(s => s.trim()).filter(Boolean);
+
+        let colorsList = [];
+        if (Array.isArray(p.colors)) colorsList = p.colors;
+        else if (typeof p.colors === 'string' && p.colors.trim()) colorsList = p.colors.split(',').map(s => s.trim()).filter(Boolean);
+
+        currentSelectedSize = sizesList.length ? sizesList[0] : '';
+        currentSelectedColor = colorsList.length ? colorsList[0] : '';
+
+        // WhatsApp link
         const waMsg = `Hi Zayn Shop, I want to order this product:\n*${p.name}*\nPrice: ${currency}${p.price.toLocaleString()}\nLink: ${window.location.href}`;
         const waCleanNumber = (CONFIG.whatsappNumber || '8801819740112').replace(/[^0-9]/g, '');
         const waProductUrl = `https://wa.me/${waCleanNumber}?text=${encodeURIComponent(waMsg)}`;
-        document.getElementById('floatingWaBtn').href = waProductUrl;
+        const flWa = document.getElementById('floatingWaBtn');
+        if (flWa) flWa.href = waProductUrl;
 
-        // Render Main 2-Column Product Grid
+        // Render Main Grid
         mainArea.innerHTML = `
           <div class="pdp-main-grid">
             <!-- Left: Gallery -->
             <div class="pdp-gallery-wrap">
               <div class="pdp-main-img-box">
-                <img id="pdpDisplayImg" src="${p.image}" alt="${escapeHtml(p.name)}" class="pdp-main-img" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
-                <button type="button" class="pdp-zoom-btn" title="View Full Image" onclick="window.open('${p.image}','_blank')">🔍</button>
+                <img id="pdpDisplayImg" src="${p.image}" alt="${escapeHtml(p.name)}" class="pdp-main-img" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='images/hero_banner.jpg';" onclick="openLightbox(this.src)" style="cursor:zoom-in">
+                <button type="button" class="pdp-zoom-btn" title="View Full Image" onclick="openLightbox(document.getElementById('pdpDisplayImg').src)">🔍</button>
               </div>
 
               <!-- Thumbnails strip -->
               <div class="pdp-thumb-row">
-                <div class="pdp-thumb-item active" onclick="switchMainImage('${p.image}', this)">
-                  <img src="${p.image}" alt="Preview 1" referrerpolicy="no-referrer">
-                </div>
-                <div class="pdp-thumb-item" onclick="switchMainImage('${p.image}', this)">
-                  <img src="${p.image}" alt="Preview 2" referrerpolicy="no-referrer">
-                </div>
-                <div class="pdp-thumb-item" onclick="switchMainImage('${p.image}', this)">
-                  <img src="${p.image}" alt="Preview 3" referrerpolicy="no-referrer">
-                </div>
-                <div class="pdp-thumb-item" onclick="switchMainImage('${p.image}', this)">
-                  <img src="${p.image}" alt="Preview 4" referrerpolicy="no-referrer">
-                </div>
+                ${allImgs.map((imgSrc, idx) => `
+                  <div class="pdp-thumb-item ${idx === 0 ? 'active' : ''}" onclick="switchMainImage('${imgSrc}', this)">
+                    <img src="${imgSrc}" alt="Thumbnail ${idx + 1}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
+                  </div>
+                `).join('')}
               </div>
             </div>
 
             <!-- Right: Product Info & Actions -->
             <div class="pdp-info-wrap">
               <div class="pdp-badge-row">
-                <span class="pdp-badge-tag">Pre-Order</span>
-                <span class="pdp-badge-time">${deliveryTime} delivery</span>
+                ${inStock 
+                  ? `<span class="pdp-badge-instock">🟢 Ready Stock</span>`
+                  : `<span class="pdp-badge-tag">✈️ Pre-Order</span>`
+                }
+                <span class="pdp-badge-time">${effectiveDelivery} delivery</span>
                 ${discount > 0 ? `<span class="pdp-discount-pill">${discount}% OFF</span>` : ''}
               </div>
 
@@ -324,10 +393,40 @@
 
               <!-- Highlights list -->
               <ul class="pdp-highlights">
-                <li>100% genuine imported pre-order collection from global verified suppliers.</li>
+                ${inStock 
+                  ? `<li>Ready in Dhaka warehouse for fast 2-3 days doorstep delivery across Bangladesh.</li>`
+                  : `<li>100% genuine imported pre-order collection from global verified suppliers.</li>`
+                }
                 <li>Carefully inspected, brand-new piece packaged securely for home delivery.</li>
-                <li>Fast air-shipping to Bangladesh with continuous tracking updates.</li>
+                <li>Cash on Delivery with live phone & WhatsApp customer support.</li>
               </ul>
+
+              <!-- Variants Section (Size & Color) -->
+              ${(sizesList.length || colorsList.length) ? `
+                <div class="pdp-variant-sec">
+                  ${sizesList.length ? `
+                    <div class="pdp-variant-group">
+                      <div class="pdp-variant-title">Size: <span class="selected-val" id="selectedSizeLabel">${escapeHtml(sizesList[0])}</span></div>
+                      <div class="pdp-variant-options" id="sizeOptionsWrap">
+                        ${sizesList.map((sz, i) => `
+                          <button type="button" class="pdp-variant-pill ${i === 0 ? 'active' : ''}" onclick="selectVariant('size', '${escapeHtml(sz)}', this)">${escapeHtml(sz)}</button>
+                        `).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
+
+                  ${colorsList.length ? `
+                    <div class="pdp-variant-group" style="margin-top:10px">
+                      <div class="pdp-variant-title">Color: <span class="selected-val" id="selectedColorLabel">${escapeHtml(colorsList[0])}</span></div>
+                      <div class="pdp-variant-options" id="colorOptionsWrap">
+                        ${colorsList.map((cl, i) => `
+                          <button type="button" class="pdp-variant-pill ${i === 0 ? 'active' : ''}" onclick="selectVariant('color', '${escapeHtml(cl)}', this)">${escapeHtml(cl)}</button>
+                        `).join('')}
+                      </div>
+                    </div>
+                  ` : ''}
+                </div>
+              ` : ''}
 
               <!-- Actions Box -->
               <div class="pdp-actions-box">
@@ -355,7 +454,7 @@
                 <b>Categories:</b> ${escapeHtml(p.category)}
               </div>
 
-              <!-- Trust Information Box (Matches Screenshot) -->
+              <!-- Trust Information Box -->
               <div class="pdp-trust-box">
                 <div class="pdp-trust-item">
                   <span class="pdp-trust-check">✓</span>
@@ -363,11 +462,11 @@
                 </div>
                 <div class="pdp-trust-item">
                   <span class="pdp-trust-check">✓</span>
-                  <div><b>Advance Delivery Charge:</b> Inside Dhaka ৳70, Outside Dhaka ৳130 (৳${advanceAmount} pre-order advance via bKash/Nagad).</div>
+                  <div><b>Delivery Charges:</b> Inside Dhaka ৳70, Outside Dhaka ৳130 (৳${advanceAmount} pre-order advance via bKash/Nagad).</div>
                 </div>
                 <div class="pdp-trust-item">
                   <span class="pdp-trust-check">✓</span>
-                  <div><b>Delivery Timeline:</b> ${deliveryTime} across all districts of Bangladesh.</div>
+                  <div><b>Delivery Timeline:</b> ${effectiveDelivery} across all 64 districts of Bangladesh.</div>
                 </div>
                 <div class="pdp-trust-item">
                   <span class="pdp-trust-check">✓</span>
@@ -384,21 +483,22 @@
 
         // Fill Tabs Section
         document.getElementById('tabFullDescText').textContent = p.description || 'Premium quality imported item. Sourced directly from manufacturer on pre-order.';
-        document.getElementById('specDelivery').textContent = deliveryTime;
-        
-        // Populate Tab 2 Images
+        document.getElementById('specDelivery').textContent = effectiveDelivery;
+
+        // Tab 2: Images Grid
         const tabImagesGrid = document.getElementById('tabImagesGrid');
-        tabImagesGrid.innerHTML = `
-          <div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;background:#fff;text-align:center">
-            <img src="${p.image}" alt="View 1" style="max-width:100%;height:180px;object-fit:contain">
+        tabImagesGrid.innerHTML = allImgs.map((src, i) => `
+          <div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;background:#fff;text-align:center;cursor:pointer" onclick="openLightbox('${src}')">
+            <img src="${src}" alt="View ${i + 1}" style="max-width:100%;height:180px;object-fit:contain" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
           </div>
-          <div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;background:#fff;text-align:center">
-            <img src="${p.image}" alt="View 2" style="max-width:100%;height:180px;object-fit:contain">
-          </div>
-        `;
+        `).join('');
+
+        // Tab 4: Customer Reviews
+        loadProductReviews(p.id);
+
         document.getElementById('pdpTabsSection').style.display = 'block';
 
-        // Render Related Products (same category or top products)
+        // Render Related Products (same category)
         const related = products.filter(item => item.id !== p.id && item.category === p.category).slice(0, 4);
         const relatedToDisplay = related.length >= 3 ? related : products.filter(item => item.id !== p.id).slice(0, 4);
 
@@ -407,7 +507,7 @@
           relatedGrid.innerHTML = relatedToDisplay.map(item => `
             <div class="related-card" onclick="window.location='product.html?id=${item.id}'">
               <div class="related-img-wrap">
-                <img src="${item.image}" alt="${escapeHtml(item.name)}" class="related-img" loading="lazy">
+                <img src="${item.image}" alt="${escapeHtml(item.name)}" class="related-img" loading="lazy" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
               </div>
               <div class="related-body">
                 <div class="related-cat">${escapeHtml(item.category)}</div>
@@ -422,7 +522,6 @@
           document.getElementById('relatedSection').style.display = 'block';
         }
 
-        // Track ViewContent event
         trackEvent('ViewContent', {
           content_name: p.name,
           content_ids: [String(p.id)],
@@ -438,7 +537,8 @@
     }
 
     function switchMainImage(src, element) {
-      document.getElementById('pdpDisplayImg').src = src;
+      const mainImg = document.getElementById('pdpDisplayImg');
+      if (mainImg) mainImg.src = src;
       document.querySelectorAll('.pdp-thumb-item').forEach(el => el.classList.remove('active'));
       if (element) element.classList.add('active');
     }
@@ -455,14 +555,14 @@
       if (!activePdpProduct) return;
       const input = document.getElementById('pdpQtyInput');
       const qty = input ? parseInt(input.value, 10) || 1 : 1;
-      addToCart(activePdpProduct.id, qty, true);
+      addToCart(activePdpProduct.id, qty, true, currentSelectedSize, currentSelectedColor);
     }
 
     function buyPdpNow() {
       if (!activePdpProduct) return;
       const input = document.getElementById('pdpQtyInput');
       const qty = input ? parseInt(input.value, 10) || 1 : 1;
-      openDirectCheckout(activePdpProduct.id, qty);
+      openDirectCheckout(activePdpProduct.id, qty, currentSelectedSize, currentSelectedColor);
     }
 
     function switchTab(tabId, btn) {
@@ -471,6 +571,144 @@
       if (btn) btn.classList.add('active');
       const targetPane = document.getElementById('tabPane-' + tabId);
       if (targetPane) targetPane.classList.add('active');
+    }
+
+    // Customer Reviews Loader & Submitter
+    let selectedRating = 5;
+
+    function setReviewRating(star) {
+      selectedRating = star;
+      document.querySelectorAll('.rating-star-btn').forEach((b, idx) => {
+        if (idx < star) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+    }
+
+    async function loadProductReviews(productId) {
+      const container = document.getElementById('tabPane-reviews');
+      if (!container) return;
+
+      container.innerHTML = '<p style="color:#64748b;padding:20px 0;">Loading reviews…</p>';
+
+      let reviews = [];
+      try {
+        if (typeof CONFIG !== 'undefined' && CONFIG.orderWebhookUrl) {
+          const sep = CONFIG.orderWebhookUrl.includes('?') ? '&' : '?';
+          const res = await fetch(CONFIG.orderWebhookUrl + sep + 'action=get_reviews&productId=' + encodeURIComponent(productId));
+          if (res.ok) {
+            reviews = await res.json();
+          }
+        }
+      } catch (err) {
+        console.warn('Review fetch failed:', err);
+      }
+
+      const reviewCountTab = document.querySelector('button[onclick*="reviews"]');
+      if (reviewCountTab) {
+        reviewCountTab.textContent = `Reviews (${reviews.length})`;
+      }
+
+      let reviewsListHtml = '';
+      if (!reviews.length) {
+        reviewsListHtml = `
+          <div style="font-size:14px;color:#64748b;padding:12px 0;">
+            <p>There are no reviews for this product yet.</p>
+            <p style="font-size:12px;margin-top:4px;">Be the first customer to share your experience!</p>
+          </div>
+        `;
+      } else {
+        reviewsListHtml = reviews.map(r => `
+          <div class="review-item-card">
+            <div class="review-item-header">
+              <span class="review-item-name">${escapeHtml(r.name)}</span>
+              <span class="review-item-date">${escapeHtml(r.date)}</span>
+            </div>
+            <div class="review-stars">${'★'.repeat(r.rating || 5)}${'☆'.repeat(5 - (r.rating || 5))}</div>
+            <div class="review-item-text">${escapeHtml(r.comment)}</div>
+          </div>
+        `).join('');
+      }
+
+      container.innerHTML = `
+        <div class="pdp-reviews-wrap">
+          <div id="reviewsListArea">${reviewsListHtml}</div>
+
+          <div class="review-form-box">
+            <div class="review-form-title">✍️ Leave a Review</div>
+            <form id="reviewSubmitForm" onsubmit="handleReviewSubmit(event, ${productId})">
+              <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:4px">Your Rating:</label>
+                <div class="rating-select-row">
+                  <button type="button" class="rating-star-btn active" onclick="setReviewRating(1)">★</button>
+                  <button type="button" class="rating-star-btn active" onclick="setReviewRating(2)">★</button>
+                  <button type="button" class="rating-star-btn active" onclick="setReviewRating(3)">★</button>
+                  <button type="button" class="rating-star-btn active" onclick="setReviewRating(4)">★</button>
+                  <button type="button" class="rating-star-btn active" onclick="setReviewRating(5)">★</button>
+                  <span id="ratingNum" style="font-size:13px;font-weight:700;color:#f59e0b;margin-left:6px">5 / 5</span>
+                </div>
+              </div>
+
+              <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:4px">Your Name:</label>
+                <input type="text" id="revName" required class="form-input" placeholder="e.g. Tanvir Ahmed" style="padding:8px 12px;font-size:13px;border-radius:6px;border:1.5px solid #cbd5e1;width:100%;box-sizing:border-box">
+              </div>
+
+              <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:4px">Your Review:</label>
+                <textarea id="revComment" required class="form-input" rows="3" placeholder="Share your experience with this item..." style="padding:8px 12px;font-size:13px;border-radius:6px;border:1.5px solid #cbd5e1;width:100%;box-sizing:border-box"></textarea>
+              </div>
+
+              <button type="submit" id="btnSubmitRev" style="background:#0f172a;color:#fff;font-size:13px;font-weight:800;padding:10px 20px;border:none;border-radius:8px;cursor:pointer">
+                Submit Review
+              </button>
+              <div id="revMsg" style="margin-top:10px;font-size:12px;display:none;"></div>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    async function handleReviewSubmit(e, productId) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitRev');
+      const msg = document.getElementById('revMsg');
+      const name = document.getElementById('revName').value.trim();
+      const comment = document.getElementById('revComment').value.trim();
+
+      if (!name || !comment) return;
+
+      btn.disabled = true;
+      btn.textContent = 'Submitting…';
+
+      try {
+        if (typeof CONFIG !== 'undefined' && CONFIG.orderWebhookUrl) {
+          await fetch(CONFIG.orderWebhookUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({
+              action: 'submit_review',
+              productId: productId,
+              name: name,
+              rating: selectedRating,
+              comment: comment
+            })
+          });
+        }
+
+        msg.style.display = 'block';
+        msg.style.color = '#059669';
+        msg.innerHTML = '✅ ধন্যবাদ! আপনার রিভিউটি জমা নেওয়া হয়েছে এবং পর্যালোচনার পর প্রকাশিত হবে।';
+        document.getElementById('reviewSubmitForm').reset();
+        showToast('✅ Review submitted for moderation!');
+      } catch (err) {
+        msg.style.display = 'block';
+        msg.style.color = '#e11d48';
+        msg.textContent = 'Error submitting review. Please try again.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Submit Review';
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {

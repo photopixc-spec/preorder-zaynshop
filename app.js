@@ -1,11 +1,17 @@
-// Zayn Shop BD — Pre-Order E-Commerce Engine
+// Zayn Shop BD — Pre-Order & E-Commerce Engine
 // High-Converting, Lightweight, Zero-Hosting Architecture
+// Version: 2.0 (Dual Stock, Variants, Instant Filter, Mobile Bottom Nav)
 
 let allProducts = [];
 let cart = [];
 let activeCategory = 'all';
 let currentProduct = null;
 let deliveryArea = 'dhaka'; // 'dhaka' or 'outside'
+
+// Price filter & sorting state
+let filterMinPrice = null;
+let filterMaxPrice = null;
+let currentSortOrder = 'default'; // 'default', 'price-asc', 'price-desc', 'ready-stock'
 
 // Pre-load saved delivery area from localStorage if available
 try {
@@ -47,44 +53,55 @@ function initTracking() {
 }
 
 function trackEvent(name, params = {}) {
-  console.log(`[Tracking Event] ${name}:`, params);
-
-  // Meta Pixel
-  if (window.fbq) {
-    fbq('track', name, params);
-  }
-
-  // GTM / dataLayer
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({ event: name, ...params });
+  try {
+    if (window.fbq) {
+      fbq('track', name, params);
+    }
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({ event: name, ...params });
+  } catch (_) {}
 }
 
-// ---- Universal Product Loader (Google Sheet Sync with Local Fallback) ----
+// ---- Universal Product Loader (Google Sheet is Source of Truth) ----
 async function fetchStoreProducts() {
-  let localProducts = [];
-  try {
-    const resLocal = await fetch('products.json?v=' + Date.now());
-    localProducts = await resLocal.json();
-  } catch (_) {}
-
-  // 1. Try Google Sheet Webhook if configured (Cache-Busted for Real-Time Sync)
+  // 1. Try Google Sheet Webhook first (Source of Truth with Cache Busting)
   if (typeof CONFIG !== 'undefined' && CONFIG.orderWebhookUrl) {
     try {
       const sep = CONFIG.orderWebhookUrl.includes('?') ? '&' : '?';
       const res = await fetch(CONFIG.orderWebhookUrl + sep + 't=' + Date.now());
-      const sheetProducts = await res.json();
-      if (Array.isArray(sheetProducts) && sheetProducts.length > 0) {
-        // Merge: New products from Google Sheet placed FIRST on top!
-        const sheetIds = new Set(sheetProducts.map(p => String(p.id)));
-        const combined = [...sheetProducts, ...localProducts.filter(p => !sheetIds.has(String(p.id)))];
-        return combined;
+      if (res.ok) {
+        const sheetProducts = await res.json();
+        if (Array.isArray(sheetProducts) && sheetProducts.length > 0) {
+          // Google Sheet is source of truth: do NOT revive deleted items from products.json!
+          try {
+            sessionStorage.setItem('zayn_cached_products', JSON.stringify(sheetProducts));
+          } catch (_) {}
+          return sheetProducts;
+        }
       }
     } catch (sheetErr) {
-      console.warn('Google Sheet product fetch failed, fallback to local products.json:', sheetErr);
+      console.warn('Google Sheet product fetch failed, falling back to local storage/products.json:', sheetErr);
     }
   }
 
-  return localProducts;
+  // 2. Fast sessionStorage cache fallback
+  try {
+    const cached = sessionStorage.getItem('zayn_cached_products');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (_) {}
+
+  // 3. Fallback to offline products.json only if remote Sheet is unreachable
+  try {
+    const resLocal = await fetch('products.json?v=' + Date.now());
+    const localProducts = await resLocal.json();
+    return Array.isArray(localProducts) ? localProducts : [];
+  } catch (err) {
+    console.error('All product fetch mechanisms failed:', err);
+    return [];
+  }
 }
 
 // ---- Load Products & Render ----
@@ -92,7 +109,7 @@ async function loadProducts() {
   const grid = document.getElementById('productGrid');
   try {
     allProducts = await fetchStoreProducts();
-    
+
     // Check if category is passed via URL query
     const urlParams = new URLSearchParams(window.location.search);
     const catQuery = urlParams.get('cat');
@@ -102,6 +119,7 @@ async function loadProducts() {
 
     renderCategoryNav();
     renderCategoryPills();
+    renderFilterToolbar();
     if (grid) renderProducts();
   } catch (err) {
     console.error('Failed to load products:', err);
@@ -127,9 +145,8 @@ function renderCategoryNav() {
     'Stationery & Books': '📚'
   };
 
-  // Get unique categories from current product list
   const presentCats = [...new Set(allProducts.map(p => (p.category || '').trim()).filter(Boolean))];
-  
+
   const navList = [
     { id: 'all', name: 'All Products', icon: '✨' },
     ...presentCats.map(cat => ({
@@ -183,17 +200,91 @@ function renderCategoryPills() {
   }).join('');
 }
 
+function renderFilterToolbar() {
+  const toolbarContainer = document.getElementById('filterToolbar');
+  if (!toolbarContainer) return;
+
+  toolbarContainer.innerHTML = `
+    <div class="filter-toolbar-wrap">
+      <div class="filter-toolbar-row">
+        <div class="filter-group-left">
+          <div class="filter-input-wrap">
+            <span>Price:</span>
+            <input type="number" id="filterMinPriceInput" class="filter-input-price" placeholder="Min ৳" oninput="handlePriceFilterChange()">
+            <span>–</span>
+            <input type="number" id="filterMaxPriceInput" class="filter-input-price" placeholder="Max ৳" oninput="handlePriceFilterChange()">
+          </div>
+
+          <select id="filterSortSelect" class="filter-select" onchange="handleSortChange(this.value)">
+            <option value="default">Sort: Default / Featured</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="ready-stock">🟢 Ready Stock First</option>
+          </select>
+
+          <button type="button" class="btn-filter-reset" onclick="resetAllFilters()">
+            ↺ Reset
+          </button>
+        </div>
+
+        <div class="filter-stats" id="filterStatsLabel">
+          Showing ${allProducts.length} items
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function handlePriceFilterChange() {
+  const minVal = document.getElementById('filterMinPriceInput')?.value;
+  const maxVal = document.getElementById('filterMaxPriceInput')?.value;
+  filterMinPrice = minVal !== '' && !isNaN(minVal) ? Number(minVal) : null;
+  filterMaxPrice = maxVal !== '' && !isNaN(maxVal) ? Number(maxVal) : null;
+  renderProducts();
+}
+
+function handleSortChange(val) {
+  currentSortOrder = val || 'default';
+  renderProducts();
+}
+
+function resetAllFilters() {
+  activeCategory = 'all';
+  filterMinPrice = null;
+  filterMaxPrice = null;
+  currentSortOrder = 'default';
+
+  const q = document.getElementById('searchQuery');
+  if (q) q.value = '';
+  const minInp = document.getElementById('filterMinPriceInput');
+  if (minInp) minInp.value = '';
+  const maxInp = document.getElementById('filterMaxPriceInput');
+  if (maxInp) maxInp.value = '';
+  const sortSel = document.getElementById('filterSortSelect');
+  if (sortSel) sortSel.value = 'default';
+
+  renderCategoryNav();
+  renderCategoryPills();
+  renderProducts();
+}
+
 function setCategory(cat) {
   activeCategory = cat;
   renderCategoryNav();
   renderCategoryPills();
   renderProducts();
 
-  // Scroll gently toward product grid if user is high up on the page
   const grid = document.getElementById('productGrid');
   if (grid && window.scrollY > 450) {
     grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+}
+
+function isProductInStock(p) {
+  if (!p) return false;
+  const badge = (p.badge || '').toLowerCase();
+  const stockStatus = (p.stock_status || '').toLowerCase();
+  return badge.includes('ready') || badge.includes('in stock') || stockStatus === 'in stock';
 }
 
 function renderProducts() {
@@ -202,35 +293,74 @@ function renderProducts() {
 
   const searchInput = document.getElementById('searchQuery')?.value.toLowerCase().trim() || '';
 
-  const filtered = allProducts.filter(p => {
+  let filtered = allProducts.filter(p => {
+    // 1. Category filter
     const pCat = (p.category || '').toLowerCase();
     const aCat = activeCategory.toLowerCase();
-    const matchCat = activeCategory === 'all' || 
-      p.category === activeCategory || 
-      aCat.includes(pCat) || 
+    const matchCat = activeCategory === 'all' ||
+      p.category === activeCategory ||
+      aCat.includes(pCat) ||
       pCat.includes(aCat) ||
       (aCat.split(' ')[0] && pCat.includes(aCat.split(' ')[0]));
-    const matchSearch = !searchInput || p.name.toLowerCase().includes(searchInput) || (p.description && p.description.toLowerCase().includes(searchInput));
-    return matchCat && matchSearch;
+
+    // 2. Search query filter
+    const matchSearch = !searchInput ||
+      p.name.toLowerCase().includes(searchInput) ||
+      (p.description && p.description.toLowerCase().includes(searchInput)) ||
+      (p.category && p.category.toLowerCase().includes(searchInput));
+
+    // 3. Price filter
+    const price = Number(p.price) || 0;
+    const matchMin = filterMinPrice === null || price >= filterMinPrice;
+    const matchMax = filterMaxPrice === null || price <= filterMaxPrice;
+
+    return matchCat && matchSearch && matchMin && matchMax;
   });
 
+  // Sort
+  if (currentSortOrder === 'price-asc') {
+    filtered.sort((a, b) => (Number(a.price) || 0) - (Number(b.price) || 0));
+  } else if (currentSortOrder === 'price-desc') {
+    filtered.sort((a, b) => (Number(b.price) || 0) - (Number(a.price) || 0));
+  } else if (currentSortOrder === 'ready-stock') {
+    filtered.sort((a, b) => (isProductInStock(b) ? 1 : 0) - (isProductInStock(a) ? 1 : 0));
+  }
+
+  // Update Stats label
+  const statsLabel = document.getElementById('filterStatsLabel');
+  if (statsLabel) {
+    statsLabel.textContent = `Showing ${filtered.length} of ${allProducts.length} items`;
+  }
+
   if (!filtered.length) {
-    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#64748b"><h3>No products found!</h3><p>Try searching with different keywords.</p></div>';
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#64748b">
+        <h3>No matching products found!</h3>
+        <p style="margin:8px 0 16px;">Try adjusting your search terms or price filter.</p>
+        <button type="button" class="btn-filter-reset" onclick="resetAllFilters()">Clear All Filters</button>
+      </div>`;
     return;
   }
 
   const currency = typeof CONFIG !== 'undefined' ? CONFIG.currencySymbol : '৳';
   const deliveryTime = typeof CONFIG !== 'undefined' ? CONFIG.deliveryTime : '15–25 Days';
+  const readyStockDelivery = (typeof CONFIG !== 'undefined' && CONFIG.readyStockDeliveryTime) || '২–৩ Days';
 
   grid.innerHTML = filtered.map(p => {
-    const discount = p.regular_price && p.regular_price > p.price 
-      ? Math.round(((p.regular_price - p.price) / p.regular_price) * 100) 
+    const inStock = isProductInStock(p);
+    const discount = p.regular_price && p.regular_price > p.price
+      ? Math.round(((p.regular_price - p.price) / p.regular_price) * 100)
       : 0;
+
+    const hasVariants = (p.sizes && p.sizes.length > 0) || (p.colors && p.colors.length > 0);
 
     return `
     <div class="product-card" onclick="window.location='product.html?id=${p.id}'" style="cursor:pointer">
       <div class="prod-img-wrap">
-        <span class="badge-preorder">Pre-Order (${deliveryTime})</span>
+        ${inStock 
+          ? `<span class="badge-instock">🟢 Ready Stock (${readyStockDelivery})</span>`
+          : `<span class="badge-preorder">✈️ Pre-Order (${deliveryTime})</span>`
+        }
         ${discount > 0 ? `<span class="badge-discount">${discount}% off</span>` : ''}
         <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" referrerpolicy="no-referrer" class="prod-img" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
       </div>
@@ -242,19 +372,32 @@ function renderProducts() {
           ${p.regular_price ? `<span class="price-old">${currency}${p.regular_price.toLocaleString()}</span>` : ''}
         </div>
         <div class="prod-actions" onclick="event.stopPropagation()">
-          <button class="btn-card-cart" onclick="addToCart(${p.id}, 1, true)">
-            🛒 Add to Bag
-          </button>
-          <button class="btn-card-buy" onclick="openDirectCheckout(${p.id})">
-            ⚡ Order Now
-          </button>
+          ${hasVariants ? `
+            <button class="btn-card-cart" onclick="window.location='product.html?id=${p.id}'">
+              🎨 Options
+            </button>
+            <button class="btn-card-buy" onclick="window.location='product.html?id=${p.id}'">
+              ⚡ Order Now
+            </button>
+          ` : `
+            <button class="btn-card-cart" onclick="addToCart(${p.id}, 1, true)">
+              🛒 Add to Bag
+            </button>
+            <button class="btn-card-buy" onclick="openDirectCheckout(${p.id})">
+              ⚡ Order Now
+            </button>
+          `}
         </div>
       </div>
     </div>`;
   }).join('');
 }
 
-// ---- Cart Management ----
+// ---- Cart Management with Variant Support ----
+function getCartItemKey(id, size, color) {
+  return `${id}__${size || ''}__${color || ''}`;
+}
+
 function loadCart() {
   try {
     const raw = localStorage.getItem('zayn_cart');
@@ -263,16 +406,20 @@ function loadCart() {
     } else if (raw.startsWith('[') || raw.startsWith('{')) {
       cart = JSON.parse(raw);
     } else {
-      // Legacy base64 decoding with safe UTF-8 fallback
       try {
         cart = JSON.parse(decodeURIComponent(escape(atob(raw))));
       } catch (_) {
         cart = JSON.parse(atob(raw));
       }
     }
-    if (!Array.isArray(cart)) {
-      cart = [];
-    }
+    if (!Array.isArray(cart)) cart = [];
+
+    // Ensure all items have a variantKey for unique tracking
+    cart.forEach(item => {
+      if (!item.variantKey) {
+        item.variantKey = getCartItemKey(item.id, item.size, item.color);
+      }
+    });
   } catch (e) {
     console.warn('Could not parse cart from localStorage:', e);
     cart = [];
@@ -297,12 +444,12 @@ function saveCart() {
   }
 }
 
-// Immediately load cart into memory on script evaluation
+// Immediately load cart into memory
 loadCart();
 
 function updateCartBadge() {
-  const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
-  const badgeEls = document.querySelectorAll('.cart-badge-count');
+  const totalCount = cart.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
+  const badgeEls = document.querySelectorAll('.cart-badge-count, .mob-nav-badge');
   badgeEls.forEach(el => {
     el.textContent = totalCount;
     el.style.display = totalCount > 0 ? 'inline-block' : 'none';
@@ -314,33 +461,40 @@ async function ensureProductsLoaded() {
     try {
       allProducts = await fetchStoreProducts();
     } catch (e) {
-      console.error('Failed to fetch products for cart item lookup', e);
+      console.error('Failed to fetch products for cart lookup', e);
     }
   }
 }
 
-function addToCart(productId, qty = 1, openDrawer = true) {
+function addToCart(productId, qty = 1, openDrawer = true, size = '', color = '') {
   function doAdd(p) {
     if (!p) return;
 
-    const existing = cart.find(item => Number(item.id) === Number(productId));
+    const variantKey = getCartItemKey(p.id, size, color);
+    const existing = cart.find(item => item.variantKey === variantKey || (!item.variantKey && Number(item.id) === Number(productId) && !size && !color));
+
     if (existing) {
       existing.qty += qty;
+      existing.variantKey = variantKey;
+      existing.size = size || existing.size || '';
+      existing.color = color || existing.color || '';
     } else {
       cart.push({
         id: p.id,
+        variantKey: variantKey,
         name: p.name,
         price: p.price,
         regular_price: p.regular_price || 0,
         image: p.image,
         category: p.category,
+        size: size || '',
+        color: color || '',
         qty: qty
       });
     }
 
     saveCart();
 
-    // Track AddToCart
     trackEvent('AddToCart', {
       content_name: p.name,
       content_ids: [String(p.id)],
@@ -349,21 +503,20 @@ function addToCart(productId, qty = 1, openDrawer = true) {
       currency: 'BDT'
     });
 
-    showToast(`✅ "${p.name}" added to bag!`);
+    const variantLabel = (size || color) ? ` (${[size, color].filter(Boolean).join(', ')})` : '';
+    showToast(`✅ "${p.name}"${variantLabel} added to bag!`);
 
     if (openDrawer) {
       openCartDrawer();
     }
   }
 
-  // Fast path: if products are already cached in memory, add synchronously without any async delay
   const existingProduct = allProducts.find(item => Number(item.id) === Number(productId));
   if (existingProduct) {
     doAdd(existingProduct);
     return Promise.resolve(existingProduct);
   }
 
-  // Fallback: fetch products if not yet in memory
   return ensureProductsLoaded().then(() => {
     const p = allProducts.find(item => Number(item.id) === Number(productId));
     doAdd(p);
@@ -371,20 +524,19 @@ function addToCart(productId, qty = 1, openDrawer = true) {
   });
 }
 
-function openDirectCheckout(productId, qty = 1) {
-  // Add item to cart and navigate immediately to order.html
-  Promise.resolve(addToCart(productId, qty, false)).then(() => {
+function openDirectCheckout(productId, qty = 1, size = '', color = '') {
+  Promise.resolve(addToCart(productId, qty, false, size, color)).then(() => {
     window.location.href = 'order.html';
   });
 }
 
-function updateCartItemQty(id, delta) {
-  const item = cart.find(i => Number(i.id) === Number(id));
+function updateCartItemQty(keyOrId, delta) {
+  const item = cart.find(i => i.variantKey === String(keyOrId) || (!i.variantKey && Number(i.id) === Number(keyOrId)));
   if (!item) return;
 
   item.qty += delta;
   if (item.qty <= 0) {
-    cart = cart.filter(i => Number(i.id) !== Number(id));
+    cart = cart.filter(i => (i.variantKey ? i.variantKey !== String(keyOrId) : Number(i.id) !== Number(keyOrId)));
   }
   saveCart();
 }
@@ -437,21 +589,28 @@ function renderCartItems() {
   const footer = document.getElementById('cartFooter');
   if (footer) footer.style.display = 'block';
 
-  list.innerHTML = cart.map(item => `
+  list.innerHTML = cart.map(item => {
+    const key = item.variantKey || item.id;
+    const variantTag = (item.size || item.color)
+      ? `<div style="font-size:11px;color:#2563eb;font-weight:700;margin-top:2px">${[item.size ? 'Size: ' + item.size : '', item.color ? 'Color: ' + item.color : ''].filter(Boolean).join(' | ')}</div>`
+      : '';
+
+    return `
     <div class="cart-item">
-      <img src="${item.image}" alt="${escapeHtml(item.name)}" class="cart-item-img">
+      <img src="${item.image}" alt="${escapeHtml(item.name)}" class="cart-item-img" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
       <div class="cart-item-info">
         <h4 class="cart-item-title">${escapeHtml(item.name)}</h4>
+        ${variantTag}
         <div class="cart-item-price">${currency}${item.price.toLocaleString()} × ${item.qty}</div>
         <div class="qty-control">
-          <button onclick="updateCartItemQty(${item.id}, -1)">−</button>
+          <button type="button" onclick="updateCartItemQty('${key}', -1)">−</button>
           <span>${item.qty}</span>
-          <button onclick="updateCartItemQty(${item.id}, 1)">+</button>
+          <button type="button" onclick="updateCartItemQty('${key}', 1)">+</button>
         </div>
       </div>
-      <button class="cart-item-del" onclick="updateCartItemQty(${item.id}, -9999)" title="Remove item">✕</button>
-    </div>
-  `).join('');
+      <button type="button" class="cart-item-del" onclick="updateCartItemQty('${key}', -9999)" title="Remove item">✕</button>
+    </div>`;
+  }).join('');
 
   // Calculate totals
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
@@ -465,6 +624,49 @@ function renderCartItems() {
   if (subtotalEl) subtotalEl.textContent = `${currency}${subtotal.toLocaleString()}`;
   if (deliveryEl) deliveryEl.textContent = `${currency}${delivery}`;
   if (totalEl) totalEl.textContent = `${currency}${total.toLocaleString()}`;
+}
+
+// ---- Modern Mobile Bottom Navigation Bar ----
+function renderMobileBottomNav() {
+  if (document.getElementById('mobileBottomNav')) return;
+
+  const path = window.location.pathname;
+  const isHome = path.endsWith('index.html') || path.endsWith('/') || !path.includes('.html');
+  const isOrder = path.includes('order.html');
+  const isTrack = path.includes('track.html');
+
+  const nav = document.createElement('nav');
+  nav.id = 'mobileBottomNav';
+  nav.className = 'mobile-bottom-nav';
+
+  const waNumber = (typeof CONFIG !== 'undefined' && CONFIG.whatsappNumber) || '8801819740112';
+
+  nav.innerHTML = `
+    <a href="index.html" class="mob-nav-item ${isHome ? 'active' : ''}">
+      <span class="mob-nav-icon">🏠</span>
+      <span class="mob-nav-label">হোম</span>
+    </a>
+    <a href="index.html#categoryPills" class="mob-nav-item" onclick="if(window.location.pathname.includes('index.html')){setCategory('all');document.getElementById('categoryPills')?.scrollIntoView({behavior:'smooth'});return false;}">
+      <span class="mob-nav-icon">🏷️</span>
+      <span class="mob-nav-label">ক্যাটাগরি</span>
+    </a>
+    <a href="javascript:void(0)" class="mob-nav-item" onclick="openCartDrawer()">
+      <span class="mob-nav-icon">🛍️</span>
+      <span class="mob-nav-label">ব্যাগ</span>
+      <span class="mob-nav-badge" style="display:none">0</span>
+    </a>
+    <a href="track.html" class="mob-nav-item ${isTrack ? 'active' : ''}">
+      <span class="mob-nav-icon">📦</span>
+      <span class="mob-nav-label">ট্র্যাক অর্ডার</span>
+    </a>
+    <a href="https://wa.me/${waNumber}" target="_blank" class="mob-nav-item">
+      <span class="mob-nav-icon">💬</span>
+      <span class="mob-nav-label">WhatsApp</span>
+    </a>
+  `;
+
+  document.body.appendChild(nav);
+  updateCartBadge();
 }
 
 // ---- Utility Helpers ----
@@ -494,7 +696,12 @@ function showToast(msg) {
 window.addEventListener('DOMContentLoaded', () => {
   initTracking();
   loadCart();
-  loadProducts();
+  renderMobileBottomNav();
+
+  // Load products if on index or page with productGrid
+  if (document.getElementById('productGrid')) {
+    loadProducts();
+  }
 
   // Live search filtering
   document.getElementById('searchQuery')?.addEventListener('input', () => {

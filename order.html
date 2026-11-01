@@ -459,6 +459,8 @@
               </label>
               <textarea id="custAddress" class="form-textarea" rows="3" required placeholder="House/Flat number, Road, Area (e.g. Dhanmondi, Mirpur, Uttara)"></textarea>
             </div>
+            <!-- Honeypot Bot Spam Protection (Hidden from humans) -->
+            <input type="text" name="website_url_hp" id="custWebsiteHp" style="display:none !important; position:absolute; left:-9999px;" tabindex="-1" autocomplete="off">
 
             <div class="form-group">
               <label class="form-label" for="custNote">
@@ -492,7 +494,22 @@
             <span>📋</span>
             <span>Order Summary</span>
           </div>
+          <!-- Coupon / Promo Code Input Box -->
+          <div style="margin-bottom:16px;background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;">
+            <label style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;display:block">🏷️ Have a Promo / Coupon Code?</label>
+            <div class="coupon-box">
+              <input type="text" id="couponCodeInput" class="coupon-input" placeholder="e.g. WELCOME50">
+              <button type="button" id="btnApplyCoupon" class="btn-apply-coupon" onclick="applyCouponCode()">Apply</button>
+            </div>
+            <div id="couponMsg" class="coupon-msg"></div>
+          </div>
 
+
+          
+          <div class="summary-row" id="rowDiscount" style="display:none;color:#059669;font-weight:700">
+            <span>Coupon Discount:</span>
+            <span id="orderDiscount">-৳0</span>
+          </div>
           <div class="summary-row">
             <span>Items Subtotal:</span>
             <span id="orderSubtotal">৳0</span>
@@ -817,27 +834,40 @@
               <img src="${item.image}" alt="${escapeHtml(item.name)}" class="checkout-item-thumb">
               <div class="checkout-item-meta">
                 <div class="checkout-item-name">${escapeHtml(item.name)}</div>
+                ${(item.size || item.color) ? `<div style="font-size:11px;color:#2563eb;font-weight:700;margin-top:2px">${[item.size ? 'Size: ' + item.size : '', item.color ? 'Color: ' + item.color : ''].filter(Boolean).join(' | ')}</div>` : ''}
                 <div class="checkout-item-sub">${currency}${item.price.toLocaleString()} each</div>
               </div>
               <div class="checkout-item-qty">
-                <button type="button" onclick="modifyOrderItemQty(${item.id}, -1)">−</button>
+                <button type="button" onclick="modifyOrderItemQty('${item.variantKey || item.id}', -1)">−</button>
                 <span>${item.qty}</span>
-                <button type="button" onclick="modifyOrderItemQty(${item.id}, 1)">+</button>
+                <button type="button" onclick="modifyOrderItemQty('${item.variantKey || item.id}', 1)">+</button>
               </div>
               <div class="checkout-item-total">
                 ${currency}${(item.price * item.qty).toLocaleString()}
               </div>
-              <button type="button" class="checkout-item-remove" onclick="modifyOrderItemQty(${item.id}, -9999)" title="Remove item">✕</button>
+              <button type="button" class="checkout-item-remove" onclick="modifyOrderItemQty('${item.variantKey || item.id}', -9999)" title="Remove item">✕</button>
             </div>
           `).join('')}
         </div>
       `;
 
-      // Calculations
+      // Calculations with Coupon Discount
       const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
       const delivery = checkoutDeliveryArea === 'dhaka' ? deliveryDhaka : deliveryOutside;
-      const total = subtotal + delivery;
+      const discount = appliedCoupon ? Math.min(appliedCoupon.discount, subtotal) : 0;
+      const total = Math.max(0, subtotal - discount) + delivery;
       const remainingCod = Math.max(0, total - advanceAmount);
+
+      const discountRowEl = document.getElementById('rowDiscount');
+      const discountEl = document.getElementById('orderDiscount');
+      if (discountRowEl && discountEl) {
+        if (discount > 0) {
+          discountRowEl.style.display = 'flex';
+          discountEl.textContent = `-৳${discount.toLocaleString()}`;
+        } else {
+          discountRowEl.style.display = 'none';
+        }
+      }
 
       document.getElementById('orderSubtotal').textContent = `${currency}${subtotal.toLocaleString()}`;
       document.getElementById('orderDelivery').textContent = `${currency}${delivery}`;
@@ -929,9 +959,11 @@
 
       const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
       const delivery = isOutside ? deliveryOutside : deliveryDhaka;
-      const total = subtotal + delivery;
+      const discount = appliedCoupon ? Math.min(appliedCoupon.discount, subtotal) : 0;
+      const total = Math.max(0, subtotal - discount) + delivery;
       const remainingCod = Math.max(0, total - advanceAmount);
       const orderId = 'ZS-' + Math.floor(100000 + Math.random() * 900000);
+      const hpVal = document.getElementById('custWebsiteHp')?.value.trim() || '';
 
       // Track Purchase Event
       trackEvent('Purchase', {
@@ -946,6 +978,10 @@
       // Prepare order payload for Webhook (Google Sheets)
       const orderPayload = {
         orderId: orderId,
+        hp_field: hpVal,
+        couponCode: appliedCoupon ? appliedCoupon.code : 'NONE',
+        discountAmount: discount,
+        subtotal: subtotal,
         customerName: name,
         customerPhone: phone,
         deliveryAddress: formattedAddress,
@@ -961,6 +997,8 @@
         items: cart.map(i => ({
           id: i.id,
           name: i.name,
+          size: i.size || '',
+          color: i.color || '',
           price: i.price,
           qty: i.qty,
           subtotal: i.price * i.qty
@@ -982,9 +1020,11 @@
       }
 
       // Build WhatsApp prefilled message
-      let itemsListText = cart.map((item, idx) => 
-        `${idx + 1}. ${item.name}\n   Qty: ${item.qty} × ${currency}${item.price.toLocaleString()} = ${currency}${(item.price * item.qty).toLocaleString()}`
-      ).join('\n');
+      let itemsListText = cart.map((item, idx) => {
+        const vText = [item.size ? 'Size: ' + item.size : '', item.color ? 'Color: ' + item.color : ''].filter(Boolean).join(', ');
+        const vLine = vText ? ' [' + vText + ']' : '';
+        return `${idx + 1}. ${item.name}${vLine}\n   Qty: ${item.qty} × ${currency}${item.price.toLocaleString()} = ${currency}${(item.price * item.qty).toLocaleString()}`;
+      }).join('\n');
 
       const waMsg = 
         `🛍️ *New Pre-Order from Zayn Shop*\n` +
@@ -1000,6 +1040,7 @@
         `📋 *Ordered Items:*\n${itemsListText}\n` +
         `──────────────────────────\n` +
         `💰 *Subtotal:* ${currency}${subtotal.toLocaleString()}\n` +
+        (discount > 0 ? `🏷️ *Promo Discount (${appliedCoupon.code}):* -${currency}${discount.toLocaleString()}\n` : '') +
         `🚚 *Delivery Charge:* ${currency}${delivery}\n` +
         `💵 *Total Order Amount:* ${currency}${total.toLocaleString()}\n` +
         `⚠️ *Advance Required:* ${currency}${advanceAmount} (via bKash/Nagad: 01819740112)\n` +
