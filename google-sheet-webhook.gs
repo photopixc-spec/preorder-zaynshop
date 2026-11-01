@@ -1,14 +1,15 @@
 /**
  * Zayn Shop BD — Universal Webhook, E-Commerce Engine & Database API
- * Version: 2.0 (Zero-Cost Architecture)
+ * Version: 2.1 (Zero-Cost Architecture)
  * 
  * Capabilities:
- * 1. Products: Dual Stock ("Ready Stock" / "Pre-Order"), Variants (Sizes/Colors), Multiple Images Gallery.
- * 2. Orders: LockService concurrency protection, Server-side unique Order ID, Honeypot bot protection, Stock decrement.
- * 3. Coupons: Server-side promo code validation & usage tracking.
- * 4. Tracking: Live order status lookup by Order ID or Phone number.
- * 5. Reviews: Customer review submission with Admin moderation workflow.
- * 6. Admin Auth: Secret Token validation for all administrative operations.
+ * 1. 1-Click Initial Setup: Creates/updates all tabs, headers (Products, Orders, Coupons, Reviews).
+ * 2. Products: Dual Stock ("Ready Stock" / "Pre-Order"), Variants (Sizes/Colors), Multiple Images Gallery.
+ * 3. Orders: LockService concurrency protection, Server-side unique Order ID, Honeypot bot protection, Stock decrement.
+ * 4. Coupons: Server-side promo code validation & usage tracking.
+ * 5. Tracking: Live order status lookup by Order ID or Phone number.
+ * 6. Reviews: Customer review submission with Admin moderation workflow.
+ * 7. Admin Auth: Secret Token validation for all administrative operations.
  */
 
 // Configuration: Change this token or set "ADMIN_SECRET_TOKEN" in Script Properties
@@ -22,6 +23,100 @@ function getAdminToken() {
   } catch (e) {
     return DEFAULT_ADMIN_TOKEN;
   }
+}
+
+/**
+ * ===================================================================
+ * 1-CLICK DATABASE SETUP FUNCTION
+ * Run this function once by selecting "runInitialSetup" and clicking "Run".
+ * Or refresh your Google Sheet and click menu: "🚀 Zayn Shop Engine > 1-Click Database Setup".
+ * ===================================================================
+ */
+function onOpen() {
+  try {
+    var ui = SpreadsheetApp.getUi();
+    ui.createMenu("🚀 Zayn Shop Engine")
+      .addItem("1-Click Database Setup & Column Sync", "runInitialSetup")
+      .addItem("Populate 42 Original Products (if empty)", "populateOriginalProductsManual")
+      .addToUi();
+  } catch (_) {}
+}
+
+function runInitialSetup() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // 1. Setup Products Sheet & 14 Headers
+  var prodSheet = ss.getSheetByName("Products");
+  if (!prodSheet) {
+    prodSheet = ss.insertSheet("Products");
+  }
+
+  var prodHeaders = [
+    "ID", "Name", "Category", "Price (৳)", "Regular Price (৳)",
+    "Image URL", "Description", "Badge", "Status",
+    "Additional Images", "Stock Qty", "Stock Status", "Sizes", "Colors"
+  ];
+
+  prodSheet.getRange(1, 1, 1, prodHeaders.length).setValues([prodHeaders]);
+  prodSheet.getRange(1, 1, 1, prodHeaders.length).setFontWeight("bold").setBackground("#e2e8f0");
+  prodSheet.setFrozenRows(1);
+  prodSheet.setColumnWidth(1, 70);
+  prodSheet.setColumnWidth(2, 260);
+  prodSheet.setColumnWidth(3, 160);
+  prodSheet.setColumnWidth(4, 90);
+  prodSheet.setColumnWidth(5, 120);
+  prodSheet.setColumnWidth(6, 220);
+  prodSheet.setColumnWidth(7, 300);
+  prodSheet.setColumnWidth(8, 110);
+  prodSheet.setColumnWidth(9, 90);
+  prodSheet.setColumnWidth(10, 200);
+  prodSheet.setColumnWidth(11, 90);
+  prodSheet.setColumnWidth(12, 110);
+  prodSheet.setColumnWidth(13, 130);
+  prodSheet.setColumnWidth(14, 130);
+
+  // If Products sheet has only headers, import all 42 products automatically!
+  if (prodSheet.getLastRow() <= 1) {
+    importAllOriginalProducts(ss);
+  }
+
+  // 2. Setup Orders Sheet & 17 Headers
+  var orderSheet = ss.getSheetByName("Orders");
+  if (!orderSheet) {
+    orderSheet = ss.insertSheet("Orders");
+  }
+
+  var orderHeaders = [
+    "Timestamp", "Order ID", "Customer Name", "Customer Phone",
+    "Delivery Address", "Delivery Area", "Delivery Charge (৳)",
+    "Ordered Items", "Subtotal (৳)", "Advance Required (৳)",
+    "Remaining COD (৳)", "Total Order Amount (৳)", "Note / Instructions",
+    "Order Status", "Coupon Code", "Discount (৳)", "Courier Tracking"
+  ];
+
+  orderSheet.getRange(1, 1, 1, orderHeaders.length).setValues([orderHeaders]);
+  orderSheet.getRange(1, 1, 1, orderHeaders.length).setFontWeight("bold").setBackground("#f1f5f9");
+  orderSheet.setFrozenRows(1);
+
+  // 3. Setup Coupons Sheet
+  initCouponsSheet(ss);
+
+  // 4. Setup Reviews Sheet
+  initReviewsSheet(ss);
+
+  try {
+    SpreadsheetApp.getUi().alert("🎉 Zayn Shop Database Setup Completed Successfully!\n\nAll 14 columns, tabs (Products, Orders, Coupons, Reviews) and initial promo code have been created.");
+  } catch (_) {
+    Logger.log("Database setup completed successfully!");
+  }
+}
+
+function populateOriginalProductsManual() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  importAllOriginalProducts(ss);
+  try {
+    SpreadsheetApp.getUi().alert("✅ 42 Original Products have been imported into your Products sheet!");
+  } catch (_) {}
 }
 
 function doPost(e) {
@@ -48,7 +143,6 @@ function doPost(e) {
     // 1. HONEYPOT BOT PROTECTION
     // ==========================================
     if (data.hp_field || data.website_url_hp) {
-      // Bot filled the hidden honeypot field! Drop silently.
       return jsonResponse({
         status: "success",
         orderId: "ZS-" + Math.floor(100000 + Math.random() * 900000),
@@ -87,7 +181,7 @@ function doPost(e) {
     // ==========================================
     // 6. ADMIN OPERATIONS (Require Secret Token)
     // ==========================================
-    var providedToken = String(data.adminToken || e.parameter.adminToken || "").trim();
+    var providedToken = String(data.adminToken || (e && e.parameter && e.parameter.adminToken) || "").trim();
     if (providedToken !== getAdminToken()) {
       return jsonResponse({
         status: "unauthorized",
@@ -222,7 +316,6 @@ function handleOrderSubmission(ss, data) {
   }
   ensureOrdersSheetSchema(orderSheet);
 
-  // Generate Unique Server-Side Order ID: ZS-YYMMDD-XXXX
   var dateStr = Utilities.formatDate(new Date(), "Asia/Dhaka", "yyMMdd");
   var existingIds = {};
   var oData = orderSheet.getDataRange().getValues();
@@ -240,7 +333,6 @@ function handleOrderSubmission(ss, data) {
     } while (existingIds[finalOrderId] && attempts < 50);
   }
 
-  // Format Items text with Variants
   var itemsText = "";
   if (data.items && data.items.length) {
     itemsText = data.items.map(function(item) {
@@ -282,14 +374,12 @@ function handleOrderSubmission(ss, data) {
 
   orderSheet.appendRow(newRow);
 
-  // Decrement Stock for finite stock products
   try {
     decrementProductStock(ss, data.items);
   } catch (errStock) {
     Logger.log("Stock decrement notice: " + errStock);
   }
 
-  // Increment Coupon usage count if coupon applied
   if (couponCode && couponCode !== "NONE") {
     try {
       incrementCouponUsage(ss, couponCode);
@@ -305,9 +395,6 @@ function handleOrderSubmission(ss, data) {
   });
 }
 
-// ===================================================
-// STOCK MANAGEMENT HELPER
-// ===================================================
 function decrementProductStock(ss, items) {
   if (!items || !items.length) return;
   var prodSheet = ss.getSheetByName("Products");
@@ -336,9 +423,6 @@ function decrementProductStock(ss, items) {
   }
 }
 
-// ===================================================
-// HANDLER: COUPON VERIFICATION (GET/POST)
-// ===================================================
 function handleVerifyCoupon(ss, data) {
   var code = String(data.code || data.couponCode || "").trim().toUpperCase();
   var subtotal = Number(data.subtotal) || 0;
@@ -358,7 +442,7 @@ function handleVerifyCoupon(ss, data) {
     if (String(cData[i][0]).trim().toUpperCase() === code) {
       found = {
         code: String(cData[i][0]).trim().toUpperCase(),
-        type: String(cData[i][1]).trim().toLowerCase(), // "flat" or "percentage"
+        type: String(cData[i][1]).trim().toLowerCase(),
         value: Number(cData[i][2]) || 0,
         minOrder: Number(cData[i][3]) || 0,
         maxDiscount: Number(cData[i][4]) || 0,
@@ -424,16 +508,12 @@ function incrementCouponUsage(ss, code) {
   }
 }
 
-// ===================================================
-// HANDLER: ORDER TRACKING (GET/POST)
-// ===================================================
 function handleTrackOrder(ss, data) {
   var query = String(data.query || data.orderId || data.phone || "").trim();
   if (!query) {
     return jsonResponse({ status: "error", message: "Please provide an Order ID or Phone number." });
   }
 
-  // Clean phone input (English digits only)
   var cleanQuery = query.replace(/[^0-9a-zA-Z\-]/g, "").toLowerCase();
 
   var oSheet = ss.getSheetByName("Orders");
@@ -453,7 +533,6 @@ function handleTrackOrder(ss, data) {
     var isPhoneMatch = cleanQuery.length >= 10 && rowPhone.endsWith(cleanQuery.slice(-10));
 
     if (isOrderMatch || isPhoneMatch) {
-      // Obfuscate phone for privacy: 018****0112
       var p = String(row[3]).replace(/[^0-9]/g, "");
       var maskedPhone = p.length > 6 ? p.slice(0, 3) + "****" + p.slice(-4) : p;
 
@@ -473,7 +552,7 @@ function handleTrackOrder(ss, data) {
         courierTracking: row[16] || ""
       });
 
-      if (matchedOrders.length >= 5) break; // Return max 5 recent orders for a phone number
+      if (matchedOrders.length >= 5) break;
     }
   }
 
@@ -487,9 +566,6 @@ function handleTrackOrder(ss, data) {
   });
 }
 
-// ===================================================
-// HANDLER: CUSTOMER REVIEWS (GET/POST)
-// ===================================================
 function handleSubmitReview(ss, data) {
   var rSheet = ss.getSheetByName("Reviews");
   if (!rSheet) {
@@ -511,7 +587,7 @@ function handleSubmitReview(ss, data) {
     name,
     rating,
     comment,
-    "Pending" // Reviews are moderated before appearing
+    "Pending"
   ]);
 
   return jsonResponse({
@@ -547,9 +623,6 @@ function handleGetReviews(ss, data) {
   return jsonResponse(reviews.reverse());
 }
 
-// ===================================================
-// HANDLER: ADMIN OPERATIONS (POST)
-// ===================================================
 function handleAddProduct(ss, data) {
   var prodSheet = ss.getSheetByName("Products");
   if (!prodSheet) prodSheet = initProductsSheet(ss);
@@ -684,7 +757,7 @@ function handleManageCoupon(ss, data) {
   var cSheet = ss.getSheetByName("Coupons");
   if (!cSheet) cSheet = initCouponsSheet(ss);
 
-  var subAction = data.subAction || "add"; // "add", "update", "delete"
+  var subAction = data.subAction || "add";
   var code = String(data.code || "").trim().toUpperCase();
 
   if (!code) return jsonResponse({ status: "error", message: "Coupon code required." });
@@ -701,7 +774,6 @@ function handleManageCoupon(ss, data) {
     return jsonResponse({ status: "not_found", message: "Coupon not found" });
   }
 
-  // Add or Update
   var foundRow = 0;
   for (var i = 1; i < cData.length; i++) {
     if (String(cData[i][0]).trim().toUpperCase() === code) {
@@ -736,7 +808,7 @@ function handleModerateReview(ss, data) {
   if (!rSheet) return jsonResponse({ status: "error", message: "Reviews sheet not found" });
 
   var rowIndex = Number(data.rowIndex);
-  var newStatus = String(data.status || "").trim(); // "Approved" or "Rejected"
+  var newStatus = String(data.status || "").trim();
 
   if (!rowIndex || rowIndex < 2) {
     return jsonResponse({ status: "error", message: "Invalid review row index." });
@@ -747,7 +819,6 @@ function handleModerateReview(ss, data) {
 }
 
 function handleGetAdminData(ss) {
-  // Orders
   var oSheet = ss.getSheetByName("Orders");
   var orders = [];
   if (oSheet) {
@@ -776,7 +847,6 @@ function handleGetAdminData(ss) {
     }
   }
 
-  // Coupons
   var cSheet = ss.getSheetByName("Coupons");
   var coupons = [];
   if (cSheet) {
@@ -796,7 +866,6 @@ function handleGetAdminData(ss) {
     }
   }
 
-  // Reviews
   var rSheet = ss.getSheetByName("Reviews");
   var reviews = [];
   if (rSheet) {
@@ -822,38 +891,36 @@ function handleGetAdminData(ss) {
   });
 }
 
-// ===================================================
-// SHEET INITIALIZATION & SCHEMA HELPERS
-// ===================================================
 function initProductsSheet(ss) {
-  var sheet = ss.insertSheet("Products");
+  var sheet = ss.getSheetByName("Products");
+  if (!sheet) sheet = ss.insertSheet("Products");
+
   var headers = [
     "ID", "Name", "Category", "Price (৳)", "Regular Price (৳)",
     "Image URL", "Description", "Badge", "Status",
     "Additional Images", "Stock Qty", "Stock Status", "Sizes", "Colors"
   ];
-  sheet.appendRow(headers);
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#e2e8f0");
   sheet.setFrozenRows(1);
   return sheet;
 }
 
 function ensureProductsSheetSchema(sheet) {
-  var lastCol = sheet.getLastColumn();
-  if (lastCol < 14) {
-    var fullHeaders = [
-      "ID", "Name", "Category", "Price (৳)", "Regular Price (৳)",
-      "Image URL", "Description", "Badge", "Status",
-      "Additional Images", "Stock Qty", "Stock Status", "Sizes", "Colors"
-    ];
-    for (var c = lastCol + 1; c <= 14; c++) {
-      sheet.getRange(1, c).setValue(fullHeaders[c - 1]).setFontWeight("bold").setBackground("#e2e8f0");
-    }
-  }
+  var fullHeaders = [
+    "ID", "Name", "Category", "Price (৳)", "Regular Price (৳)",
+    "Image URL", "Description", "Badge", "Status",
+    "Additional Images", "Stock Qty", "Stock Status", "Sizes", "Colors"
+  ];
+  sheet.getRange(1, 1, 1, fullHeaders.length).setValues([fullHeaders]);
+  sheet.getRange(1, 1, 1, fullHeaders.length).setFontWeight("bold").setBackground("#e2e8f0");
+  sheet.setFrozenRows(1);
 }
 
 function initOrdersSheet(ss) {
-  var sheet = ss.insertSheet("Orders");
+  var sheet = ss.getSheetByName("Orders");
+  if (!sheet) sheet = ss.insertSheet("Orders");
+
   var headers = [
     "Timestamp", "Order ID", "Customer Name", "Customer Phone",
     "Delivery Address", "Delivery Area", "Delivery Charge (৳)",
@@ -861,41 +928,40 @@ function initOrdersSheet(ss) {
     "Remaining COD (৳)", "Total Order Amount (৳)", "Note / Instructions",
     "Order Status", "Coupon Code", "Discount (৳)", "Courier Tracking"
   ];
-  sheet.appendRow(headers);
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#f1f5f9");
   sheet.setFrozenRows(1);
   return sheet;
 }
 
 function ensureOrdersSheetSchema(sheet) {
-  var lastCol = sheet.getLastColumn();
-  if (lastCol < 17) {
-    var fullHeaders = [
-      "Timestamp", "Order ID", "Customer Name", "Customer Phone",
-      "Delivery Address", "Delivery Area", "Delivery Charge (৳)",
-      "Ordered Items", "Subtotal (৳)", "Advance Required (৳)",
-      "Remaining COD (৳)", "Total Order Amount (৳)", "Note / Instructions",
-      "Order Status", "Coupon Code", "Discount (৳)", "Courier Tracking"
-    ];
-    for (var c = lastCol + 1; c <= 17; c++) {
-      sheet.getRange(1, c).setValue(fullHeaders[c - 1]).setFontWeight("bold").setBackground("#f1f5f9");
-    }
-  }
+  var fullHeaders = [
+    "Timestamp", "Order ID", "Customer Name", "Customer Phone",
+    "Delivery Address", "Delivery Area", "Delivery Charge (৳)",
+    "Ordered Items", "Subtotal (৳)", "Advance Required (৳)",
+    "Remaining COD (৳)", "Total Order Amount (৳)", "Note / Instructions",
+    "Order Status", "Coupon Code", "Discount (৳)", "Courier Tracking"
+  ];
+  sheet.getRange(1, 1, 1, fullHeaders.length).setValues([fullHeaders]);
+  sheet.getRange(1, 1, 1, fullHeaders.length).setFontWeight("bold").setBackground("#f1f5f9");
+  sheet.setFrozenRows(1);
 }
 
 function initCouponsSheet(ss) {
   var sheet = ss.getSheetByName("Coupons");
   if (!sheet) {
     sheet = ss.insertSheet("Coupons");
-    var headers = [
-      "Coupon Code", "Discount Type", "Discount Value", "Min Order (৳)",
-      "Max Discount (৳)", "Expiry Date", "Usage Limit", "Times Used", "Status"
-    ];
-    sheet.appendRow(headers);
-    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#fef08a");
-    sheet.setFrozenRows(1);
+  }
 
-    // Add a default welcome coupon
+  var headers = [
+    "Coupon Code", "Discount Type", "Discount Value", "Min Order (৳)",
+    "Max Discount (৳)", "Expiry Date", "Usage Limit", "Times Used", "Status"
+  ];
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#fef08a");
+  sheet.setFrozenRows(1);
+
+  if (sheet.getLastRow() <= 1) {
     sheet.appendRow(["WELCOME50", "flat", 50, 500, 50, "2027-12-31", 1000, 0, "Active"]);
   }
   return sheet;
@@ -905,11 +971,11 @@ function initReviewsSheet(ss) {
   var sheet = ss.getSheetByName("Reviews");
   if (!sheet) {
     sheet = ss.insertSheet("Reviews");
-    var headers = ["Timestamp", "Product ID", "Customer Name", "Rating", "Review Text", "Status"];
-    sheet.appendRow(headers);
-    sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#dcfce7");
-    sheet.setFrozenRows(1);
   }
+  var headers = ["Timestamp", "Product ID", "Customer Name", "Rating", "Review Text", "Status"];
+  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#dcfce7");
+  sheet.setFrozenRows(1);
   return sheet;
 }
 
@@ -934,7 +1000,7 @@ function importAllOriginalProducts(ss) {
         p.badge || "Pre-Order",
         "Active",
         "", // Additional images
-        "", // Stock Qty (unlimited pre-order)
+        "", // Stock Qty
         "Pre-Order",
         "", // Sizes
         ""  // Colors
