@@ -84,7 +84,7 @@
     return s.includes('alicdn') || s.includes('1688') || s.includes('cib') || s.includes('storage') || s.includes('.jpg') || s.includes('.png') || s.includes('.webp') || s.includes('.jpeg');
   });
   const uniqueImgs = [...new Set(allImgs)];
-  let selectedImg = uniqueImgs[0] || 'https://photopixc-spec.github.io/preorder-zaynshop/images/hero_banner.jpg';
+  let selectedImg = uniqueImgs[0] || 'https://preorder.zaynshopbd.com/images/hero_banner.jpg';
 
   // Extract Prices (BDT)
   let detectedSalePrice = '';

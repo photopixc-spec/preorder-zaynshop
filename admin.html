@@ -324,7 +324,7 @@
             <div style="font-size:14px;font-weight:800;color:var(--sec)">⚡ MoveDrop 1-Click Product Importer Bookmarklet</div>
             <div style="font-size:12px;color:var(--text-muted)">ব্রাউজারের বুকমার্কস বারে নিচের বাটনটি ড্র্যাগ করে রেখে দিন। MoveDrop-এ যেকোনো প্রোডাক্ট পেজে ১-ক্লিকে শিটে ইম্পোর্ট হবে।</div>
           </div>
-          <a class="bookmarklet-btn" href="javascript:(function(){var s=document.createElement('script');s.src='https://photopixc-spec.github.io/preorder-zaynshop/importer.js?v='+Date.now();document.body.appendChild(s);})();">
+          <a class="bookmarklet-btn" href="javascript:(function(){var s=document.createElement('script');s.src='https://preorder.zaynshopbd.com/importer.js?v='+Date.now();document.body.appendChild(s);})();">
             + Zayn MoveDrop Importer
           </a>
         </div>
@@ -636,7 +636,11 @@
 
     // Verify local or restricted environment
     window.addEventListener('DOMContentLoaded', () => {
-      if (window.location.hostname.includes('github.io')) {
+      const isLocal = window.location.protocol === 'file:' || 
+                      window.location.hostname === 'localhost' || 
+                      window.location.hostname === '127.0.0.1' || 
+                      window.location.hostname === '';
+      if (!isLocal) {
         document.getElementById('publicLockBanner').style.display = 'block';
         document.getElementById('adminApp').style.display = 'none';
         return;

@@ -984,7 +984,13 @@ function importAllOriginalProducts(ss) {
   if (!sheet) sheet = initProductsSheet(ss);
 
   try {
-    var res = UrlFetchApp.fetch("https://photopixc-spec.github.io/preorder-zaynshop/products.json");
+    var jsonUrl = "https://preorder.zaynshopbd.com/products.json";
+    var res;
+    try {
+      res = UrlFetchApp.fetch(jsonUrl);
+    } catch (_) {
+      res = UrlFetchApp.fetch("https://photopixc-spec.github.io/preorder-zaynshop/products.json");
+    }
     var list = JSON.parse(res.getContentText());
     var toAdd = [];
     for (var j = 0; j < list.length; j++) {
