@@ -10,7 +10,8 @@ const CONFIG = {
   deliveryDhaka: 70,
   deliveryOutside: 130,
   advanceAmount: 200,
-  advanceNotice: "প্রি-অর্ডার কনফার্ম করতে ২০০ টাকা অ্যাডভান্স পেমেন্ট প্রযোজ্য (বিকাশ/নগদ: 01860034712)। বাকি টাকা ক্যাশ অন ডেলিভারিতে পরিশোধ করবেন।",
+  paymentNumber: "01819740112", // bKash & Nagad number for 200 BDT advance payment
+  advanceNotice: "প্রি-অর্ডার কনফার্ম করতে ২০০ টাকা অ্যাডভান্স পেমেন্ট প্রযোজ্য (বিকাশ/নগদ: 01819740112)। বাকি টাকা ক্যাশ অন ডেলিভারিতে পরিশোধ করবেন।",
   deliveryTime: "15–25 Days",
   readyStockDeliveryTime: "২–৩ Days",
   

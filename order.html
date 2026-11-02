@@ -471,16 +471,30 @@
 
             <!-- Payment & Advance Notice Box -->
             <div class="payment-notice-box">
-              <span class="payment-badge">Payment Method: Cash on Delivery</span>
-              <p style="font-size:13px;color:#334155;line-height:1.5;margin:6px 0;">
-                ⚠️ <b>Pre-Order Condition:</b> To confirm your reservation, an advance of <b>৳200</b> is required. The remaining amount will be paid Cash on Delivery at your doorstep.
-              </p>
-              <div style="font-size:12px;color:#64748b;margin-top:8px;">
-                Send ৳200 advance via Send Money to personal account:
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <span class="payment-badge">পেমেন্ট মেথড: ক্যাশ অন ডেলিভারি (COD)</span>
+                <span style="font-size:11px;color:#8a5a00;font-weight:700;">৳২০০ অ্যাডভান্স প্রযোজ্য</span>
               </div>
-              <div style="margin-top:6px;">
-                <span class="mfs-pill">📱 bKash: <b>01860034712</b></span>
-                <span class="mfs-pill">📱 Nagad: <b>01860034712</b></span>
+              <p style="font-size:13px;color:#334155;line-height:1.5;margin:6px 0;">
+                ⚠️ <b>প্রি-অর্ডার কনফার্মেশন নিয়ম:</b> গ্লোবাল ওয়্যারহাউস থেকে প্রোডাক্ট বুকিং কনফার্ম করতে <b>৳২০০ অগ্রিম</b> পাঠাতে হবে। বাকি সমস্ত টাকা পার্সেল হাতে পাওয়ার পর ডেলিভারি ম্যানকে পরিশোধ করবেন।
+              </p>
+              <div style="font-size:12px;color:#64748b;margin:10px 0 6px;">
+                বিকাশ অথবা নগদ পার্সোনাল নম্বরে Send Money করুন:
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                <div class="payment-copy-pill">
+                  <span>📱 bKash / Nagad: <b>01819740112</b></span>
+                  <button type="button" class="btn-copy-num" onclick="copyPaymentNumber('01819740112', this)">📋 Copy Number</button>
+                </div>
+              </div>
+
+              <!-- TrxID / Payment proof capture -->
+              <div style="margin-top:14px;padding-top:12px;border-top:1px dashed #cbd5e1;">
+                <label class="form-label" for="custTrxId" style="font-size:12px;margin-bottom:4px;">
+                  💳 bKash/Nagad Transaction ID (TrxID) বা শেষ ৪ ডিজিট (ঐচ্ছিক):
+                </label>
+                <input type="text" id="custTrxId" class="form-input" placeholder="e.g. 9K72AB12 অথবা শেষ ৪ ডিজিট (যেমন: 4011)" style="padding:10px 12px;font-size:13px;">
+                <span style="font-size:11px;color:#64748b;display:block;margin-top:4px;">টাকা পাঠানোর পর TrxID বা লাস্ট ৪ ডিজিট এখানে দিতে পারেন, অথবা সরাসরি হোয়াটসঅ্যাপে জানাতে পারবেন।</span>
               </div>
             </div>
           </form>
@@ -561,7 +575,7 @@
       </p>
       <div style="background:#f8fafc;padding:14px;border-radius:10px;text-align:left;font-size:13px;margin-bottom:20px;border:1px solid #e2e8f0;">
         <div style="margin-bottom:6px">💰 <b>Total Payable:</b> <span id="tyTotal">৳0</span></div>
-        <div style="margin-bottom:6px">⚠️ <b>Advance Due:</b> ৳200 (Send to bKash/Nagad 01860034712)</div>
+        <div style="margin-bottom:6px">⚠️ <b>Advance Due:</b> ৳200 (Send to bKash/Nagad 01819740112)</div>
         <div>💬 <b>Next Step:</b> Tap below to send your order details and payment screenshot on WhatsApp.</div>
       </div>
       <a id="tyWaLink" href="#" target="_blank" class="btn-submit-order" style="text-decoration:none;margin-bottom:10px;">
@@ -1089,7 +1103,7 @@
         (discount > 0 ? `🏷️ *Promo Discount (${appliedCoupon.code}):* -${currency}${discount.toLocaleString()}\n` : '') +
         `🚚 *Delivery Charge:* ${currency}${delivery}\n` +
         `💵 *Total Order Amount:* ${currency}${total.toLocaleString()}\n` +
-        `⚠️ *Advance Required:* ${currency}${advanceAmount} (via bKash/Nagad: 01860034712)\n` +
+        `⚠️ *Advance Required:* ${currency}${advanceAmount} (via bKash/Nagad: 01819740112)\n` +
         `📦 *Remaining on Delivery (COD):* ${currency}${remainingCod.toLocaleString()}\n` +
         `──────────────────────────\n` +
         `Thank you! I would like to confirm my pre-order.`;
