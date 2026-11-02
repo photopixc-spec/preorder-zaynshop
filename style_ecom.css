@@ -1964,3 +1964,164 @@ body {
   cursor: pointer;
   object-fit: cover;
 }
+
+
+/* =========================================================
+   PHOTOPIXC SHARED DESIGN SYSTEM (DESIGN.md) ENFORCEMENT
+   ========================================================= */
+
+/* Typography */
+body, button, input, select, textarea {
+  font-family: var(--font-ui) !important;
+}
+
+body {
+  background-color: var(--color-surface) !important;
+  color: var(--color-ink) !important;
+}
+
+/* Header & Announcement */
+.top-bar {
+  background: var(--color-dark) !important;
+  color: var(--color-text-on-dark) !important;
+}
+
+header.site-header {
+  background: var(--color-canvas) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+/* Primary and Secondary Buttons */
+.btn-card-buy, .btn-pdp-buy, .btn-sticky-buy, .btn-submit-order, .btn-apply-coupon {
+  background: var(--color-accent) !important;
+  color: var(--color-text-on-accent) !important;
+  border: 1px solid var(--color-accent) !important;
+  border-radius: var(--radius) !important;
+  font-weight: 600 !important;
+  transition: background 0.2s ease, border-color 0.2s ease !important;
+}
+
+.btn-card-buy:hover, .btn-pdp-buy:hover, .btn-sticky-buy:hover, .btn-submit-order:hover, .btn-apply-coupon:hover {
+  background: var(--color-accent-dark) !important;
+  border-color: var(--color-accent-dark) !important;
+}
+
+.btn-card-cart, .btn-pdp-cart, .btn-sticky-cart, .btn-filter-reset {
+  background: var(--color-canvas) !important;
+  color: var(--color-ink) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius) !important;
+  font-weight: 600 !important;
+}
+
+.btn-card-cart:hover, .btn-pdp-cart:hover, .btn-sticky-cart:hover, .btn-filter-reset:hover {
+  border-color: var(--color-ink) !important;
+  background: var(--color-surface) !important;
+}
+
+/* Cards & Surfaces */
+.product-card, .card-box, .track-search-card {
+  background: var(--color-canvas) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: 0 2px 8px rgba(16, 42, 67, 0.04) !important;
+}
+
+.product-card:hover {
+  border-color: #b0bec5 !important;
+  box-shadow: 0 8px 24px rgba(16, 42, 67, 0.08) !important;
+}
+
+/* Badges compliant with Section 2.1 Contrast Rules */
+.badge-preorder {
+  background: var(--color-dark) !important;
+  color: var(--color-text-on-dark) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.badge-instock {
+  background: #e6f4f2 !important;
+  color: var(--color-accent-dark) !important;
+  border: 1px solid #b2dfdb !important;
+}
+
+.pulse-dot.green {
+  background: var(--color-accent) !important;
+}
+
+/* Discount Pill using Highlight Amber (WCAG AA 8.01:1) */
+.badge-discount, .pdp-discount-pill {
+  background: var(--color-highlight) !important;
+  color: var(--color-text-on-highlight) !important;
+  font-weight: 700 !important;
+  border-radius: 999px !important;
+  border: none !important;
+}
+
+/* Category Pills & Nav */
+.cat-pill.active, .category-nav-link.active {
+  background: var(--color-accent) !important;
+  color: #ffffff !important;
+  border-color: var(--color-accent) !important;
+}
+
+.cat-pill {
+  background: var(--color-canvas) !important;
+  color: var(--color-ink) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.cat-pill:hover {
+  border-color: var(--color-accent) !important;
+}
+
+/* PDP Variants Active state */
+.pdp-variant-pill.active {
+  border-color: var(--color-accent) !important;
+  background: #e6f4f2 !important;
+  color: var(--color-accent-dark) !important;
+  box-shadow: 0 0 0 2px rgba(14, 124, 107, 0.2) !important;
+}
+
+/* Price Row */
+.price-current, .pdp-price-current {
+  color: var(--color-ink) !important;
+  font-weight: 800 !important;
+}
+
+.price-old, .pdp-price-old {
+  color: var(--color-muted) !important;
+}
+
+/* Form Inputs Focus State */
+.form-input:focus, .form-textarea:focus, select.form-input:focus {
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 3px rgba(14, 124, 107, 0.15) !important;
+}
+
+/* Receipts & Summaries */
+.receipt-header {
+  border-bottom: 2px dashed var(--color-border) !important;
+}
+.receipt-tag {
+  background: #e6f4f2 !important;
+  color: var(--color-accent-dark) !important;
+}
+.receipt-highlight-advance {
+  background: #fff8e1 !important;
+  border: 1.5px solid #ffe082 !important;
+  color: #8a5a00 !important;
+}
+.receipt-highlight-cod {
+  background: #e6f4f2 !important;
+  border: 1.5px solid #b2dfdb !important;
+  color: var(--color-accent-dark) !important;
+}
+
+/* Mobile bottom nav active color */
+.mob-nav-item.active, .mob-nav-item:hover {
+  color: var(--color-accent) !important;
+}
+.mob-nav-badge {
+  background: var(--color-accent) !important;
+}

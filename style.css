@@ -1,15 +1,65 @@
 /* Zayn Shop BD — Pre-Order E-Commerce Styling */
 :root {
-  --pri: #e11d48;
-  --pri-dark: #be123c;
-  --pri-light: #ffe4e6;
-  --sec: #0f172a;
-  --accent: #2563eb;
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --line: #e2e8f0;
-  --text: #0f172a;
-  --text-mut: #64748b;
+  /* Surfaces (PhotoPixc Shared Design System) */
+  --color-canvas: #ffffff;
+  --color-surface: #f6f9f8;
+  --color-blog-surface: #f7f6f3;
+  --color-dark: #0b1f33;
+  --color-dark-card: #162e44;
+
+  /* Text */
+  --color-ink: #102a43;
+  --color-muted: #52606d;
+  --color-text-on-dark: #ffffff;
+  --color-text-on-accent: #ffffff;
+
+  /* Borders */
+  --color-border: #d9dee8;
+
+  /* Accent — teal family ONLY */
+  --color-accent: #0e7c6b;        /* primary buttons, large accents */
+  --color-accent-dark: #0a5c50;   /* small text links, button hover */
+  --color-accent-bright: #2ab69e; /* accent ONLY on dark backgrounds */
+
+  /* Highlight — badges ONLY */
+  --color-highlight: #ffb020;
+  --color-text-on-highlight: #102a43;
+
+  /* Feedback */
+  --color-success: #0e7c6b;
+  --color-warning-text: #8a5a00;
+  --color-error: #c0392b;
+
+  /* Type */
+  --font-ui: "Inter", "Hind Siliguri", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-blog-heading: Georgia, "Times New Roman", serif;
+
+  /* Shape + spacing (8px base scale) */
+  --radius: 8px;
+  --radius-card: 12px;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-6: 48px;
+  --space-8: 64px;
+  --space-12: 96px;
+
+  /* Layout */
+  --max-width-site: 1120px;
+  --max-width-reading: 720px;
+
+  /* Legacy mappings mapped to Shared Design System tokens */
+  --pri: var(--color-accent);
+  --pri-dark: var(--color-accent-dark);
+  --pri-light: #e6f4f2;
+  --sec: var(--color-dark);
+  --accent: var(--color-accent);
+  --bg: var(--color-surface);
+  --card: var(--color-canvas);
+  --line: var(--color-border);
+  --text: var(--color-ink);
+  --text-mut: var(--color-muted);
   --wa: #25d366;
   --wa-dark: #1da851;
 }
