@@ -1,6 +1,6 @@
 // Zayn Shop BD — Pre-Order & E-Commerce Engine
 // High-Converting, Lightweight, Zero-Hosting Architecture
-// Version: 2.0 (Dual Stock, Variants, Instant Filter, Mobile Bottom Nav)
+// Version: 3.0 (Stale-While-Revalidate Caching, WebP CDN Proxy, Shimmer Skeleton, Abandoned Cart)
 
 let allProducts = [];
 let cart = [];
@@ -13,6 +13,11 @@ let filterMinPrice = null;
 let filterMaxPrice = null;
 let currentSortOrder = 'default'; // 'default', 'price-asc', 'price-desc', 'ready-stock'
 
+// Cache configuration
+const CACHE_KEY = 'zayn_catalog_cache';
+const CACHE_TIME_KEY = 'zayn_catalog_timestamp';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 // Pre-load saved delivery area from localStorage if available
 try {
   const savedArea = localStorage.getItem('zayn_delivery_area');
@@ -21,7 +26,19 @@ try {
   }
 } catch (_) {}
 
-// ---- Tracking Initialization (Meta Pixel & GTM) ----
+// ---- Phase 1: Global Image CDN Proxy & WebP Compression ----
+function getOptimizedImageUrl(url, width = 600) {
+  if (!url || typeof url !== 'string') return 'images/hero_banner.jpg';
+  const trimmed = url.trim();
+  if (!trimmed) return 'images/hero_banner.jpg';
+  // Skip local paths, base64 data, blob URLs, or already wsrv.nl proxied URLs
+  if (!/^https?:\/\//i.test(trimmed) || trimmed.includes('wsrv.nl')) {
+    return trimmed;
+  }
+  return `https://wsrv.nl/?url=${encodeURIComponent(trimmed)}&w=${width}&output=webp&q=85`;
+}
+
+// ---- Tracking Initialization (Meta Pixel & GTM / DataLayer) ----
 function initTracking() {
   window.dataLayer = window.dataLayer || [];
 
@@ -62,9 +79,41 @@ function trackEvent(name, params = {}) {
   } catch (_) {}
 }
 
-// ---- Universal Product Loader (Google Sheet is Source of Truth) ----
+// ---- Phase 1: Stale-While-Revalidate Universal Product Loader ----
 async function fetchStoreProducts() {
-  // 1. Try Google Sheet Webhook first (Source of Truth with Cache Busting)
+  const urlParams = new URLSearchParams(window.location.search);
+  const bypassCache = urlParams.get('nocache') === '1' || urlParams.get('refresh') === '1';
+
+  // 1. Check local cache (Stale-While-Revalidate)
+  if (!bypassCache) {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      const timeStr = localStorage.getItem(CACHE_TIME_KEY);
+      if (cached && timeStr) {
+        const parsed = JSON.parse(cached);
+        const age = Date.now() - Number(timeStr);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          if (age < CACHE_TTL) {
+            // Cache is completely fresh (< 5 mins) -> Return immediately
+            return parsed;
+          } else {
+            // Cache is stale (>= 5 mins) -> Return immediately for 0ms load, then revalidate in background!
+            revalidateCatalogInBackground(parsed);
+            return parsed;
+          }
+        }
+      }
+    } catch (cacheErr) {
+      console.warn('Cache read error:', cacheErr);
+    }
+  }
+
+  // 2. No valid cache or bypass requested: Fetch live from Google Sheets
+  return await fetchFreshProductsFromSource();
+}
+
+// Fetch live from Webhook
+async function fetchFreshProductsFromSource() {
   if (typeof CONFIG !== 'undefined' && CONFIG.orderWebhookUrl) {
     try {
       const sep = CONFIG.orderWebhookUrl.includes('?') ? '&' : '?';
@@ -72,26 +121,17 @@ async function fetchStoreProducts() {
       if (res.ok) {
         const sheetProducts = await res.json();
         if (Array.isArray(sheetProducts) && sheetProducts.length > 0) {
-          // Google Sheet is source of truth: do NOT revive deleted items from products.json!
           try {
-            sessionStorage.setItem('zayn_cached_products', JSON.stringify(sheetProducts));
+            localStorage.setItem(CACHE_KEY, JSON.stringify(sheetProducts));
+            localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
           } catch (_) {}
           return sheetProducts;
         }
       }
     } catch (sheetErr) {
-      console.warn('Google Sheet product fetch failed, falling back to local storage/products.json:', sheetErr);
+      console.warn('Google Sheet product fetch failed, falling back to local fallback:', sheetErr);
     }
   }
-
-  // 2. Fast sessionStorage cache fallback
-  try {
-    const cached = sessionStorage.getItem('zayn_cached_products');
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch (_) {}
 
   // 3. Fallback to offline products.json only if remote Sheet is unreachable
   try {
@@ -104,9 +144,66 @@ async function fetchStoreProducts() {
   }
 }
 
+// Background revalidation without blocking DOM
+async function revalidateCatalogInBackground(currentCached) {
+  try {
+    const fresh = await fetchFreshProductsFromSource();
+    if (Array.isArray(fresh) && fresh.length > 0) {
+      const isChanged = JSON.stringify(fresh) !== JSON.stringify(currentCached);
+      if (isChanged) {
+        allProducts = fresh;
+        renderCategoryNav();
+        renderCategoryPills();
+        renderProducts();
+        console.log('⚡ Zayn Catalog silently updated via background revalidation.');
+      }
+    }
+  } catch (err) {
+    console.warn('Background revalidation skipped:', err);
+  }
+}
+
+// Force refresh catalog helper
+async function forceRefreshCatalog() {
+  try {
+    localStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(CACHE_TIME_KEY);
+    showToast('🔄 Refreshing catalog...');
+    allProducts = await fetchFreshProductsFromSource();
+    renderCategoryNav();
+    renderCategoryPills();
+    renderFilterToolbar();
+    renderProducts();
+    showToast('✅ Latest products loaded!');
+  } catch (e) {
+    showToast('Failed to refresh catalog');
+  }
+}
+window.forceRefreshCatalog = forceRefreshCatalog;
+
+// ---- Phase 2: Shimmer Skeleton Grid Loader ----
+function renderShimmerSkeleton(grid, count = 6) {
+  if (!grid) return;
+  const skeletonCard = `
+    <div class="skeleton-card">
+      <div class="skeleton-shimmer skeleton-img"></div>
+      <div class="skeleton-shimmer skeleton-line short"></div>
+      <div class="skeleton-shimmer skeleton-line"></div>
+      <div class="skeleton-shimmer skeleton-line medium"></div>
+      <div class="skeleton-actions">
+        <div class="skeleton-shimmer skeleton-btn"></div>
+        <div class="skeleton-shimmer skeleton-btn"></div>
+      </div>
+    </div>
+  `;
+  grid.innerHTML = Array(count).fill(skeletonCard).join('');
+}
+
 // ---- Load Products & Render ----
 async function loadProducts() {
   const grid = document.getElementById('productGrid');
+  if (grid) renderShimmerSkeleton(grid, 6);
+
   try {
     allProducts = await fetchStoreProducts();
 
@@ -121,6 +218,7 @@ async function loadProducts() {
     renderCategoryPills();
     renderFilterToolbar();
     if (grid) renderProducts();
+    checkAbandonedCart();
   } catch (err) {
     console.error('Failed to load products:', err);
     if (grid) grid.innerHTML = '<p style="text-align:center;padding:40px;color:#ef4444">Failed to load products. Please refresh the page.</p>';
@@ -348,28 +446,33 @@ function renderProducts() {
 
   grid.innerHTML = filtered.map(p => {
     const inStock = isProductInStock(p);
-    const discount = p.regular_price && p.regular_price > p.price
-      ? Math.round(((p.regular_price - p.price) / p.regular_price) * 100)
+    const regularPrice = Number(p.regular_price) || 0;
+    const currentPrice = Number(p.price) || 0;
+    const discount = regularPrice > currentPrice
+      ? Math.round(((regularPrice - currentPrice) / regularPrice) * 100)
       : 0;
+    const saveAmount = regularPrice > currentPrice ? (regularPrice - currentPrice) : 0;
 
     const hasVariants = (p.sizes && p.sizes.length > 0) || (p.colors && p.colors.length > 0);
+    const optimizedImg = getOptimizedImageUrl(p.image, 500);
 
     return `
     <div class="product-card" onclick="window.location='product.html?id=${p.id}'" style="cursor:pointer">
       <div class="prod-img-wrap">
         ${inStock 
-          ? `<span class="badge-instock">🟢 Ready Stock (${readyStockDelivery})</span>`
-          : `<span class="badge-preorder">✈️ Pre-Order (${deliveryTime})</span>`
+          ? `<span class="badge-instock"><span class="pulse-dot green"></span>🟢 Ready Stock • ${readyStockDelivery}</span>`
+          : `<span class="badge-preorder">✈️ Global Pre-Order • ${deliveryTime}</span>`
         }
-        ${discount > 0 ? `<span class="badge-discount">${discount}% off</span>` : ''}
-        <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy" referrerpolicy="no-referrer" class="prod-img" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
+        ${discount > 0 ? `<span class="badge-discount">-${discount}% OFF</span>` : ''}
+        <img src="${optimizedImg}" alt="${escapeHtml(p.name)}" loading="lazy" referrerpolicy="no-referrer" class="prod-img" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
       </div>
       <div class="prod-body">
         <div class="prod-cat">${escapeHtml(p.category)}</div>
         <h3 class="prod-title">${escapeHtml(p.name)}</h3>
         <div class="prod-price-row">
-          <span class="price-current">${currency}${p.price.toLocaleString()}</span>
-          ${p.regular_price ? `<span class="price-old">${currency}${p.regular_price.toLocaleString()}</span>` : ''}
+          <span class="price-current">${currency}${currentPrice.toLocaleString()}</span>
+          ${regularPrice ? `<span class="price-old">${currency}${regularPrice.toLocaleString()}</span>` : ''}
+          ${saveAmount > 0 ? `<span style="font-size:11px;color:#10b981;font-weight:700">Save ${currency}${saveAmount}</span>` : ''}
         </div>
         <div class="prod-actions" onclick="event.stopPropagation()">
           ${hasVariants ? `
@@ -429,6 +532,7 @@ function loadCart() {
   if (typeof renderCheckoutItems === 'function') {
     renderCheckoutItems();
   }
+  checkAbandonedCart();
 }
 
 function saveCart() {
@@ -442,111 +546,89 @@ function saveCart() {
   if (typeof renderCheckoutItems === 'function') {
     renderCheckoutItems();
   }
+  checkAbandonedCart();
 }
 
 // Immediately load cart into memory
 loadCart();
 
 function updateCartBadge() {
-  const totalCount = cart.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
-  const badgeEls = document.querySelectorAll('.cart-badge-count, .mob-nav-badge');
-  badgeEls.forEach(el => {
-    el.textContent = totalCount;
-    el.style.display = totalCount > 0 ? 'inline-block' : 'none';
+  const totalCount = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+  document.querySelectorAll('.cart-badge-count, .mob-nav-badge').forEach(badge => {
+    badge.textContent = totalCount;
+    badge.style.display = totalCount > 0 ? 'inline-flex' : 'none';
   });
 }
 
-async function ensureProductsLoaded() {
-  if (!allProducts.length) {
-    try {
-      allProducts = await fetchStoreProducts();
-    } catch (e) {
-      console.error('Failed to fetch products for cart lookup', e);
-    }
-  }
-}
+function addToCart(productId, qty = 1, openDrawer = true, selectedSize = '', selectedColor = '') {
+  const product = allProducts.find(p => String(p.id).trim() === String(productId).trim());
+  if (!product) return;
 
-function addToCart(productId, qty = 1, openDrawer = true, size = '', color = '') {
-  function doAdd(p) {
-    if (!p) return;
+  const vKey = getCartItemKey(product.id, selectedSize, selectedColor);
+  const existingIndex = cart.findIndex(item => (item.variantKey || item.id) === vKey);
 
-    const variantKey = getCartItemKey(p.id, size, color);
-    const existing = cart.find(item => item.variantKey === variantKey || (!item.variantKey && Number(item.id) === Number(productId) && !size && !color));
-
-    if (existing) {
-      existing.qty += qty;
-      existing.variantKey = variantKey;
-      existing.size = size || existing.size || '';
-      existing.color = color || existing.color || '';
-    } else {
-      cart.push({
-        id: p.id,
-        variantKey: variantKey,
-        name: p.name,
-        price: p.price,
-        regular_price: p.regular_price || 0,
-        image: p.image,
-        category: p.category,
-        size: size || '',
-        color: color || '',
-        qty: qty
-      });
-    }
-
-    saveCart();
-
-    trackEvent('AddToCart', {
-      content_name: p.name,
-      content_ids: [String(p.id)],
-      content_type: 'product',
-      value: p.price * qty,
-      currency: 'BDT'
+  if (existingIndex > -1) {
+    cart[existingIndex].qty += qty;
+  } else {
+    cart.push({
+      id: product.id,
+      variantKey: vKey,
+      name: product.name,
+      price: product.price,
+      regular_price: product.regular_price || product.price,
+      image: product.image,
+      category: product.category,
+      badge: product.badge,
+      stock_status: product.stock_status,
+      size: selectedSize,
+      color: selectedColor,
+      qty: qty
     });
-
-    const variantLabel = (size || color) ? ` (${[size, color].filter(Boolean).join(', ')})` : '';
-    showToast(`✅ "${p.name}"${variantLabel} added to bag!`);
-
-    if (openDrawer) {
-      openCartDrawer();
-    }
   }
 
-  const existingProduct = allProducts.find(item => Number(item.id) === Number(productId));
-  if (existingProduct) {
-    doAdd(existingProduct);
-    return Promise.resolve(existingProduct);
-  }
+  saveCart();
 
-  return ensureProductsLoaded().then(() => {
-    const p = allProducts.find(item => Number(item.id) === Number(productId));
-    doAdd(p);
-    return p;
+  trackEvent('AddToCart', {
+    content_name: product.name,
+    content_ids: [String(product.id)],
+    content_type: 'product',
+    value: product.price * qty,
+    currency: 'BDT'
   });
+
+  const variantDesc = [selectedSize ? 'Size: ' + selectedSize : '', selectedColor ? 'Color: ' + selectedColor : ''].filter(Boolean).join(', ');
+  showToast(`🛒 ${product.name}${variantDesc ? ' (' + variantDesc + ')' : ''} added to your bag!`);
+
+  if (openDrawer) {
+    openCartDrawer();
+  }
 }
 
-function openDirectCheckout(productId, qty = 1, size = '', color = '') {
-  Promise.resolve(addToCart(productId, qty, false, size, color)).then(() => {
-    window.location.href = 'order.html';
-  });
+function openDirectCheckout(productId, qty = 1, selectedSize = '', selectedColor = '') {
+  addToCart(productId, qty, false, selectedSize, selectedColor);
+  window.location.href = 'order.html';
 }
 
-function updateCartItemQty(keyOrId, delta) {
-  const item = cart.find(i => i.variantKey === String(keyOrId) || (!i.variantKey && Number(i.id) === Number(keyOrId)));
-  if (!item) return;
+function updateCartItemQty(key, delta) {
+  const itemIndex = cart.findIndex(item => (item.variantKey || item.id) === key);
+  if (itemIndex === -1) return;
 
-  item.qty += delta;
-  if (item.qty <= 0) {
-    cart = cart.filter(i => (i.variantKey ? i.variantKey !== String(keyOrId) : Number(i.id) !== Number(keyOrId)));
+  cart[itemIndex].qty += delta;
+
+  if (cart[itemIndex].qty <= 0) {
+    cart.splice(itemIndex, 1);
+    showToast('Item removed from bag');
   }
+
   saveCart();
 }
 
 function openCartDrawer() {
-  renderCartItems();
   const drawer = document.getElementById('cartDrawer');
   const overlay = document.getElementById('cartOverlay');
   if (drawer) drawer.classList.add('open');
   if (overlay) overlay.classList.add('open');
+  renderCartItems();
   document.body.style.overflow = 'hidden';
 }
 
@@ -594,10 +676,11 @@ function renderCartItems() {
     const variantTag = (item.size || item.color)
       ? `<div style="font-size:11px;color:#2563eb;font-weight:700;margin-top:2px">${[item.size ? 'Size: ' + item.size : '', item.color ? 'Color: ' + item.color : ''].filter(Boolean).join(' | ')}</div>`
       : '';
+    const optimizedThumb = getOptimizedImageUrl(item.image, 160);
 
     return `
     <div class="cart-item">
-      <img src="${item.image}" alt="${escapeHtml(item.name)}" class="cart-item-img" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
+      <img src="${optimizedThumb}" alt="${escapeHtml(item.name)}" class="cart-item-img" loading="lazy" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
       <div class="cart-item-info">
         <h4 class="cart-item-title">${escapeHtml(item.name)}</h4>
         ${variantTag}
@@ -626,13 +709,56 @@ function renderCartItems() {
   if (totalEl) totalEl.textContent = `${currency}${total.toLocaleString()}`;
 }
 
+// ---- Phase 3: Abandoned Cart Floating Bar ----
+function checkAbandonedCart() {
+  const isOrderPage = window.location.pathname.includes('order.html');
+  if (isOrderPage) {
+    const existing = document.getElementById('abandonedCartBar');
+    if (existing) existing.remove();
+    return;
+  }
+
+  const dismissed = sessionStorage.getItem('zayn_dismissed_abandoned_cart');
+  if (dismissed === '1') return;
+
+  const totalQty = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
+  let bar = document.getElementById('abandonedCartBar');
+
+  if (totalQty > 0) {
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'abandonedCartBar';
+      bar.className = 'abandoned-cart-bar';
+      document.body.appendChild(bar);
+    }
+    bar.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;">
+        <span>🛍️</span>
+        <span>আপনার ব্যাগে ${totalQty} টি প্রোডাক্ট অপেক্ষা করছে!</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <a href="order.html" class="btn-abandoned-checkout">চেকআউট ⚡</a>
+        <button type="button" class="btn-abandoned-close" onclick="dismissAbandonedCart()" title="Dismiss">✕</button>
+      </div>
+    `;
+  } else if (bar) {
+    bar.remove();
+  }
+}
+
+function dismissAbandonedCart() {
+  sessionStorage.setItem('zayn_dismissed_abandoned_cart', '1');
+  const bar = document.getElementById('abandonedCartBar');
+  if (bar) bar.remove();
+}
+window.dismissAbandonedCart = dismissAbandonedCart;
+
 // ---- Modern Mobile Bottom Navigation Bar ----
 function renderMobileBottomNav() {
   if (document.getElementById('mobileBottomNav')) return;
 
   const path = window.location.pathname;
   const isHome = path.endsWith('index.html') || path.endsWith('/') || !path.includes('.html');
-  const isOrder = path.includes('order.html');
   const isTrack = path.includes('track.html');
 
   const nav = document.createElement('nav');
@@ -657,7 +783,7 @@ function renderMobileBottomNav() {
     </a>
     <a href="track.html" class="mob-nav-item ${isTrack ? 'active' : ''}">
       <span class="mob-nav-icon">📦</span>
-      <span class="mob-nav-label">ট্র্যাক অর্ডার</span>
+      <span class="mob-nav-label">ট্র্যাক</span>
     </a>
     <a href="https://wa.me/${waNumber}" target="_blank" class="mob-nav-item">
       <span class="mob-nav-icon">💬</span>

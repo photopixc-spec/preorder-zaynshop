@@ -8,9 +8,9 @@
   <meta name="description" content="Secure Checkout and Pre-Order Confirmation for Zayn Shop.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="style_ecom.css?v=3">
+  <link rel="stylesheet" href="style_ecom.css?v=5">
   <style>
     .checkout-wrap {
       max-width: 1100px;
@@ -489,13 +489,16 @@
 
       <!-- Right Column: Order Summary Sidebar -->
       <div class="checkout-right">
-        <div class="card-box summary-sidebar">
-          <div class="card-box-title">
-            <span>📋</span>
-            <span>Order Summary</span>
+        <div class="card-box summary-sidebar receipt-breakdown-box">
+          <div class="receipt-header">
+            <div class="receipt-title">
+              <span>🧾</span> <span>Digital Order Receipt</span>
+            </div>
+            <span class="receipt-tag">Pre-Order Spec</span>
           </div>
-          <!-- Coupon / Promo Code Input Box -->
-          <div style="margin-bottom:16px;background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;">
+
+          <!-- Coupon Box -->
+          <div style="margin-bottom:14px;background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #e2e8f0;">
             <label style="font-size:12px;font-weight:700;color:#334155;margin-bottom:6px;display:block">🏷️ Have a Promo / Coupon Code?</label>
             <div class="coupon-box">
               <input type="text" id="couponCodeInput" class="coupon-input" placeholder="e.g. WELCOME50">
@@ -504,44 +507,44 @@
             <div id="couponMsg" class="coupon-msg"></div>
           </div>
 
+          <div class="receipt-line">
+            <span>প্রোডাক্ট সাবটোটাল:</span>
+            <span id="orderSubtotal" style="font-weight:700">৳0</span>
+          </div>
 
-          
-          <div class="summary-row" id="rowDiscount" style="display:none;color:#059669;font-weight:700">
-            <span>Coupon Discount:</span>
+          <div class="receipt-line" id="rowDiscount" style="display:none;color:#059669;font-weight:700">
+            <span>কুপন ডিসকাউন্ট:</span>
             <span id="orderDiscount">-৳0</span>
           </div>
-          <div class="summary-row">
-            <span>Items Subtotal:</span>
-            <span id="orderSubtotal">৳0</span>
+
+          <div class="receipt-line">
+            <span>হোম ডেলিভারি চার্জ:</span>
+            <span id="orderDelivery" style="font-weight:700">৳70</span>
           </div>
 
-          <div class="summary-row">
-            <span>Delivery Charge:</span>
-            <span id="orderDelivery">৳70</span>
+          <div class="receipt-line total-line">
+            <span>সর্বমোট বিল (Total):</span>
+            <span id="orderTotal" style="color:var(--pri);font-size:18px">৳0</span>
           </div>
 
-          <div class="summary-row total-row">
-            <span>Total Order Amount:</span>
-            <span id="orderTotal" style="color:var(--pri)">৳0</span>
+          <!-- Distinct Advance vs COD Breakdown -->
+          <div class="receipt-highlight-advance">
+            <span>💳 Pay Now (অগ্রিম বিকাশ/নগদ):</span>
+            <span id="orderAdvance" style="font-size:15px">৳200</span>
           </div>
 
-          <div class="summary-row advance-row">
-            <span>Advance Required:</span>
-            <span id="orderAdvance">৳200</span>
-          </div>
-
-          <div class="summary-row cod-row">
-            <span>Remaining Cash on Delivery:</span>
-            <span id="orderCodRemaining">৳0</span>
+          <div class="receipt-highlight-cod">
+            <span>📦 Pay on Delivery (ক্যাশ অন ডেলিভারি বাকি):</span>
+            <span id="orderCodRemaining" style="font-size:15px">৳0</span>
           </div>
 
           <button type="button" class="btn-submit-order" onclick="triggerOrderSubmit()">
             <span>💬</span>
-            <span>Confirm Order via WhatsApp</span>
+            <span>Confirm Pre-Order via WhatsApp</span>
           </button>
 
-          <p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:12px;">
-            🔒 Safe & Direct WhatsApp Confirmation with Zayn Shop Support
+          <p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:12px;line-height:1.4">
+            🔒 ১০০% নিরাপদ ও বিশ্বস্ত প্রি-অর্ডার প্রসেসিং। হোয়াটসঅ্যাপে কনফার্মেশনের পর সাপ্লায়ারকে অর্ডার পাঠানো হবে।
           </p>
         </div>
       </div>
@@ -611,7 +614,7 @@
 
   <!-- Scripts -->
   <script src="config.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
   <script>
     let checkoutDeliveryArea = 'dhaka';
 
@@ -786,6 +789,47 @@
       renderCheckoutItems();
     }
 
+    
+    function copyPaymentNumber(num, btn) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(num).then(() => {
+          showCopySuccess(btn, num);
+        }).catch(() => {
+          fallbackCopyText(num, btn);
+        });
+      } else {
+        fallbackCopyText(num, btn);
+      }
+    }
+
+    function fallbackCopyText(text, btn) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showCopySuccess(btn, text);
+      } catch (err) {
+        showToast('Number: ' + text);
+      }
+      document.body.removeChild(ta);
+    }
+
+    function showCopySuccess(btn, num) {
+      if (!btn) return;
+      const originalText = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      btn.style.background = '#10b981';
+      btn.style.color = '#ffffff';
+      showToast('📋 Payment Number Copied: ' + num);
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = '';
+        btn.style.color = '';
+      }, 2000);
+    }
+
     function renderCheckoutItems() {
       const container = document.getElementById('checkoutItemsContainer');
       if (!container) return;
@@ -831,7 +875,7 @@
         <div class="checkout-items-list">
           ${cart.map(item => `
             <div class="checkout-item-row">
-              <img src="${item.image}" alt="${escapeHtml(item.name)}" class="checkout-item-thumb">
+              <img src="${typeof getOptimizedImageUrl === 'function' ? getOptimizedImageUrl(item.image, 160) : item.image}" alt="${escapeHtml(item.name)}" class="checkout-item-thumb" loading="lazy" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
               <div class="checkout-item-meta">
                 <div class="checkout-item-name">${escapeHtml(item.name)}</div>
                 ${(item.size || item.color) ? `<div style="font-size:11px;color:#2563eb;font-weight:700;margin-top:2px">${[item.size ? 'Size: ' + item.size : '', item.color ? 'Color: ' + item.color : ''].filter(Boolean).join(' | ')}</div>` : ''}
@@ -979,6 +1023,8 @@
       const orderPayload = {
         orderId: orderId,
         hp_field: hpVal,
+        trxId: trxId,
+        paymentTrxId: trxId,
         couponCode: appliedCoupon ? appliedCoupon.code : 'NONE',
         discountAmount: discount,
         subtotal: subtotal,
@@ -1036,6 +1082,7 @@
         (isOutside ? `🏛️ *District:* ${district}\n🏘️ *Upazila/Thana:* ${upazila}\n` : '') +
         `📍 *Address:* ${address}\n` +
         (note ? `📝 *Note:* ${note}\n` : '') +
+        (trxId ? `💳 *bKash/Nagad TrxID:* ${trxId}\n` : '') +
         `──────────────────────────\n` +
         `📋 *Ordered Items:*\n${itemsListText}\n` +
         `──────────────────────────\n` +

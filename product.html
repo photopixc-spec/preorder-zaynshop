@@ -8,9 +8,9 @@
   <meta name="description" content="Authentic global pre-order collection at Zayn Shop BD.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="style_ecom.css?v=3">
+  <link rel="stylesheet" href="style_ecom.css?v=5">
 </head>
 <body>
   <!-- Top Announcement Bar -->
@@ -228,11 +228,57 @@
 
   <!-- Scripts -->
   <script src="config.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
   <script>
     let activePdpProduct = null;
     let currentSelectedSize = '';
     let currentSelectedColor = '';
+
+    function getColorHex(colorName) {
+      const name = (colorName || '').toLowerCase().trim();
+      const map = {
+        'gold': '#d4af37',
+        'silver': '#c0c0c0',
+        'black': '#1e293b',
+        'white': '#ffffff',
+        'rose gold': '#b76e79',
+        'pink': '#f472b6',
+        'red': '#ef4444',
+        'blue': '#3b82f6',
+        'green': '#10b981',
+        'yellow': '#eab308',
+        'purple': '#a855f7',
+        'grey': '#94a3b8',
+        'gray': '#94a3b8',
+        'brown': '#78350f',
+        'navy': '#1e3a8a',
+        'beige': '#f5f5dc',
+        'orange': '#f97316'
+      };
+      return map[name] || '#cbd5e1';
+    }
+
+    function getPreOrderTimelineDates() {
+      const monthsBn = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+      const now = new Date();
+      function formatDate(d) {
+        return d.getDate() + ' ' + monthsBn[d.getMonth()];
+      }
+      const todayStr = formatDate(now);
+      const transitStart = new Date(now);
+      transitStart.setDate(now.getDate() + 5);
+      const transitEnd = new Date(now);
+      transitEnd.setDate(now.getDate() + 7);
+      const transitStr = formatDate(transitStart) + ' – ' + formatDate(transitEnd);
+
+      const delStart = new Date(now);
+      delStart.setDate(now.getDate() + 15);
+      const delEnd = new Date(now);
+      delEnd.setDate(now.getDate() + 25);
+      const delStr = formatDate(delStart) + ' – ' + formatDate(delEnd);
+
+      return { todayStr, transitStr, delStr };
+    }
 
     function openLightbox(src) {
       const box = document.getElementById('pdpLightbox');
@@ -265,6 +311,51 @@
         document.querySelectorAll('#colorOptionsWrap .pdp-variant-pill').forEach(b => b.classList.remove('active'));
       }
       if (btn) btn.classList.add('active');
+    }
+
+    function validateVariantSelection() {
+      let isValid = true;
+      let sizesList = [];
+      if (activePdpProduct) {
+        if (Array.isArray(activePdpProduct.sizes)) sizesList = activePdpProduct.sizes;
+        else if (typeof activePdpProduct.sizes === 'string' && activePdpProduct.sizes.trim()) {
+          sizesList = activePdpProduct.sizes.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+
+      let colorsList = [];
+      if (activePdpProduct) {
+        if (Array.isArray(activePdpProduct.colors)) colorsList = activePdpProduct.colors;
+        else if (typeof activePdpProduct.colors === 'string' && activePdpProduct.colors.trim()) {
+          colorsList = activePdpProduct.colors.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+
+      if (sizesList.length && !currentSelectedSize) {
+        const wrap = document.getElementById('sizeOptionsWrap');
+        if (wrap) {
+          wrap.classList.remove('variant-shake-warning');
+          void wrap.offsetWidth;
+          wrap.classList.add('variant-shake-warning');
+          setTimeout(() => wrap.classList.remove('variant-shake-warning'), 600);
+        }
+        showToast('⚠️ অনুগ্রহ করে সাইজ নির্বাচন করুন!');
+        isValid = false;
+      }
+
+      if (colorsList.length && !currentSelectedColor) {
+        const wrap = document.getElementById('colorOptionsWrap');
+        if (wrap) {
+          wrap.classList.remove('variant-shake-warning');
+          void wrap.offsetWidth;
+          wrap.classList.add('variant-shake-warning');
+          setTimeout(() => wrap.classList.remove('variant-shake-warning'), 600);
+        }
+        showToast('⚠️ অনুগ্রহ করে কালার নির্বাচন করুন!');
+        isValid = false;
+      }
+
+      return isValid;
     }
 
     async function initProductPage() {
@@ -320,11 +411,14 @@
         const inStock = (p.badge || '').toLowerCase().includes('ready') || (p.badge || '').toLowerCase().includes('in stock') || (p.stock_status || '').toLowerCase() === 'in stock';
         const effectiveDelivery = inStock ? readyDelivery : deliveryTime;
 
-        const discount = p.regular_price && p.regular_price > p.price
-          ? Math.round(((p.regular_price - p.price) / p.regular_price) * 100)
+        const regularPrice = Number(p.regular_price) || 0;
+        const currentPrice = Number(p.price) || 0;
+        const discount = regularPrice > currentPrice
+          ? Math.round(((regularPrice - currentPrice) / regularPrice) * 100)
           : 0;
+        const saveAmount = regularPrice > currentPrice ? (regularPrice - currentPrice) : 0;
 
-        // Image Gallery list
+        // Image Gallery list with WebP optimization
         let allImgs = [p.image];
         if (p.additional_images && Array.isArray(p.additional_images)) {
           allImgs = allImgs.concat(p.additional_images);
@@ -332,6 +426,8 @@
           allImgs = allImgs.concat(p.additional_images.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean));
         }
         allImgs = [...new Set(allImgs.filter(Boolean))];
+
+        const optimizedMainImg = typeof getOptimizedImageUrl === 'function' ? getOptimizedImageUrl(p.image, 700) : p.image;
 
         // Variants
         let sizesList = [];
@@ -345,12 +441,21 @@
         currentSelectedSize = sizesList.length ? sizesList[0] : '';
         currentSelectedColor = colorsList.length ? colorsList[0] : '';
 
-        // WhatsApp link
-        const waMsg = `Hi Zayn Shop, I want to order this product:\n*${p.name}*\nPrice: ${currency}${p.price.toLocaleString()}\nLink: ${window.location.href}`;
+        // WhatsApp inquiry link
         const waCleanNumber = (CONFIG.whatsappNumber || '8801819740112').replace(/[^0-9]/g, '');
-        const waProductUrl = `https://wa.me/${waCleanNumber}?text=${encodeURIComponent(waMsg)}`;
-        const flWa = document.getElementById('floatingWaBtn');
-        if (flWa) flWa.href = waProductUrl;
+        const waInquiryMsg = `Hi Zayn Shop, I want to inquire about this product:\n*${p.name}* (ID: #${p.id})\nPrice: ${currency}${currentPrice.toLocaleString()}\nLink: ${window.location.href}`;
+        const waInquiryUrl = `https://wa.me/${waCleanNumber}?text=${encodeURIComponent(waInquiryMsg)}`;
+
+        // Timeline dates calculation for Pre-Order items
+        const timelineDates = getPreOrderTimelineDates();
+
+        // Update Sticky Mobile Action Bar
+        const stickyImg = document.getElementById('stickyBarImg');
+        const stickyPrice = document.getElementById('stickyBarPrice');
+        const stickyTitle = document.getElementById('stickyBarTitle');
+        if (stickyImg) stickyImg.src = typeof getOptimizedImageUrl === 'function' ? getOptimizedImageUrl(p.image, 100) : p.image;
+        if (stickyPrice) stickyPrice.textContent = `${currency}${currentPrice.toLocaleString()}`;
+        if (stickyTitle) stickyTitle.textContent = p.name;
 
         // Render Main Grid
         mainArea.innerHTML = `
@@ -358,17 +463,20 @@
             <!-- Left: Gallery -->
             <div class="pdp-gallery-wrap">
               <div class="pdp-main-img-box">
-                <img id="pdpDisplayImg" src="${p.image}" alt="${escapeHtml(p.name)}" class="pdp-main-img" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='images/hero_banner.jpg';" onclick="openLightbox(this.src)" style="cursor:zoom-in">
+                <img id="pdpDisplayImg" src="${optimizedMainImg}" alt="${escapeHtml(p.name)}" class="pdp-main-img" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='images/hero_banner.jpg';" onclick="openLightbox(this.src)" style="cursor:zoom-in">
                 <button type="button" class="pdp-zoom-btn" title="View Full Image" onclick="openLightbox(document.getElementById('pdpDisplayImg').src)">🔍</button>
               </div>
 
               <!-- Thumbnails strip -->
               <div class="pdp-thumb-row">
-                ${allImgs.map((imgSrc, idx) => `
-                  <div class="pdp-thumb-item ${idx === 0 ? 'active' : ''}" onclick="switchMainImage('${imgSrc}', this)">
-                    <img src="${imgSrc}" alt="Thumbnail ${idx + 1}" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
-                  </div>
-                `).join('')}
+                ${allImgs.map((imgSrc, idx) => {
+                  const thumbOptimized = typeof getOptimizedImageUrl === 'function' ? getOptimizedImageUrl(imgSrc, 160) : imgSrc;
+                  return `
+                    <div class="pdp-thumb-item ${idx === 0 ? 'active' : ''}" onclick="switchMainImage('${imgSrc}', this)">
+                      <img src="${thumbOptimized}" alt="Thumbnail ${idx + 1}" referrerpolicy="no-referrer" loading="lazy" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
+                    </div>
+                  `;
+                }).join('')}
               </div>
             </div>
 
@@ -376,19 +484,19 @@
             <div class="pdp-info-wrap">
               <div class="pdp-badge-row">
                 ${inStock 
-                  ? `<span class="pdp-badge-instock">🟢 Ready Stock</span>`
-                  : `<span class="pdp-badge-tag">✈️ Pre-Order</span>`
+                  ? `<span class="badge-instock"><span class="pulse-dot green"></span>🟢 Ready Stock • ${effectiveDelivery}</span>`
+                  : `<span class="badge-preorder">✈️ Global Pre-Order • ${effectiveDelivery}</span>`
                 }
-                <span class="pdp-badge-time">${effectiveDelivery} delivery</span>
-                ${discount > 0 ? `<span class="pdp-discount-pill">${discount}% OFF</span>` : ''}
+                ${discount > 0 ? `<span class="badge-discount">-${discount}% OFF</span>` : ''}
               </div>
 
-              <div class="pdp-cat-label">${escapeHtml(p.category)}</div>
+              <div class="pdp-cat-label" style="margin-top:12px;">${escapeHtml(p.category)}</div>
               <h1 class="pdp-title">${escapeHtml(p.name)}</h1>
 
               <div class="pdp-price-row">
-                <span class="pdp-price-current">${currency}${p.price.toLocaleString()}</span>
-                ${p.regular_price ? `<span class="pdp-price-old">${currency}${p.regular_price.toLocaleString()}</span>` : ''}
+                <span class="pdp-price-current">${currency}${currentPrice.toLocaleString()}</span>
+                ${regularPrice ? `<span class="pdp-price-old">${currency}${regularPrice.toLocaleString()}</span>` : ''}
+                ${saveAmount > 0 ? `<span style="font-size:12px;color:#10b981;font-weight:800;background:#ecfdf5;padding:3px 8px;border-radius:6px;border:1px solid #a7f3d0">Save ${currency}${saveAmount}</span>` : ''}
               </div>
 
               <!-- Highlights list -->
@@ -401,7 +509,7 @@
                 <li>Cash on Delivery with live phone & WhatsApp customer support.</li>
               </ul>
 
-              <!-- Variants Section (Size & Color) -->
+              <!-- Variants Section (Size & Color with Color Swatches) -->
               ${(sizesList.length || colorsList.length) ? `
                 <div class="pdp-variant-sec">
                   ${sizesList.length ? `
@@ -416,20 +524,46 @@
                   ` : ''}
 
                   ${colorsList.length ? `
-                    <div class="pdp-variant-group" style="margin-top:10px">
+                    <div class="pdp-variant-group" style="margin-top:12px">
                       <div class="pdp-variant-title">Color: <span class="selected-val" id="selectedColorLabel">${escapeHtml(colorsList[0])}</span></div>
                       <div class="pdp-variant-options" id="colorOptionsWrap">
-                        ${colorsList.map((cl, i) => `
-                          <button type="button" class="pdp-variant-pill ${i === 0 ? 'active' : ''}" onclick="selectVariant('color', '${escapeHtml(cl)}', this)">${escapeHtml(cl)}</button>
-                        `).join('')}
+                        ${colorsList.map((cl, i) => {
+                          const hex = getColorHex(cl);
+                          return `
+                            <button type="button" class="pdp-variant-pill ${i === 0 ? 'active' : ''}" onclick="selectVariant('color', '${escapeHtml(cl)}', this)">
+                              <span class="swatch-circle" style="background:${hex};"></span>
+                              <span>${escapeHtml(cl)}</span>
+                            </button>
+                          `;
+                        }).join('')}
                       </div>
                     </div>
                   ` : ''}
                 </div>
               ` : ''}
 
+              <!-- Pre-Order Dynamic Roadmap Timeline -->
+              ${!inStock ? `
+                <div class="preorder-timeline-box">
+                  <div class="timeline-title">
+                    <span>🗓️</span> <span>Estimated Delivery Roadmap (প্রি-অর্ডার সময়রেখা)</span>
+                  </div>
+                  <div class="timeline-steps">
+                    <div class="timeline-step completed">
+                      <b>অর্ডার বুকিং (আজ):</b> ৳২০০ অগ্রিম কনফার্মেশন <span class="date-tag">${timelineDates.todayStr}</span>
+                    </div>
+                    <div class="timeline-step">
+                      <b>আন্তর্জাতিক ট্রানজিট:</b> গ্লোবাল ওয়্যারহাউস থেকে রওয়ানা <span class="date-tag">${timelineDates.transitStr}</span>
+                    </div>
+                    <div class="timeline-step">
+                      <b>হোম ডেলিভারি:</b> কুরিয়ার মারফত আপনার ঠিকানায় <span class="date-tag" style="background:#eff6ff;color:#2563eb;">${timelineDates.delStr}</span>
+                    </div>
+                  </div>
+                </div>
+              ` : ''}
+
               <!-- Actions Box -->
-              <div class="pdp-actions-box">
+              <div class="pdp-actions-box" id="pdpActionBlock">
                 <div class="pdp-qty-and-cart-row">
                   <div class="pdp-qty-stepper">
                     <button type="button" onclick="changePdpQty(-1)">−</button>
@@ -445,8 +579,8 @@
                   ⚡ Order Now
                 </button>
 
-                <a href="${waProductUrl}" target="_blank" class="btn-pdp-whatsapp">
-                  💬 WhatsApp Us
+                <a href="${waInquiryUrl}" target="_blank" class="btn-pdp-wa-inquire">
+                  💬 Ask About This Product on WhatsApp
                 </a>
               </div>
 
@@ -487,11 +621,14 @@
 
         // Tab 2: Images Grid
         const tabImagesGrid = document.getElementById('tabImagesGrid');
-        tabImagesGrid.innerHTML = allImgs.map((src, i) => `
-          <div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;background:#fff;text-align:center;cursor:pointer" onclick="openLightbox('${src}')">
-            <img src="${src}" alt="View ${i + 1}" style="max-width:100%;height:180px;object-fit:contain" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
-          </div>
-        `).join('');
+        tabImagesGrid.innerHTML = allImgs.map((src, i) => {
+          const opt = typeof getOptimizedImageUrl === 'function' ? getOptimizedImageUrl(src, 300) : src;
+          return `
+            <div style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;background:#fff;text-align:center;cursor:pointer" onclick="openLightbox('${src}')">
+              <img src="${opt}" alt="View ${i + 1}" style="max-width:100%;height:180px;object-fit:contain" loading="lazy" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
+            </div>
+          `;
+        }).join('');
 
         // Tab 4: Customer Reviews
         loadProductReviews(p.id);
@@ -504,25 +641,29 @@
 
         if (relatedToDisplay.length) {
           const relatedGrid = document.getElementById('relatedGrid');
-          relatedGrid.innerHTML = relatedToDisplay.map(item => `
-            <div class="related-card" onclick="window.location='product.html?id=${item.id}'">
-              <div class="related-img-wrap">
-                <img src="${item.image}" alt="${escapeHtml(item.name)}" class="related-img" loading="lazy" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
+          relatedGrid.innerHTML = relatedToDisplay.map(item => {
+            const relOpt = typeof getOptimizedImageUrl === 'function' ? getOptimizedImageUrl(item.image, 300) : item.image;
+            return `
+              <div class="related-card" onclick="window.location='product.html?id=${item.id}'">
+                <div class="related-img-wrap">
+                  <img src="${relOpt}" alt="${escapeHtml(item.name)}" class="related-img" loading="lazy" onerror="this.onerror=null;this.src='images/hero_banner.jpg';">
+                </div>
+                <div class="related-body">
+                  <div class="related-cat">${escapeHtml(item.category)}</div>
+                  <div class="related-name">${escapeHtml(item.name)}</div>
+                  <div class="related-price">${currency}${Number(item.price).toLocaleString()}</div>
+                  <button type="button" class="btn-related-order" onclick="event.stopPropagation();window.location='product.html?id=${item.id}'">
+                    Order Now
+                  </button>
+                </div>
               </div>
-              <div class="related-body">
-                <div class="related-cat">${escapeHtml(item.category)}</div>
-                <div class="related-name">${escapeHtml(item.name)}</div>
-                <div class="related-price">${currency}${item.price.toLocaleString()}</div>
-                <button type="button" class="btn-related-order" onclick="event.stopPropagation();window.location='product.html?id=${item.id}'">
-                  Order Now
-                </button>
-              </div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
           document.getElementById('relatedSection').style.display = 'block';
         }
 
-        trackEvent('ViewContent', {
+        // Standard e-commerce view_item event
+        trackEvent('view_item', {
           content_name: p.name,
           content_ids: [String(p.id)],
           content_type: 'product',
@@ -530,15 +671,32 @@
           currency: 'BDT'
         });
 
+        // Initialize Sticky Bar Scroll Watcher
+        initStickyBarScroll();
+
       } catch (err) {
         console.error('Failed to load PDP:', err);
         mainArea.innerHTML = '<p style="text-align:center;padding:40px;color:#ef4444">Failed to load product details.</p>';
       }
     }
 
+    function initStickyBarScroll() {
+      const stickyBar = document.getElementById('stickyMobileActionBar');
+      if (!stickyBar) return;
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 400) {
+          stickyBar.classList.add('visible');
+        } else {
+          stickyBar.classList.remove('visible');
+        }
+      }, { passive: true });
+    }
+
     function switchMainImage(src, element) {
       const mainImg = document.getElementById('pdpDisplayImg');
-      if (mainImg) mainImg.src = src;
+      if (mainImg) {
+        mainImg.src = typeof getOptimizedImageUrl === 'function' ? getOptimizedImageUrl(src, 700) : src;
+      }
       document.querySelectorAll('.pdp-thumb-item').forEach(el => el.classList.remove('active'));
       if (element) element.classList.add('active');
     }
@@ -553,6 +711,7 @@
 
     function addPdpToCart() {
       if (!activePdpProduct) return;
+      if (!validateVariantSelection()) return;
       const input = document.getElementById('pdpQtyInput');
       const qty = input ? parseInt(input.value, 10) || 1 : 1;
       addToCart(activePdpProduct.id, qty, true, currentSelectedSize, currentSelectedColor);
@@ -560,6 +719,7 @@
 
     function buyPdpNow() {
       if (!activePdpProduct) return;
+      if (!validateVariantSelection()) return;
       const input = document.getElementById('pdpQtyInput');
       const qty = input ? parseInt(input.value, 10) || 1 : 1;
       openDirectCheckout(activePdpProduct.id, qty, currentSelectedSize, currentSelectedColor);
@@ -582,6 +742,8 @@
         if (idx < star) b.classList.add('active');
         else b.classList.remove('active');
       });
+      const numLbl = document.getElementById('ratingNum');
+      if (numLbl) numLbl.textContent = star + ' / 5';
     }
 
     async function loadProductReviews(productId) {
@@ -617,16 +779,20 @@
           </div>
         `;
       } else {
-        reviewsListHtml = reviews.map(r => `
-          <div class="review-item-card">
-            <div class="review-item-header">
-              <span class="review-item-name">${escapeHtml(r.name)}</span>
-              <span class="review-item-date">${escapeHtml(r.date)}</span>
+        reviewsListHtml = reviews.map(r => {
+          const attachedImg = r.image ? `<img src="${r.image}" class="review-attached-img" alt="Review Photo" onclick="openLightbox('${r.image}')">` : '';
+          return `
+            <div class="review-item-card">
+              <div class="review-item-header">
+                <span class="review-item-name">${escapeHtml(r.name)} <span class="verified-buyer-badge">✔ Verified Purchase</span></span>
+                <span class="review-item-date">${escapeHtml(r.date)}</span>
+              </div>
+              <div class="review-stars">${'★'.repeat(r.rating || 5)}${'☆'.repeat(5 - (r.rating || 5))}</div>
+              <div class="review-item-text">${escapeHtml(r.comment)}</div>
+              ${attachedImg}
             </div>
-            <div class="review-stars">${'★'.repeat(r.rating || 5)}${'☆'.repeat(5 - (r.rating || 5))}</div>
-            <div class="review-item-text">${escapeHtml(r.comment)}</div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
 
       container.innerHTML = `
@@ -654,6 +820,11 @@
               </div>
 
               <div style="margin-bottom:12px;">
+                <label style="display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:4px">Product Photo URL (Optional):</label>
+                <input type="url" id="revImageUrl" class="form-input" placeholder="https://example.com/photo.jpg" style="padding:8px 12px;font-size:13px;border-radius:6px;border:1.5px solid #cbd5e1;width:100%;box-sizing:border-box">
+              </div>
+
+              <div style="margin-bottom:12px;">
                 <label style="display:block;font-size:12px;font-weight:700;color:#334155;margin-bottom:4px">Your Review:</label>
                 <textarea id="revComment" required class="form-input" rows="3" placeholder="Share your experience with this item..." style="padding:8px 12px;font-size:13px;border-radius:6px;border:1.5px solid #cbd5e1;width:100%;box-sizing:border-box"></textarea>
               </div>
@@ -674,6 +845,7 @@
       const msg = document.getElementById('revMsg');
       const name = document.getElementById('revName').value.trim();
       const comment = document.getElementById('revComment').value.trim();
+      const imageUrl = document.getElementById('revImageUrl')?.value.trim() || '';
 
       if (!name || !comment) return;
 
@@ -691,7 +863,8 @@
               productId: productId,
               name: name,
               rating: selectedRating,
-              comment: comment
+              comment: comment,
+              image: imageUrl
             })
           });
         }
@@ -715,5 +888,21 @@
       initProductPage();
     });
   </script>
+
+  <!-- Sticky Mobile Bottom Action Bar (PDP) -->
+  <div id="stickyMobileActionBar" class="sticky-mobile-action-bar">
+    <div class="sticky-bar-left">
+      <img id="stickyBarImg" src="images/hero_banner.jpg" alt="Product" class="sticky-bar-thumb">
+      <div>
+        <div id="stickyBarPrice" class="sticky-bar-price">৳0</div>
+        <div id="stickyBarTitle" class="sticky-bar-title">Loading...</div>
+      </div>
+    </div>
+    <div class="sticky-bar-btns">
+      <button type="button" class="btn-sticky-cart" onclick="addPdpToCart()">🛒 Bag</button>
+      <button type="button" class="btn-sticky-buy" onclick="buyPdpNow()">⚡ Order</button>
+    </div>
+  </div>
+
 </body>
 </html>
