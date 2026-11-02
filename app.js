@@ -765,7 +765,7 @@ function renderMobileBottomNav() {
   nav.id = 'mobileBottomNav';
   nav.className = 'mobile-bottom-nav';
 
-  const waNumber = (typeof CONFIG !== 'undefined' && CONFIG.whatsappNumber) || '8801819740112';
+  const waNumber = (typeof CONFIG !== 'undefined' && CONFIG.whatsappNumber) || '8801860034712';
 
   nav.innerHTML = `
     <a href="index.html" class="mob-nav-item ${isHome ? 'active' : ''}">

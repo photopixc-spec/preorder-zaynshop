@@ -404,7 +404,7 @@
               <label class="form-label" for="custPhone">
                 Mobile Phone Number <span class="req">*</span>
               </label>
-              <input type="tel" id="custPhone" class="form-input" required placeholder="e.g. 01819740112" pattern="[0-9+ -]{11,15}">
+              <input type="tel" id="custPhone" class="form-input" required placeholder="e.g. 01860034712" pattern="[0-9+ -]{11,15}">
             </div>
 
             <div class="form-group">
@@ -479,8 +479,8 @@
                 Send ৳200 advance via Send Money to personal account:
               </div>
               <div style="margin-top:6px;">
-                <span class="mfs-pill">📱 bKash: <b>01819740112</b></span>
-                <span class="mfs-pill">📱 Nagad: <b>01819740112</b></span>
+                <span class="mfs-pill">📱 bKash: <b>01860034712</b></span>
+                <span class="mfs-pill">📱 Nagad: <b>01860034712</b></span>
               </div>
             </div>
           </form>
@@ -561,7 +561,7 @@
       </p>
       <div style="background:#f8fafc;padding:14px;border-radius:10px;text-align:left;font-size:13px;margin-bottom:20px;border:1px solid #e2e8f0;">
         <div style="margin-bottom:6px">💰 <b>Total Payable:</b> <span id="tyTotal">৳0</span></div>
-        <div style="margin-bottom:6px">⚠️ <b>Advance Due:</b> ৳200 (Send to bKash/Nagad 01819740112)</div>
+        <div style="margin-bottom:6px">⚠️ <b>Advance Due:</b> ৳200 (Send to bKash/Nagad 01860034712)</div>
         <div>💬 <b>Next Step:</b> Tap below to send your order details and payment screenshot on WhatsApp.</div>
       </div>
       <a id="tyWaLink" href="#" target="_blank" class="btn-submit-order" style="text-decoration:none;margin-bottom:10px;">
@@ -580,7 +580,7 @@
       <div class="footer-col">
         <h4 style="color:#ffffff;font-size:16px;margin-bottom:10px;">Zayn Shop</h4>
         <p style="line-height:1.7;margin-bottom:12px;color:#94a3b8">Pre-order trending products from China & global suppliers, delivered safely across Bangladesh.</p>
-        <p style="color:#cbd5e1">📞 <b>Phone / WhatsApp:</b> 01819740112<br>⏰ <b>Support:</b> Every day 9:00 AM – 10:00 PM</p>
+        <p style="color:#cbd5e1">📞 <b>Phone / WhatsApp:</b> 01860034712<br>⏰ <b>Support:</b> Every day 9:00 AM – 10:00 PM</p>
       </div>
       <div class="footer-col">
         <h4>Shop</h4>
@@ -601,8 +601,7 @@
       <div class="footer-col">
         <h4>We accept</h4>
         <p style="margin-bottom:6px;color:#cbd5e1">💵 Cash on Delivery (COD)</p>
-        <p style="margin-bottom:6px;color:#cbd5e1">📱 bKash Personal: 01819740112</p>
-        <p style="color:#cbd5e1">📱 Nagad Personal: 01819740112</p>
+        <p style="color:#cbd5e1">📱 We accept bKash and Nagad</p>
       </div>
     </div>
     <div class="footer-bottom">
@@ -1090,12 +1089,12 @@
         (discount > 0 ? `🏷️ *Promo Discount (${appliedCoupon.code}):* -${currency}${discount.toLocaleString()}\n` : '') +
         `🚚 *Delivery Charge:* ${currency}${delivery}\n` +
         `💵 *Total Order Amount:* ${currency}${total.toLocaleString()}\n` +
-        `⚠️ *Advance Required:* ${currency}${advanceAmount} (via bKash/Nagad: 01819740112)\n` +
+        `⚠️ *Advance Required:* ${currency}${advanceAmount} (via bKash/Nagad: 01860034712)\n` +
         `📦 *Remaining on Delivery (COD):* ${currency}${remainingCod.toLocaleString()}\n` +
         `──────────────────────────\n` +
         `Thank you! I would like to confirm my pre-order.`;
 
-      const cleanWaNumber = (CONFIG.whatsappNumber || '8801819740112').replace(/[^0-9]/g, '');
+      const cleanWaNumber = (CONFIG.whatsappNumber || '8801860034712').replace(/[^0-9]/g, '');
       const waUrl = `https://wa.me/${cleanWaNumber}?text=${encodeURIComponent(waMsg)}`;
 
       // Clear Cart

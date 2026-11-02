@@ -30,7 +30,7 @@ flowchart TD
         Admin["👨‍💼 অ্যাডমিন পোর্টাল (admin-local.html)"]
         MoveDrop["📦 MoveDrop / Chinese Suppliers"]
         Importer["⚡ 1-Click Bookmarklet (importer.js)"]
-        WhatsApp["💬 WhatsApp Support (01819740112)"]
+        WhatsApp["💬 WhatsApp Support (01860034712)"]
     end
 
     Customer -->|ভিজিট করে| Cloudflare

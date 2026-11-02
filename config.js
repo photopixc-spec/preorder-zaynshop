@@ -4,13 +4,13 @@
 const CONFIG = {
   brandName: "Zayn Shop",
   subTitle: "Pre-Order Global Collection",
-  whatsappNumber: "8801819740112", // WhatsApp number for orders
-  supportPhone: "01819740112",
+  whatsappNumber: "8801860034712", // WhatsApp number for orders
+  supportPhone: "01860034712",
   currencySymbol: "৳",
   deliveryDhaka: 70,
   deliveryOutside: 130,
   advanceAmount: 200,
-  advanceNotice: "প্রি-অর্ডার কনফার্ম করতে ২০০ টাকা অ্যাডভান্স পেমেন্ট প্রযোজ্য (বিকাশ/নগদ: 01819740112)। বাকি টাকা ক্যাশ অন ডেলিভারিতে পরিশোধ করবেন।",
+  advanceNotice: "প্রি-অর্ডার কনফার্ম করতে ২০০ টাকা অ্যাডভান্স পেমেন্ট প্রযোজ্য (বিকাশ/নগদ: 01860034712)। বাকি টাকা ক্যাশ অন ডেলিভারিতে পরিশোধ করবেন।",
   deliveryTime: "15–25 Days",
   readyStockDeliveryTime: "২–৩ Days",
   
