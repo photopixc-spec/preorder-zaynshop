@@ -824,6 +824,21 @@ window.addEventListener('DOMContentLoaded', () => {
   loadCart();
   renderMobileBottomNav();
 
+  // Enable horizontal mouse wheel scroll on category nav & pills
+  const enableHorizontalWheel = (containerId) => {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.addEventListener('wheel', (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
+  };
+  enableHorizontalWheel('categoryNavInner');
+  enableHorizontalWheel('categoryPills');
+
+
   // Load products if on index or page with productGrid
   if (document.getElementById('productGrid')) {
     loadProducts();
