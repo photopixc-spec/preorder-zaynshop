@@ -120,7 +120,7 @@ async function fetchFreshProductsFromSource() {
       const res = await fetch(CONFIG.orderWebhookUrl + sep + 't=' + Date.now());
       if (res.ok) {
         const sheetProducts = await res.json();
-        if (Array.isArray(sheetProducts) && sheetProducts.length > 0) {
+        if (Array.isArray(sheetProducts)) {
           try {
             localStorage.setItem(CACHE_KEY, JSON.stringify(sheetProducts));
             localStorage.setItem(CACHE_TIME_KEY, String(Date.now()));
