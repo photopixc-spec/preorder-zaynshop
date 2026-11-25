@@ -877,11 +877,14 @@
     }
 
     async function deleteProduct(id, name) {
-      if (!confirm(`Are you sure you want to delete "${name}" (ID #${id})?`)) return;
+      if (!confirm(`Are you sure you want to delete "${name}" (ID #${id}) from BOTH your Store & MoveDrop?`)) return;
 
-      showToast(`Deleting #${id}…`);
+      showToast(`Deleting #${id} from Store & MoveDrop…`);
       try {
-        if (CONFIG.orderWebhookUrl) {
+        // Call Cloudflare WC Bridge DELETE -> removes from Google Sheet AND sends product.deleted webhook to MoveDrop
+        const bridgeUrl = `https://preorder.zaynshopbd.com/wp-json/wc/v3/products/${id}?consumer_key=ck_zaynshop_9f8a7b6c5d4e3f2a1b0c9d8e&consumer_secret=cs_zaynshop_1a2b3c4d5e6f7a8b9c0d1e2f`;
+        const res = await fetch(bridgeUrl, { method: 'DELETE' });
+        if (!res.ok && CONFIG.orderWebhookUrl) {
           await fetch(CONFIG.orderWebhookUrl, {
             method: 'POST',
             mode: 'no-cors',
@@ -896,7 +899,7 @@
         adminProducts = adminProducts.filter(p => Number(p.id) !== Number(id));
         document.getElementById('prodCount').textContent = adminProducts.length;
         renderAdminTable(adminProducts);
-        showToast(`🗑️ Product #${id} deleted!`);
+        showToast(`🗑️ Product #${id} deleted from Store & MoveDrop!`);
       } catch (err) {
         alert('Delete failed: ' + err);
       }
